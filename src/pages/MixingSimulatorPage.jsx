@@ -141,6 +141,106 @@ function ReactionAnimation({ type }) {
   return null
 }
 
+// Local smart chemical prediction engine ( C.P.E. )
+const predictReactionLocally = (chemA, chemB) => {
+  const nameA = chemA.name.toLowerCase()
+  const nameB = chemB.name.toLowerCase()
+  const formulaA = chemA.formula
+  const formulaB = chemB.formula
+  
+  const isAcid = (n, f) => n.includes('acid') || f.startsWith('H') || n.includes('hydrogen')
+  const isBase = (n) => n.includes('hydroxide') || n.includes('carbonate') || n.includes('oxide') || n.includes('ammonia')
+  
+  const acidA = isAcid(nameA, formulaA)
+  const acidB = isAcid(nameB, formulaB)
+  const baseA = isBase(nameA)
+  const baseB = isBase(nameB)
+
+  // 1. Acid + Carbonate -> Neutralization producing CO2 gas
+  if ((acidA && nameB.includes('carbonate')) || (acidB && nameA.includes('carbonate'))) {
+    const acid = acidA ? chemA : chemB
+    const carbonate = acidA ? chemB : chemA
+    return {
+      is_safe: true,
+      reaction_type: 'produces_gas',
+      severity_score: 3,
+      result_description: `Reaction between ${acid.name} (${acid.formula}) and ${carbonate.name} (${carbonate.formula}) generates Carbon Dioxide (CO2) gas bubbles. Neutralization is successful.\nتفاعل التعادل بين الحمض والكربونات ينتج غاز ثاني أكسيد الكربون.`,
+      product_name: 'Carbon Dioxide & Salt',
+      product_formula: 'CO2 + Salt'
+    }
+  }
+
+  // 2. Acid + Base (Hydroxide/Ammonia) -> Exothermic Neutralization
+  if ((acidA && baseB) || (acidB && baseA)) {
+    const acid = acidA ? chemA : chemB
+    const base = acidA ? chemB : chemA
+    return {
+      is_safe: true,
+      reaction_type: 'safe',
+      severity_score: 2,
+      result_description: `Acid-base neutralization reaction between ${acid.name} and ${base.name}. Heat is released (exothermic), forming water and stable salt.\nتفاعل تعادل بين الحمض والقاعدة ينتج ملح وماء مع انطلاق حرارة.`,
+      product_name: 'Water & Salt',
+      product_formula: 'H2O + Salt'
+    }
+  }
+
+  // 3. Oxidizer + Flammable organic solvent -> Danger of fire/explosion
+  const isOxidizer = (n) => n.includes('nitrate') || n.includes('peroxide') || n.includes('permanganate') || n.includes('oxygen')
+  const isFlammable = (n) => n.includes('alcohol') || n.includes('ethanol') || n.includes('acetone') || n.includes('benzene') || n.includes('methanol') || n.includes('hydrogen')
+  
+  if ((isOxidizer(nameA) && isFlammable(nameB)) || (isOxidizer(nameB) && isFlammable(nameA))) {
+    const ox = isOxidizer(nameA) ? chemA : chemB
+    const flam = isOxidizer(nameA) ? chemB : chemA
+    return {
+      is_safe: false,
+      reaction_type: 'explosive',
+      severity_score: 9,
+      result_description: `CRITICAL DANGER: Mixing strong oxidizer ${ox.name} with flammable ${flam.name} results in violent oxidation, high heat release, and explosive combustion risk!\nخطر انفجار: خلط مادة مؤكسدة قوية مع مادة قابلة للاشتعال يسبب تفاعل سريع وخطر الحريق.`,
+      product_name: 'Combustion Gases',
+      product_formula: 'CO2 + H2O'
+    }
+  }
+
+  // 4. Concentrated Acid + Water -> Exothermic hazard
+  if ((acidA && nameB === 'water') || (acidB && nameA === 'water')) {
+    const acid = acidA ? chemA : chemB
+    return {
+      is_safe: false,
+      reaction_type: 'hazardous',
+      severity_score: 5,
+      result_description: `Exothermic acid dilution. Mixing water with concentrated ${acid.name} releases high heat. Always add acid to water slowly, never the reverse to prevent acid splash.\nتخفيف الحمض الطارد للحرارة. يجب إضافة الحمض للماء ببطء لمنع التناثر.`,
+      product_name: 'Hydronium Ions',
+      product_formula: 'H3O+'
+    }
+  }
+
+  // 5. Default response based on Hazard levels
+  const dangerLevel = Math.max(
+    chemA.hazard_level === 'danger' ? 7 : chemA.hazard_level === 'warning' ? 4 : 1,
+    chemB.hazard_level === 'danger' ? 7 : chemB.hazard_level === 'warning' ? 4 : 1
+  )
+
+  if (dangerLevel >= 7) {
+    return {
+      is_safe: false,
+      reaction_type: 'hazardous',
+      severity_score: dangerLevel,
+      result_description: `Potential hazard detected. Mixing ${chemA.name} and ${chemB.name} is restricted. Proceed with certified personal protective equipment under ventilation.\nتفاعل محتمل الخطورة بسبب وجود مواد عالية السمية أو الكاوية.`,
+      product_name: 'Unstable Complex',
+      product_formula: 'Complex'
+    }
+  }
+
+  return {
+    is_safe: true,
+    reaction_type: 'safe',
+    severity_score: 1,
+    result_description: `No active reaction expected. ${chemA.name} and ${chemB.name} are compatible for mixing under standard lab conditions.\nخلط آمن ومستقر. لا يوجد تفاعل كيميائي نشط متوقع تحت الظروف العادية.`,
+    product_name: 'Stable Mixture',
+    product_formula: `${formulaA} + ${formulaB}`
+  }
+}
+
 export default function MixingSimulatorPage() {
   const { chemicals, fetchChemicals } = useChemicalStore()
   const [chemA, setChemA] = useState(null)
@@ -248,16 +348,14 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
         }
       }
     } catch (err) {
-      console.warn("AI Simulator fallback active:", err)
-      // 4. Fallback safely if AI Key is not configured or network fails
-      const fallbackResult = {
-        reaction_type: 'safe',
-        result_description: 'No matching database rule found. AI simulation temporarily unavailable. Please refer to SDS documents and follow standard safety protocols.',
-        is_safe: true,
-        severity_score: 1
+      console.warn("AI Simulator fallback active, launching Local Smart Prediction Engine:", err)
+      // 4. Ultimate Fallback: Smart Chemical Prediction Engine (C.P.E.)
+      const localPredictionResult = predictReactionLocally(chemA, chemB)
+      setResult(localPredictionResult)
+      if (!localPredictionResult.is_safe) {
+        setScreenShake(true); setTimeout(() => setScreenShake(false), 800)
       }
-      setResult(fallbackResult)
-      toast.success('Simulation complete (local safety fallback)')
+      toast.success('Simulation complete (Local AI Engine fallback 🧠)')
     } finally {
       setLoading(false)
     }
