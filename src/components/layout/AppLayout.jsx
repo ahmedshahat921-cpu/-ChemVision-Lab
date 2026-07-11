@@ -1,0 +1,207 @@
+import React, { useState, useEffect } from 'react'
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  LayoutDashboard, FlaskConical, Beaker, QrCode, Map,
+  Settings, LogOut, Bell, Search, ChevronLeft, ChevronRight,
+  User, Shield, Menu, X, Atom
+} from 'lucide-react'
+import { useAuthStore } from '../../store'
+import toast from 'react-hot-toast'
+
+const navItems = [
+  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/chemicals', icon: FlaskConical, label: 'Chemicals' },
+  { path: '/mixing-simulator', icon: Beaker, label: 'Mixing Simulator' },
+  { path: '/qr-scanner', icon: QrCode, label: 'QR Scanner' },
+  { path: '/lab-map', icon: Map, label: 'Lab Map' },
+]
+
+const pageVariants = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -12 },
+}
+
+export default function AppLayout() {
+  const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const { profile, logout } = useAuthStore()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const handleLogout = async () => {
+    await logout()
+    toast.success('Logged out successfully')
+    navigate('/login')
+  }
+
+  // Close mobile on route change
+  useEffect(() => { setMobileOpen(false) }, [location.pathname])
+
+  return (
+    <div className="flex h-screen overflow-hidden" style={{ background: '#F0F2F5' }}>
+      {/* Mobile overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* SIDEBAR */}
+      <motion.aside
+        animate={{ width: collapsed ? 72 : 256 }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        className={`
+          flex flex-col h-screen z-50 flex-shrink-0
+          fixed lg:relative
+          ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          transition-transform lg:transition-none
+        `}
+        style={{ background: 'white', borderRight: '1px solid #E2E8F0', boxShadow: '2px 0 12px rgba(74,144,226,0.06)' }}
+      >
+        {/* Logo */}
+        <div className="flex items-center gap-3 p-4 border-b" style={{ borderColor: '#E2E8F0', minHeight: '64px' }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #4A90E2, #1B3A6B)' }}>
+            <Atom size={20} color="white" />
+          </div>
+          <AnimatePresence>
+            {!collapsed && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="overflow-hidden">
+                <h1 className="font-heading font-bold text-sm leading-tight" style={{ color: '#1B3A6B' }}>ChemVision</h1>
+                <p className="text-xs" style={{ color: '#64748B' }}>Lab Hub</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          {navItems.map(({ path, icon: Icon, label }) => (
+            <NavLink
+              key={path}
+              to={path}
+              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              title={collapsed ? label : ''}
+            >
+              <Icon size={20} className="flex-shrink-0" />
+              <AnimatePresence>
+                {!collapsed && (
+                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    {label}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </NavLink>
+          ))}
+
+          {/* Admin link */}
+          {profile?.role === 'admin' && (
+            <NavLink to="/admin" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} title={collapsed ? 'Admin' : ''}>
+              <Shield size={20} className="flex-shrink-0" />
+              <AnimatePresence>
+                {!collapsed && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>Admin Panel</motion.span>}
+              </AnimatePresence>
+            </NavLink>
+          )}
+        </nav>
+
+        {/* User section */}
+        <div className="border-t p-3 space-y-1" style={{ borderColor: '#E2E8F0' }}>
+          <NavLink to="/profile" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} title={collapsed ? 'Profile' : ''}>
+            <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-white" style={{ background: '#4A90E2' }}>
+              {profile?.name?.[0]?.toUpperCase() || 'U'}
+            </div>
+            <AnimatePresence>
+              {!collapsed && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-w-0">
+                  <p className="text-sm font-medium truncate" style={{ color: '#2C3E50' }}>{profile?.name || 'User'}</p>
+                  <p className="text-xs truncate" style={{ color: '#94A3B8' }}>{profile?.role}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </NavLink>
+          <button onClick={handleLogout} className="sidebar-link w-full text-left" title={collapsed ? 'Logout' : ''}>
+            <LogOut size={18} className="flex-shrink-0" style={{ color: '#E85D5D' }} />
+            <AnimatePresence>
+              {!collapsed && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ color: '#E85D5D' }}>Logout</motion.span>}
+            </AnimatePresence>
+          </button>
+        </div>
+
+        {/* Collapse toggle */}
+        <motion.button
+          onClick={() => setCollapsed(!collapsed)}
+          className="absolute -right-3 top-20 w-6 h-6 rounded-full flex items-center justify-center lg:flex hidden"
+          style={{ background: 'white', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+          whileHover={{ scale: 1.1 }}
+        >
+          {collapsed ? <ChevronRight size={12} color="#64748B" /> : <ChevronLeft size={12} color="#64748B" />}
+        </motion.button>
+      </motion.aside>
+
+      {/* MAIN */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Top bar */}
+        <header className="h-16 flex items-center justify-between px-4 lg:px-6 flex-shrink-0" style={{ background: 'white', borderBottom: '1px solid #E2E8F0' }}>
+          <div className="flex items-center gap-3">
+            {/* Mobile menu */}
+            <button className="lg:hidden" onClick={() => setMobileOpen(true)}>
+              <Menu size={20} style={{ color: '#64748B' }} />
+            </button>
+            {/* Search bar */}
+            <div className="relative hidden sm:block">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
+              <input
+                type="text"
+                placeholder="Quick search chemicals..."
+                className="input-field pl-9 py-2 text-sm"
+                style={{ width: '280px', fontSize: '0.85rem' }}
+                onFocus={() => navigate('/chemicals')}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Notification bell */}
+            <motion.button whileHover={{ scale: 1.05 }} className="relative p-2 rounded-lg" style={{ background: '#F0F2F5' }}>
+              <Bell size={18} style={{ color: '#64748B' }} />
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: '#E85D5D' }} />
+            </motion.button>
+
+            {/* Avatar */}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              onClick={() => navigate('/profile')}
+              className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer text-sm font-bold text-white"
+              style={{ background: 'linear-gradient(135deg, #4A90E2, #1B3A6B)' }}
+            >
+              {profile?.name?.[0]?.toUpperCase() || 'U'}
+            </motion.div>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+              className="h-full"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
+    </div>
+  )
+}
