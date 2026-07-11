@@ -177,25 +177,79 @@ export default function MixingSimulatorPage() {
         }
       } else {
         // 2. No database rule -> Invoke AI Edge Function using Gemini API
-        const { data: aiResult, error: aiError } = await supabase.functions.invoke('simulate-mixing', {
-          body: { chemA, chemB }
-        })
+        try {
+          const { data: aiResult, error: aiError } = await supabase.functions.invoke('simulate-mixing', {
+            body: { chemA, chemB }
+          })
 
-        if (aiError) throw new Error(aiError.message || "Failed to contact AI model.")
+          if (aiError) throw new Error(aiError.message || "Failed to contact AI model.")
 
-        if (aiResult && !aiResult.error) {
-          toast.success('Simulation generated securely by ChemVision AI 🧠')
-          setResult(aiResult)
-          if (!aiResult.is_safe) {
+          if (aiResult && !aiResult.error) {
+            toast.success('Simulation generated securely by ChemVision AI 🧠')
+            setResult(aiResult)
+            if (!aiResult.is_safe) {
+              setScreenShake(true); setTimeout(() => setScreenShake(false), 800)
+            }
+          } else {
+            throw new Error(aiResult?.error || "AI returned an empty response")
+          }
+        } catch (serverErr) {
+          console.warn("Server-side Edge function blocked or failed. Trying client-side direct fallback...", serverErr)
+
+          // 3. Client-side direct fallback (Useful for bypassing Google Cloud IP restriction on free-tier keys)
+          const localKey = import.meta.env.VITE_GEMINI_API_KEY
+          if (!localKey) {
+            throw serverErr // If no key is set locally, re-throw the original error to trigger fallback warning
+          }
+
+          const prompt = `You are an advanced chemical safety simulator.
+Analyze what happens when mixing Chemical A and Chemical B in a laboratory setting.
+Chemical A: ${chemA.name} (${chemA.formula})
+Chemical B: ${chemB.name} (${chemB.formula})
+
+Analyze their reactivity, safety, potential products, and hazard severity.
+You MUST respond with a valid JSON object matching this schema:
+{
+  "is_safe": boolean,
+  "reaction_type": "safe" | "hazardous" | "explosive" | "toxic" | "produces_gas" | "new_product",
+  "result_description": "A detailed, professional, easy-to-understand explanation of the reaction, listing hazards, safety measures, and chemical products in Arabic and English.",
+  "severity_score": number (1 to 10 scale of danger),
+  "product_name": "Name of the resulting product if any (leave empty if none)",
+  "product_formula": "Formula of the resulting product if any (leave empty if none)"
+}
+
+Do not include any markdown styling or extra text. Return ONLY the raw JSON string.`
+
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${localKey}`
+          const response = await fetch(geminiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: "application/json" }
+            })
+          })
+
+          if (!response.ok) {
+            const errText = await response.text()
+            throw new Error(`Gemini client API error: ${errText}`)
+          }
+
+          const data = await response.json()
+          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text
+          if (!rawText) throw new Error("Empty response from client Gemini API")
+
+          const parsedResult = JSON.parse(rawText.trim())
+          toast.success('Simulation generated directly via Client-Side AI 🧠 (IP safe)')
+          setResult(parsedResult)
+          if (!parsedResult.is_safe) {
             setScreenShake(true); setTimeout(() => setScreenShake(false), 800)
           }
-        } else {
-          throw new Error(aiResult?.error || "AI returned an empty response")
         }
       }
     } catch (err) {
       console.warn("AI Simulator fallback active:", err)
-      // 3. Fallback safely if AI Key is not configured or network fails
+      // 4. Fallback safely if AI Key is not configured or network fails
       const fallbackResult = {
         reaction_type: 'safe',
         result_description: 'No matching database rule found. AI simulation temporarily unavailable. Please refer to SDS documents and follow standard safety protocols.',
