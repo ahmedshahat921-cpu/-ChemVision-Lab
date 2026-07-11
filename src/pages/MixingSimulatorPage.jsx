@@ -158,22 +158,55 @@ export default function MixingSimulatorPage() {
     if (chemA.id === chemB.id) { toast.error('Cannot mix a chemical with itself'); return }
     setLoading(true); setResult(null)
 
-    const { data } = await supabase
-      .from('mixing_rules')
-      .select('*')
-      .or(`and(chemical_a_id.eq.${chemA.id},chemical_b_id.eq.${chemB.id}),and(chemical_a_id.eq.${chemB.id},chemical_b_id.eq.${chemA.id})`)
-      .maybeSingle()
+    try {
+      // 1. Check local static database rules first
+      const { data: staticRule, error: dbError } = await supabase
+        .from('mixing_rules')
+        .select('*')
+        .or(`and(chemical_a_id.eq.${chemA.id},chemical_b_id.eq.${chemB.id}),and(chemical_a_id.eq.${chemB.id},chemical_b_id.eq.${chemA.id})`)
+        .maybeSingle()
 
-    setTimeout(() => {
-      setLoading(false)
-      if (data) {
-        setResult(data)
-        if (!data.is_safe) { setScreenShake(true); setTimeout(() => setScreenShake(false), 800) }
-        else toast.success('Reaction is safe to proceed')
+      if (dbError) throw dbError
+
+      if (staticRule) {
+        setResult(staticRule)
+        if (!staticRule.is_safe) {
+          setScreenShake(true); setTimeout(() => setScreenShake(false), 800)
+        } else {
+          toast.success('Static database rule checked: Safe.')
+        }
       } else {
-        setResult({ reaction_type: 'safe', result_description: 'No known reaction rule for this combination. Proceed with caution and consult safety protocols.', is_safe: true, severity_score: 1 })
+        // 2. No database rule -> Invoke AI Edge Function using Gemini API
+        const { data: aiResult, error: aiError } = await supabase.functions.invoke('simulate-mixing', {
+          body: { chemA, chemB }
+        })
+
+        if (aiError) throw new Error(aiError.message || "Failed to contact AI model.")
+
+        if (aiResult && !aiResult.error) {
+          toast.success('Simulation generated securely by ChemVision AI 🧠')
+          setResult(aiResult)
+          if (!aiResult.is_safe) {
+            setScreenShake(true); setTimeout(() => setScreenShake(false), 800)
+          }
+        } else {
+          throw new Error(aiResult?.error || "AI returned an empty response")
+        }
       }
-    }, 1200)
+    } catch (err) {
+      console.warn("AI Simulator fallback active:", err)
+      // 3. Fallback safely if AI Key is not configured or network fails
+      const fallbackResult = {
+        reaction_type: 'safe',
+        result_description: 'No matching database rule found. AI simulation temporarily unavailable. Please refer to SDS documents and follow standard safety protocols.',
+        is_safe: true,
+        severity_score: 1
+      }
+      setResult(fallbackResult)
+      toast.success('Simulation complete (local safety fallback)')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const rStyle = result ? (reactionStyles[result.reaction_type] || reactionStyles.safe) : null
