@@ -323,6 +323,282 @@ const predictReactionLocally = (chemA, chemB) => {
   }
 }
 
+// Beautiful liquid color mapper
+const getLiquidColor = (chem) => {
+  if (!chem) return 'rgba(255,255,255,0.1)'
+  const name = chem.name.toLowerCase()
+  const formula = chem.formula
+  if (name.includes('acid') || formula.startsWith('H')) return '#F87171' // Red/pink acid
+  if (name.includes('hydroxide') || name.includes('ammonia')) return '#60A5FA' // Blue base
+  if (name.includes('carbonate')) return '#E2E8F0' // White carbonate suspension
+  if (name.includes('water')) return '#38BDF8' // Cyan water
+  if (name.includes('ethanol') || name.includes('acetone') || name.includes('benzene')) return '#FBBF24' // Yellow organic
+  return '#34D399' // Green general
+}
+
+const getFinalColor = (reactType, colorA, colorB) => {
+  if (reactType === 'new_product') return '#C084FC' // Purple product
+  if (reactType === 'produces_gas') return '#94A3B8' // Cloudy gray
+  if (reactType === 'explosive') return '#EF4444' // Intense red
+  if (reactType === 'toxic' || reactType === 'hazardous') return '#A3E635' // Toxic lime green
+  // Acid-Base neutralization yields neutral green
+  if (reactType === 'safe' && ((colorA === '#F87171' && colorB === '#60A5FA') || (colorA === '#60A5FA' && colorB === '#F87171'))) {
+    return '#34D399' // Emerald Green pH neutral indicator
+  }
+  return colorB // Blend/stays B
+}
+
+function ReactionChamber({ chemA, chemB, phase, reactType }) {
+  const colorA = getLiquidColor(chemA)
+  const colorB = getLiquidColor(chemB)
+  const finalColor = getFinalColor(reactType, colorA, colorB)
+
+  // Bubble list for produces_gas phase
+  const bubbleCount = 18
+  const bubbles = Array.from({ length: bubbleCount }, (_, i) => ({
+    id: i,
+    delay: Math.random() * 2,
+    duration: 1 + Math.random() * 1.5,
+    x: 25 + Math.random() * 40,
+    size: 2 + Math.random() * 4
+  }))
+
+  // Sparks for explosive phase
+  const sparkCount = 12
+  const sparks = Array.from({ length: sparkCount }, (_, i) => ({
+    id: i,
+    angle: (i / sparkCount) * 2 * Math.PI,
+    distance: 35 + Math.random() * 40,
+    delay: Math.random() * 0.4
+  }))
+
+  return (
+    <div className="relative w-full h-72 rounded-2xl overflow-hidden flex items-center justify-center border animate-fade-in" style={{ background: '#0F172A', borderColor: '#1E293B' }}>
+      {/* Background Grid Lines for Technical Lab feel */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#94A3B8 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+
+      {/* Screen Shake during explosion / hazardous reaction */}
+      <motion.div 
+        className="w-full h-full flex items-center justify-center gap-16 relative"
+        animate={
+          phase === 'reacting' && reactType === 'explosive' 
+            ? { x: [-6, 6, -6, 6, -4, 4, 0], y: [-6, 6, -6, 6, -4, 4, 0] } 
+            : phase === 'reacting' && (reactType === 'hazardous' || reactType === 'toxic')
+            ? { x: [-2, 2, -2, 2, 0] }
+            : {}
+        }
+        transition={{ duration: reactType === 'explosive' ? 0.6 : 0.4, repeat: reactType === 'explosive' ? Infinity : 0 }}
+      >
+        {/* Flash Overlay for Explosive reaction */}
+        {phase === 'reacting' && reactType === 'explosive' && (
+          <motion.div 
+            className="absolute inset-0 pointer-events-none z-30" 
+            animate={{ backgroundColor: ['rgba(245, 158, 11, 0)', 'rgba(245, 158, 11, 0.4)', 'rgba(239, 68, 68, 0.2)', 'rgba(245, 158, 11, 0)'] }}
+            transition={{ duration: 0.5, repeat: Infinity }}
+          />
+        )}
+
+        {/* --- BEAKER A (LEFT) --- */}
+        <motion.div
+          className="relative flex flex-col items-center"
+          animate={
+            phase === 'pouring'
+              ? { x: [0, 95, 95, 0], y: [0, -25, -25, 0], rotate: [0, 65, 65, 0] }
+              : { x: 0, y: 0, rotate: 0 }
+          }
+          transition={{ duration: 3.5, times: [0, 0.2, 0.8, 1] }}
+          style={{ transformOrigin: 'top right' }}
+        >
+          {/* Glass Beaker SVG */}
+          <div className="relative">
+            <svg width="70" height="90" viewBox="0 0 70 90" className="overflow-visible">
+              {/* Liquid level inside A */}
+              <motion.path
+                d="M 8 82 L 62 82 L 62 30 L 8 30 Z"
+                fill={colorA}
+                opacity={0.85}
+                animate={
+                  phase === 'pouring'
+                    ? { scaleY: [1, 1, 0.1, 0.1], originY: 1 }
+                    : { scaleY: 1 }
+                }
+                transition={{ duration: 3.5, times: [0, 0.25, 0.75, 1] }}
+                style={{ transformOrigin: 'bottom' }}
+              />
+              {/* Beaker Body */}
+              <path
+                d="M 6 15 L 6 82 A 4 4 0 0 0 10 86 L 60 86 A 4 4 0 0 0 64 82 L 64 15 M 3 15 L 67 15"
+                fill="none"
+                stroke="rgba(255,255,255,0.3)"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+              />
+              {/* Graduation markings */}
+              <line x1="15" y1="35" x2="25" y2="35" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+              <line x1="15" y1="52" x2="30" y2="52" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+              <line x1="15" y1="70" x2="25" y2="70" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+            </svg>
+          </div>
+          <span className="text-xxs font-mono mt-1 font-bold tracking-wider uppercase text-slate-400 opacity-60">{chemA?.formula}</span>
+        </motion.div>
+
+        {/* --- POURING STREAM --- */}
+        {phase === 'pouring' && (
+          <motion.div 
+            className="absolute z-10"
+            style={{ left: 'calc(50% - 15px)', top: '100px' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 1, 0] }}
+            transition={{ duration: 3.5, times: [0, 0.22, 0.78, 1] }}
+          >
+            <svg width="40" height="90" viewBox="0 0 40 90">
+              <motion.path
+                d="M 5 0 Q 20 40 22 90"
+                fill="none"
+                stroke={colorA}
+                strokeWidth="4"
+                strokeLinecap="round"
+                animate={{ strokeDashoffset: [0, -20] }}
+                transition={{ repeat: Infinity, duration: 0.5, ease: 'linear' }}
+                style={{ strokeDasharray: '6, 6' }}
+              />
+            </svg>
+          </motion.div>
+        )}
+
+        {/* --- FLASK B (RIGHT - RECEIVING) --- */}
+        <motion.div className="relative flex flex-col items-center">
+          {/* Reaction Stage Vapor Clouds (Gas / Toxic / Explosive) */}
+          {phase === 'reacting' && (reactType === 'produces_gas' || reactType === 'toxic' || reactType === 'hazardous' || reactType === 'explosive') && (
+            <div className="absolute -top-12 z-20 pointer-events-none flex flex-col items-center">
+              <motion.div
+                className="text-4xl"
+                animate={{ 
+                  y: [-10, -35], 
+                  x: [-10, 15, -15, 10],
+                  scale: [0.6, 1.4], 
+                  opacity: [0, 0.7, 0] 
+                }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeOut' }}
+              >
+                💨
+              </motion.div>
+              <motion.div
+                className="text-3xl absolute"
+                animate={{ 
+                  y: [-15, -45], 
+                  x: [15, -10, 10, -15],
+                  scale: [0.5, 1.2], 
+                  opacity: [0, 0.8, 0] 
+                }}
+                transition={{ duration: 2.1, repeat: Infinity, delay: 0.4, ease: 'easeOut' }}
+                style={{ color: reactType === 'toxic' ? '#A3E635' : '#CBD5E1' }}
+              >
+                💨
+              </motion.div>
+            </div>
+          )}
+
+          {/* Sparks/Embers on Explosion */}
+          {phase === 'reacting' && reactType === 'explosive' && (
+            <div className="absolute z-20 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+              {sparks.map((spark) => (
+                <motion.div
+                  key={spark.id}
+                  className="absolute w-2.5 h-2.5 rounded-full bg-amber-400"
+                  animate={{ 
+                    x: [0, Math.cos(spark.angle) * spark.distance], 
+                    y: [0, Math.sin(spark.angle) * spark.distance],
+                    scale: [1, 0],
+                    opacity: [1, 0]
+                  }}
+                  transition={{ duration: 0.8, repeat: Infinity, delay: spark.delay }}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Glass Flask SVG */}
+          <div className="relative">
+            {/* Pulsing reaction aura */}
+            {phase === 'reacting' && (
+              <motion.div 
+                className="absolute inset-0 rounded-full blur-xl opacity-40"
+                style={{ background: finalColor }}
+                animate={{ scale: [1, 1.25, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+              />
+            )}
+
+            <svg width="80" height="95" viewBox="0 0 80 95" className="overflow-visible">
+              {/* Flask Base Liquid */}
+              <motion.path
+                d="M 12 78 A 28 28 0 0 0 68 78 Z"
+                fill={phase === 'reacting' || phase === 'finished' ? finalColor : colorB}
+                opacity={0.85}
+                animate={
+                  phase === 'pouring'
+                    ? { scaleY: [1, 1, 1.35], originY: 1 }
+                    : phase === 'reacting'
+                    ? { scaleY: [1.35, 1.39, 1.35], originY: 1 }
+                    : { scaleY: 1.35 }
+                }
+                transition={{ 
+                  scaleY: { duration: 3.5, times: [0, 0.22, 1] },
+                  default: { duration: 0.5, repeat: phase === 'reacting' ? Infinity : 0 }
+                }}
+                style={{ transformOrigin: 'bottom' }}
+              />
+
+              {/* Reaction bubbles (gas, boiling, reaction) */}
+              {phase === 'reacting' && (
+                <g>
+                  {bubbles.map((b) => (
+                    <motion.circle
+                      key={b.id}
+                      cx={b.x}
+                      cy={78}
+                      r={b.size}
+                      fill="rgba(255,255,255,0.7)"
+                      animate={{ 
+                        y: [0, -35, -55], 
+                        opacity: [0, 1, 0],
+                        x: [b.x, b.x + (Math.random() * 10 - 5)]
+                      }}
+                      transition={{ 
+                        duration: b.duration, 
+                        repeat: Infinity, 
+                        delay: b.delay,
+                        ease: 'easeOut'
+                      }}
+                    />
+                  ))}
+                </g>
+              )}
+
+              {/* Flask Body */}
+              <path
+                d="M 32 15 L 32 38 L 10 78 A 4 4 0 0 0 14 84 L 66 84 A 4 4 0 0 0 70 78 L 48 38 L 48 15 M 27 15 L 53 15"
+                fill="none"
+                stroke="rgba(255,255,255,0.3)"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+          <span className="text-xxs font-mono mt-1 font-bold tracking-wider uppercase text-slate-400 opacity-60">{chemB?.formula}</span>
+        </motion.div>
+      </motion.div>
+
+      {/* Lab Banner info in corner */}
+      <div className="absolute bottom-3 left-4 text-xxs font-mono tracking-wide text-slate-500 uppercase flex items-center gap-1.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+        CHAMBER PHASE: {phase.toUpperCase()}
+      </div>
+    </div>
+  )
+}
+
 export default function MixingSimulatorPage() {
   const { chemicals, fetchChemicals } = useChemicalStore()
   const [chemA, setChemA] = useState(null)
@@ -331,6 +607,10 @@ export default function MixingSimulatorPage() {
   const [loading, setLoading] = useState(false)
   const [screenShake, setScreenShake] = useState(false)
 
+  // Animation Stage States
+  const [animPhase, setAnimPhase] = useState('idle') // 'idle', 'pouring', 'reacting', 'finished'
+  const [animType, setAnimType] = useState('safe')
+
   useEffect(() => { fetchChemicals() }, [])
 
   const swap = () => { setChemA(chemB); setChemB(chemA); setResult(null) }
@@ -338,53 +618,68 @@ export default function MixingSimulatorPage() {
   const simulate = async () => {
     if (!chemA || !chemB) { toast.error('Please select both chemicals'); return }
     if (chemA.id === chemB.id) { toast.error('Cannot mix a chemical with itself'); return }
-    setLoading(true); setResult(null)
+    
+    setLoading(true)
+    setResult(null)
+    setAnimPhase('pouring')
+    
+    // Instantly predict locally to get reaction type for animating appropriate effects
+    const localResult = predictReactionLocally(chemA, chemB)
+    setAnimType(localResult.reaction_type)
 
-    try {
-      // 1. Check local static database rules first
-      const { data: staticRule, error: dbError } = await supabase
-        .from('mixing_rules')
-        .select('*')
-        .or(`and(chemical_a_id.eq.${chemA.id},chemical_b_id.eq.${chemB.id}),and(chemical_a_id.eq.${chemB.id},chemical_b_id.eq.${chemA.id})`)
-        .maybeSingle()
+    // Phase 1: Pouring animation (lasts 1.5 seconds)
+    setTimeout(() => {
+      setAnimPhase('reacting')
+      
+      // Phase 2: Reaction mixing & kinetics animation (lasts 2.3 seconds)
+      setTimeout(async () => {
+        setAnimPhase('finished')
 
-      if (dbError) throw dbError
-
-      if (staticRule) {
-        setResult(staticRule)
-        if (!staticRule.is_safe) {
-          setScreenShake(true); setTimeout(() => setScreenShake(false), 800)
-        } else {
-          toast.success('Static database rule checked: Safe.')
-        }
-      } else {
-        // 2. No database rule -> Invoke AI Edge Function using Gemini API
         try {
-          const { data: aiResult, error: aiError } = await supabase.functions.invoke('simulate-mixing', {
-            body: { chemA, chemB }
-          })
+          // 1. Check local static database rules first
+          const { data: staticRule, error: dbError } = await supabase
+            .from('mixing_rules')
+            .select('*')
+            .or(`and(chemical_a_id.eq.${chemA.id},chemical_b_id.eq.${chemB.id}),and(chemical_a_id.eq.${chemB.id},chemical_b_id.eq.${chemA.id})`)
+            .maybeSingle()
 
-          if (aiError) throw new Error(aiError.message || "Failed to contact AI model.")
+          if (dbError) throw dbError
 
-          if (aiResult && !aiResult.error) {
-            toast.success('Simulation generated securely by ChemVision AI 🧠')
-            setResult(aiResult)
-            if (!aiResult.is_safe) {
+          if (staticRule) {
+            setResult(staticRule)
+            if (!staticRule.is_safe) {
               setScreenShake(true); setTimeout(() => setScreenShake(false), 800)
+            } else {
+              toast.success('Static database rule checked: Safe.')
             }
           } else {
-            throw new Error(aiResult?.error || "AI returned an empty response")
-          }
-        } catch (serverErr) {
-          console.warn("Server-side Edge function blocked or failed. Trying client-side direct fallback...", serverErr)
+            // 2. No database rule -> Invoke AI Edge Function using Gemini API
+            try {
+              const { data: aiResult, error: aiError } = await supabase.functions.invoke('simulate-mixing', {
+                body: { chemA, chemB }
+              })
 
-          // 3. Client-side direct fallback (Useful for bypassing Google Cloud IP restriction on free-tier keys)
-          const localKey = import.meta.env.VITE_GEMINI_API_KEY
-          if (!localKey) {
-            throw serverErr // If no key is set locally, re-throw the original error to trigger fallback warning
-          }
+              if (aiError) throw new Error(aiError.message || "Failed to contact AI model.")
 
-          const prompt = `You are an advanced chemical safety simulator.
+              if (aiResult && !aiResult.error) {
+                toast.success('Simulation generated securely by ChemVision AI 🧠')
+                setResult(aiResult)
+                if (!aiResult.is_safe) {
+                  setScreenShake(true); setTimeout(() => setScreenShake(false), 800)
+                }
+              } else {
+                throw new Error(aiResult?.error || "AI returned an empty response")
+              }
+            } catch (serverErr) {
+              console.warn("Server-side Edge function blocked or failed. Trying client-side direct fallback...", serverErr)
+
+              // 3. Client-side direct fallback (Useful for bypassing Google Cloud IP restriction on free-tier keys)
+              const localKey = import.meta.env.VITE_GEMINI_API_KEY
+              if (!localKey) {
+                throw serverErr
+              }
+
+              const prompt = `You are an advanced chemical safety simulator.
 Analyze what happens when mixing Chemical A and Chemical B in a laboratory setting.
 Chemical A: ${chemA.name} (${chemA.formula})
 Chemical B: ${chemB.name} (${chemB.formula})
@@ -397,50 +692,54 @@ You MUST respond with a valid JSON object matching this schema:
   "result_description": "A detailed, professional, easy-to-understand explanation of the reaction, listing hazards, safety measures, and chemical products in Arabic and English.",
   "severity_score": number (1 to 10 scale of danger),
   "product_name": "Name of the resulting product if any (leave empty if none)",
-  "product_formula": "Formula of the resulting product if any (leave empty if none)"
+  "product_formula": "Formula of the resulting product if any (leave empty if none)",
+  "physical_properties": "Detailed physical and thermal properties of the mixture in Arabic and English.",
+  "safety_measures": "Precise lab safety measures and hazard controls in Arabic and English.",
+  "chemical_properties": "Chemical properties and stability of the resulting mixture in Arabic and English."
 }
 
 Do not include any markdown styling or extra text. Return ONLY the raw JSON string.`
 
-          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${localKey}`
-          const response = await fetch(geminiUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: { responseMimeType: "application/json" }
-            })
-          })
+              const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${localKey}`
+              const response = await fetch(geminiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: prompt }] }],
+                  generationConfig: { responseMimeType: "application/json" }
+                })
+              })
 
-          if (!response.ok) {
-            const errText = await response.text()
-            throw new Error(`Gemini client API error: ${errText}`)
+              if (!response.ok) {
+                const errText = await response.text()
+                throw new Error(`Gemini client API error: ${errText}`)
+              }
+
+              const data = await response.json()
+              const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text
+              if (!rawText) throw new Error("Empty response from client Gemini API")
+
+              const parsedResult = JSON.parse(rawText.trim())
+              toast.success('Simulation generated directly via Client-Side AI 🧠 (IP safe)')
+              setResult(parsedResult)
+              if (!parsedResult.is_safe) {
+                setScreenShake(true); setTimeout(() => setScreenShake(false), 800)
+              }
+            }
           }
-
-          const data = await response.json()
-          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text
-          if (!rawText) throw new Error("Empty response from client Gemini API")
-
-          const parsedResult = JSON.parse(rawText.trim())
-          toast.success('Simulation generated directly via Client-Side AI 🧠 (IP safe)')
-          setResult(parsedResult)
-          if (!parsedResult.is_safe) {
+        } catch (err) {
+          console.warn("AI Simulator fallback active, launching Local Smart Prediction Engine:", err)
+          // 4. Ultimate Fallback: Smart Chemical Prediction Engine (C.P.E.)
+          setResult(localResult)
+          if (!localResult.is_safe) {
             setScreenShake(true); setTimeout(() => setScreenShake(false), 800)
           }
+          toast.success('Simulation complete (Local AI Engine fallback 🧠)')
+        } finally {
+          setLoading(false)
         }
-      }
-    } catch (err) {
-      console.warn("AI Simulator fallback active, launching Local Smart Prediction Engine:", err)
-      // 4. Ultimate Fallback: Smart Chemical Prediction Engine (C.P.E.)
-      const localPredictionResult = predictReactionLocally(chemA, chemB)
-      setResult(localPredictionResult)
-      if (!localPredictionResult.is_safe) {
-        setScreenShake(true); setTimeout(() => setScreenShake(false), 800)
-      }
-      toast.success('Simulation complete (Local AI Engine fallback 🧠)')
-    } finally {
-      setLoading(false)
-    }
+      }, 2300)
+    }, 1500)
   }
 
   const rStyle = result ? (reactionStyles[result.reaction_type] || reactionStyles.safe) : null
@@ -452,158 +751,191 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
       transition={{ duration: 0.6 }}
     >
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-        <h1 className="font-heading font-bold text-2xl" style={{ color: '#2C3E50' }}>🧪 Mixing Simulator</h1>
-        <p className="text-sm mt-1" style={{ color: '#64748B' }}>Select two chemicals to check reaction safety</p>
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="font-heading font-bold text-2xl" style={{ color: '#2C3E50' }}>🧪 Mixing Simulator</h1>
+          <p className="text-sm mt-1" style={{ color: '#64748B' }}>Analyze molecular compatibility and safety in real-time</p>
+        </div>
       </motion.div>
 
       <div className="max-w-3xl mx-auto space-y-6">
-        {/* Chemical Selectors */}
-        <motion.div className="card p-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <div className="flex items-end gap-4">
-            <ChemicalSelector label="Chemical A" selected={chemA} onSelect={(c) => { setChemA(c); setResult(null) }} chemicals={chemicals} exclude={chemB?.id} />
+        {/* If animPhase is 'idle', display Chemical Selectors */}
+        {animPhase === 'idle' && (
+          <motion.div className="card p-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <div className="flex items-end gap-4">
+              <ChemicalSelector label="Chemical A" selected={chemA} onSelect={(c) => { setChemA(c); setResult(null) }} chemicals={chemicals} exclude={chemB?.id} />
 
-            {/* Swap button */}
-            <motion.button
-              onClick={swap}
-              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mb-0.5"
-              style={{ background: '#EBF4FF' }}
-              whileHover={{ scale: 1.1, rotate: 180 }}
-              transition={{ duration: 0.3 }}
-            >
-              <ArrowRightLeft size={16} style={{ color: '#4A90E2' }} />
-            </motion.button>
+              {/* Swap button */}
+              <motion.button
+                onClick={swap}
+                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mb-0.5"
+                style={{ background: '#EBF4FF' }}
+                whileHover={{ scale: 1.1, rotate: 180 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ArrowRightLeft size={16} style={{ color: '#4A90E2' }} />
+              </motion.button>
 
-            <ChemicalSelector label="Chemical B" selected={chemB} onSelect={(c) => { setChemB(c); setResult(null) }} chemicals={chemicals} exclude={chemA?.id} />
-          </div>
+              <ChemicalSelector label="Chemical B" selected={chemB} onSelect={(c) => { setChemB(c); setResult(null) }} chemicals={chemicals} exclude={chemA?.id} />
+            </div>
 
-          {/* Selected beakers visualization */}
-          {(chemA || chemB) && (
-            <motion.div className="flex items-center justify-center gap-8 mt-6 py-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              {/* Beaker A */}
-              <motion.div className="text-center" animate={chemA ? { y: [0, -4, 0] } : {}} transition={{ duration: 2, repeat: Infinity }}>
-                <div className="text-5xl mb-2">🧪</div>
-                <p className="text-xs font-medium" style={{ color: '#4A90E2' }}>{chemA?.formula || '?'}</p>
+            {/* Selected beakers visualization */}
+            {(chemA || chemB) && (
+              <motion.div className="flex items-center justify-center gap-8 mt-6 py-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                {/* Beaker A */}
+                <motion.div className="text-center" animate={chemA ? { y: [0, -4, 0] } : {}} transition={{ duration: 2, repeat: Infinity }}>
+                  <div className="text-5xl mb-2">🧪</div>
+                  <p className="text-xs font-semibold" style={{ color: '#4A90E2' }}>{chemA?.formula || '?'}</p>
+                </motion.div>
+
+                <div className="text-2xl text-slate-300 font-bold">+</div>
+
+                {/* Beaker B */}
+                <motion.div className="text-center" animate={chemB ? { y: [0, -4, 0] } : {}} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}>
+                  <div className="text-5xl mb-2">⚗️</div>
+                  <p className="text-xs font-semibold" style={{ color: '#7C3AED' }}>{chemB?.formula || '?'}</p>
+                </motion.div>
               </motion.div>
-
-              <div className="text-2xl">+</div>
-
-              {/* Beaker B */}
-              <motion.div className="text-center" animate={chemB ? { y: [0, -4, 0] } : {}} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}>
-                <div className="text-5xl mb-2">⚗️</div>
-                <p className="text-xs font-medium" style={{ color: '#7C3AED' }}>{chemB?.formula || '?'}</p>
-              </motion.div>
-            </motion.div>
-          )}
-
-          {/* Simulate button */}
-          <motion.button
-            className="btn-primary w-full justify-center py-3.5 mt-4 ripple"
-            style={{ fontSize: '1rem' }}
-            onClick={simulate}
-            disabled={loading || !chemA || !chemB}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            {loading ? (
-              <>
-                <motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>🧪</motion.span>
-                Analyzing reaction...
-              </>
-            ) : (
-              <><Beaker size={18} /> Simulate Reaction</>
             )}
-          </motion.button>
-        </motion.div>
 
-        {/* RESULT */}
-        <AnimatePresence>
-          {result && (
-            <motion.div
-              className="card overflow-hidden"
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ type: 'spring', stiffness: 200 }}
-              style={{ border: `2px solid ${rStyle.border}` }}
+            {/* Simulate button */}
+            <motion.button
+              className="btn-primary w-full justify-center py-3.5 mt-4 ripple"
+              style={{ fontSize: '1rem' }}
+              onClick={simulate}
+              disabled={loading || !chemA || !chemB}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {/* Result header */}
-              <div className="p-4 flex items-center gap-3" style={{ background: rStyle.bg }}>
-                <span className="text-2xl">{rStyle.emoji}</span>
+              <Beaker size={18} /> Simulate Reaction
+            </motion.button>
+          </motion.div>
+        )}
+
+        {/* If animPhase is NOT 'idle' (pouring, reacting, finished) */}
+        {animPhase !== 'idle' && (
+          <div className="space-y-6">
+            {/* Reaction Chamber Animation */}
+            <ReactionChamber chemA={chemA} chemB={chemB} phase={animPhase} reactType={animType} />
+
+            {/* Loading / Processing Banners */}
+            {(animPhase === 'pouring' || animPhase === 'reacting') && (
+              <div className="card p-5 flex flex-col items-center justify-center text-center space-y-3" style={{ background: '#0F172A', borderColor: '#1E293B' }}>
+                <motion.div 
+                  className="w-10 h-10 rounded-full border-t-2 border-r-2 border-emerald-500 flex items-center justify-center"
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                >
+                  🧪
+                </motion.div>
                 <div>
-                  <h3 className="font-heading font-bold text-lg" style={{ color: rStyle.color }}>{rStyle.label}</h3>
-                  <p className="text-xs" style={{ color: rStyle.color, opacity: 0.8 }}>
-                    Severity: {result.severity_score}/10 – {result.reaction_type.replace('_', ' ').toUpperCase()}
+                  <p className="text-sm font-semibold text-slate-200">
+                    {animPhase === 'pouring' ? 'Phase 1: Pouring reagents into reaction vessel...' : 'Phase 2: Molecular kinetics & reaction in progress...'}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Analyzing safety datasheet properties and thermodynamic changes.
                   </p>
                 </div>
               </div>
+            )}
 
-              {/* Animation */}
-              <ReactionAnimation type={result.reaction_type} />
-
-              {/* Description */}
-              {/* Description */}
-              <div className="p-5 space-y-4">
-                {/* General Reaction Summary */}
-                <div className="flex gap-3 items-start">
-                  <div className="p-2 rounded-lg bg-blue-50 text-blue-600 flex-shrink-0 mt-0.5" style={{ background: '#EBF4FF', color: '#4A90E2' }}>
-                    <Beaker size={16} />
+            {/* Result display */}
+            {result && animPhase === 'finished' && (
+              <motion.div
+                className="card overflow-hidden"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200 }}
+                style={{ border: `2px solid ${rStyle.border}` }}
+              >
+                {/* Result header */}
+                <div className="p-4 flex items-center justify-between" style={{ background: rStyle.bg }}>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{rStyle.emoji}</span>
+                    <div>
+                      <h3 className="font-heading font-bold text-lg" style={{ color: rStyle.color }}>{rStyle.label}</h3>
+                      <p className="text-xs" style={{ color: rStyle.color, opacity: 0.8 }}>
+                        Severity: {result.severity_score}/10 – {result.reaction_type.replace('_', ' ').toUpperCase()}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: '#94A3B8' }}>Reaction Summary / ملخص التفاعل</h4>
-                    <p className="text-sm mt-1 leading-relaxed font-semibold" style={{ color: '#2C3E50' }}>{result.result_description}</p>
-                  </div>
-                </div>
-
-                {/* Physical & Thermal Properties */}
-                <div className="flex gap-3 items-start pt-3.5 border-t" style={{ borderColor: '#F0F2F5' }}>
-                  <div className="p-2 rounded-lg flex-shrink-0 mt-0.5" style={{ background: '#FFF3E0', color: '#FF9800' }}>
-                    <Flame size={16} />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: '#94A3B8' }}>Physical & Thermal Properties / الخصائص الفيزيائية الحرارية للمزيج</h4>
-                    <p className="text-sm mt-1 leading-relaxed" style={{ color: '#475569' }}>{result.physical_properties || "Standard solution thermodynamic properties apply. Temperature shift depends on actual mixture concentration."}</p>
-                  </div>
-                </div>
-
-                {/* Chemical Properties */}
-                <div className="flex gap-3 items-start pt-3.5 border-t" style={{ borderColor: '#F0F2F5' }}>
-                  <div className="p-2 rounded-lg flex-shrink-0 mt-0.5" style={{ background: '#F3E5F5', color: '#9C27B0' }}>
-                    <Zap size={16} />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: '#94A3B8' }}>Chemical Properties of Mixture / الخواص الكيميائية للمزيج الناتج</h4>
-                    <p className="text-sm mt-1 leading-relaxed" style={{ color: '#475569' }}>{result.chemical_properties || "Chemically compatible mixture under normal laboratory atmosphere. No toxic gaseous decomposition."}</p>
-                  </div>
-                </div>
-
-                {/* Lab Safety & Hazard Controls */}
-                <div className="p-4 rounded-xl flex gap-3 items-start mt-2" style={{ background: '#FFF9E6', border: '1px solid #FFE082' }}>
-                  <div className="p-2 rounded-lg flex-shrink-0" style={{ background: '#FFF3CD', color: '#D97706' }}>
-                    <AlertTriangle size={18} />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: '#B45309' }}>Precise Lab Safety & Hazard Controls / آلية الأمان والسلامة المخبرية الدقيقة</h4>
-                    <p className="text-sm mt-1 leading-relaxed font-medium" style={{ color: '#92400E' }}>{result.safety_measures || "Wear standard laboratory protection including nitrile gloves, protective lab coat, and splash goggles. Conduct mixing inside a certified fume hood."}</p>
-                  </div>
-                </div>
-
-                {result.product_name && (
-                  <motion.div
-                    className="mt-4 p-3.5 rounded-xl border"
-                    style={{ background: '#EDE9FE', borderColor: '#C084FC' }}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.3, type: 'spring' }}
+                  {/* Reset button inside header */}
+                  <button 
+                    onClick={() => {
+                      setChemA(null)
+                      setChemB(null)
+                      setResult(null)
+                      setAnimPhase('idle')
+                    }}
+                    className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-slate-800 hover:bg-slate-700 transition"
                   >
-                    <p className="text-xs font-semibold" style={{ color: '#7C3AED' }}>Product formed / الناتج المتكون:</p>
-                    <p className="text-sm font-bold mt-0.5" style={{ color: '#6326CA' }}>{result.product_name} {result.product_formula && `(${result.product_formula})`}</p>
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                    Mix New / خلطة جديدة
+                  </button>
+                </div>
+
+                {/* Description Panels */}
+                <div className="p-5 space-y-4">
+                  {/* General Reaction Summary */}
+                  <div className="flex gap-3 items-start">
+                    <div className="p-2 rounded-lg bg-blue-50 text-blue-600 flex-shrink-0 mt-0.5" style={{ background: '#EBF4FF', color: '#4A90E2' }}>
+                      <Beaker size={16} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: '#94A3B8' }}>Reaction Summary / ملخص التفاعل</h4>
+                      <p className="text-sm mt-1 leading-relaxed font-semibold" style={{ color: '#2C3E50' }}>{result.result_description}</p>
+                    </div>
+                  </div>
+
+                  {/* Physical & Thermal Properties */}
+                  <div className="flex gap-3 items-start pt-3.5 border-t" style={{ borderColor: '#F0F2F5' }}>
+                    <div className="p-2 rounded-lg flex-shrink-0 mt-0.5" style={{ background: '#FFF3E0', color: '#FF9800' }}>
+                      <Flame size={16} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: '#94A3B8' }}>Physical & Thermal Properties / الخصائص الفيزيائية الحرارية للمزيج</h4>
+                      <p className="text-sm mt-1 leading-relaxed" style={{ color: '#475569' }}>{result.physical_properties}</p>
+                    </div>
+                  </div>
+
+                  {/* Chemical Properties */}
+                  <div className="flex gap-3 items-start pt-3.5 border-t" style={{ borderColor: '#F0F2F5' }}>
+                    <div className="p-2 rounded-lg flex-shrink-0 mt-0.5" style={{ background: '#F3E5F5', color: '#9C27B0' }}>
+                      <Zap size={16} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: '#94A3B8' }}>Chemical Properties of Mixture / الخواص الكيميائية للمزيج الناتج</h4>
+                      <p className="text-sm mt-1 leading-relaxed" style={{ color: '#475569' }}>{result.chemical_properties}</p>
+                    </div>
+                  </div>
+
+                  {/* Lab Safety & Hazard Controls */}
+                  <div className="p-4 rounded-xl flex gap-3 items-start mt-2" style={{ background: '#FFF9E6', border: '1px solid #FFE082' }}>
+                    <div className="p-2 rounded-lg flex-shrink-0" style={{ background: '#FFF3CD', color: '#D97706' }}>
+                      <AlertTriangle size={18} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: '#B45309' }}>Precise Lab Safety & Hazard Controls / آلية الأمان والسلامة المخبرية الدقيقة</h4>
+                      <p className="text-sm mt-1 leading-relaxed font-medium" style={{ color: '#92400E' }}>{result.safety_measures}</p>
+                    </div>
+                  </div>
+
+                  {result.product_name && (
+                    <motion.div
+                      className="mt-4 p-3.5 rounded-xl border"
+                      style={{ background: '#EDE9FE', borderColor: '#C084FC' }}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.3, type: 'spring' }}
+                    >
+                      <p className="text-xs font-semibold" style={{ color: '#7C3AED' }}>Product formed / الناتج المتكون:</p>
+                      <p className="text-sm font-bold mt-0.5" style={{ color: '#6326CA' }}>{result.product_name} {result.product_formula && `(${result.product_formula})`}</p>
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </div>
+        )}
       </div>
     </motion.div>
   )
