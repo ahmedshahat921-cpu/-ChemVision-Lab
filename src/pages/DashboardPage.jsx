@@ -4,6 +4,7 @@ import { FlaskConical, AlertTriangle, TrendingUp, Activity, ArrowUpRight, Clock,
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore, useChemicalStore } from '../store'
 import { supabase } from '../lib/supabase'
+import { useLanguage } from '../hooks/useLanguage'
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 // Animated counter hook
@@ -146,6 +147,7 @@ const usageData = [
 export default function DashboardPage() {
   const { profile } = useAuthStore()
   const { chemicals, fetchChemicals } = useChemicalStore()
+  const { lang, t } = useLanguage()
   const navigate = useNavigate()
   const [recentLogs, setRecentLogs] = useState([])
 
@@ -171,15 +173,25 @@ export default function DashboardPage() {
     visible: { opacity: 1, y: 0 }
   }
 
+  const getGreeting = () => {
+    const hours = new Date().getHours()
+    if (lang === 'ar') {
+      return hours < 12 ? 'صباح الخير،' : hours < 18 ? 'طاب يومك،' : 'مساء الخير،'
+    }
+    return hours < 12 ? 'Good morning,' : hours < 18 ? 'Good afternoon,' : 'Good evening,'
+  }
+
   return (
-    <div className="p-4 lg:p-6 space-y-6">
+    <div className={`p-4 lg:p-6 space-y-6 ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="font-heading font-bold text-2xl" style={{ color: '#2C3E50' }}>
-          Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'},{' '}
+          {getGreeting()}{' '}
           <span className="gradient-text">{profile?.name?.split(' ')[0] || 'there'}</span> 👋
         </h1>
-        <p style={{ color: '#64748B' }} className="text-sm mt-1">Here's what's happening in your lab today</p>
+        <p style={{ color: '#64748B' }} className="text-sm mt-1">
+          {lang === 'ar' ? 'إليك آخر مستجدات مختبرك اليوم' : "Here's what's happening in your lab today"}
+        </p>
       </motion.div>
 
       {/* Stats Grid */}
@@ -190,16 +202,46 @@ export default function DashboardPage() {
         animate="visible"
       >
         <motion.div variants={itemVariants}>
-          <StatCard icon={FlaskConical} label="Total Chemicals" value={(chemicals || []).length} color="#4A90E2" bg="#EBF4FF" trend="+2 this week" onClick={() => navigate('/chemicals')} />
+          <StatCard 
+            icon={FlaskConical} 
+            label={t('total_chemicals')} 
+            value={(chemicals || []).length} 
+            color="#4A90E2" 
+            bg="#EBF4FF" 
+            trend={lang === 'ar' ? '+2 هذا الأسبوع' : '+2 this week'} 
+            onClick={() => navigate('/chemicals')} 
+          />
         </motion.div>
         <motion.div variants={itemVariants}>
-          <StatCard icon={Clock} label="Expiring Soon" value={expiringCount} color="#F5A623" bg="#FEF3DC" onClick={() => navigate('/chemicals')} />
+          <StatCard 
+            icon={Clock} 
+            label={lang === 'ar' ? 'تنتهي صلاحيتها قريباً' : 'Expiring Soon'} 
+            value={expiringCount} 
+            color="#F5A623" 
+            bg="#FEF3DC" 
+            onClick={() => navigate('/chemicals')} 
+          />
         </motion.div>
         <motion.div variants={itemVariants}>
-          <StatCard icon={AlertTriangle} label="Hazard Alerts" value={hazardCount} color="#E85D5D" bg="#FDEAEA" onClick={() => navigate('/chemicals')} />
+          <StatCard 
+            icon={AlertTriangle} 
+            label={t('hazard_alerts')} 
+            value={hazardCount} 
+            color="#E85D5D" 
+            bg="#FDEAEA" 
+            onClick={() => navigate('/chemicals')} 
+          />
         </motion.div>
         <motion.div variants={itemVariants}>
-          <StatCard icon={Activity} label="Usage Today" value={recentLogs.length} color="#5DB9A0" bg="#E8FBF6" trend="Active labs" onClick={() => navigate('/chemicals')} />
+          <StatCard 
+            icon={Activity} 
+            label={lang === 'ar' ? 'الاستخدام اليوم' : 'Usage Today'} 
+            value={recentLogs.length} 
+            color="#5DB9A0" 
+            bg="#E8FBF6" 
+            trend={lang === 'ar' ? 'مختبرات نشطة' : 'Active labs'} 
+            onClick={() => navigate('/chemicals')} 
+          />
         </motion.div>
       </motion.div>
 
@@ -213,9 +255,13 @@ export default function DashboardPage() {
           transition={{ delay: 0.3 }}
         >
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>Weekly Chemical Usage</h3>
-              <p className="text-xs" style={{ color: '#94A3B8' }}>Usage log over past 7 days</p>
+            <div className="text-left">
+              <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>
+                {lang === 'ar' ? 'معدل الاستخدام الأسبوعي' : 'Weekly Chemical Usage'}
+              </h3>
+              <p className="text-xs" style={{ color: '#94A3B8' }}>
+                {lang === 'ar' ? 'سجل الاستخدام الكيميائي لآخر 7 أيام' : 'Usage log over past 7 days'}
+              </p>
             </div>
             <TrendingUp size={18} style={{ color: '#4A90E2' }} />
           </div>
@@ -243,8 +289,12 @@ export default function DashboardPage() {
           transition={{ delay: 0.4 }}
         >
           <div className="text-center">
-            <h3 className="font-heading font-semibold text-base mb-1" style={{ color: '#2C3E50' }}>Molecule Viewer</h3>
-            <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>Interactive 3D visualization</p>
+            <h3 className="font-heading font-semibold text-base mb-1" style={{ color: '#2C3E50' }}>
+              {lang === 'ar' ? 'مستعرض الجزيئات ثلاثي الأبعاد' : 'Molecule Viewer'}
+            </h3>
+            <p className="text-xs mb-4" style={{ color: '#94A3B8' }}>
+              {lang === 'ar' ? 'محاكاة تفاعلية ثلاثية الأبعاد' : 'Interactive 3D visualization'}
+            </p>
           </div>
           <Molecule3D />
           <motion.button
@@ -252,7 +302,7 @@ export default function DashboardPage() {
             whileHover={{ scale: 1.02 }}
             onClick={() => navigate('/chemicals')}
           >
-            <Zap size={16} /> Explore Chemicals
+            <Zap size={16} /> {lang === 'ar' ? 'تصفح المواد الكيميائية' : 'Explore Chemicals'}
           </motion.button>
         </motion.div>
       </div>
@@ -262,15 +312,17 @@ export default function DashboardPage() {
         {/* Lab Heatmap */}
         <motion.div className="card p-5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>Lab Heatmap</h3>
-              <p className="text-xs" style={{ color: '#94A3B8' }}>Chemical concentration by zone</p>
+            <div className="text-left">
+              <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>{t('lab_occupancy')}</h3>
+              <p className="text-xs" style={{ color: '#94A3B8' }}>
+                {lang === 'ar' ? 'مستويات تركيز المواد حسب مناطق المختبر' : 'Chemical concentration by zone'}
+              </p>
             </div>
             <MapPin size={18} style={{ color: '#4A90E2' }} />
           </div>
           <LabHeatmap />
           <div className="flex gap-4 mt-3">
-            {[{ color: '#5DB9A0', label: 'Low' }, { color: '#F5A623', label: 'Medium' }, { color: '#E85D5D', label: 'High' }].map(l => (
+            {[{ color: '#5DB9A0', label: lang === 'ar' ? 'منخفض' : 'Low' }, { color: '#F5A623', label: lang === 'ar' ? 'متوسط' : 'Medium' }, { color: '#E85D5D', label: lang === 'ar' ? 'مرتفع' : 'High' }].map(l => (
               <div key={l.label} className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ background: l.color }} />
                 <span className="text-xs" style={{ color: '#64748B' }}>{l.label}</span>
@@ -282,18 +334,20 @@ export default function DashboardPage() {
         {/* Hazard Distribution */}
         <motion.div className="card p-5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>Hazard Distribution</h3>
-              <p className="text-xs" style={{ color: '#94A3B8' }}>Chemicals by hazard level</p>
+            <div className="text-left">
+              <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>{t('chemical_stability')}</h3>
+              <p className="text-xs" style={{ color: '#94A3B8' }}>
+                {lang === 'ar' ? 'تصنيف المواد حسب درجة الأمان الكيميائي' : 'Chemicals by hazard level'}
+              </p>
             </div>
             <AlertTriangle size={18} style={{ color: '#F5A623' }} />
           </div>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={[
-              { level: 'Low', count: (chemicals || []).filter(c => c.hazard_level === 'low').length, color: '#5DB9A0' },
-              { level: 'Medium', count: (chemicals || []).filter(c => c.hazard_level === 'medium').length, color: '#F5A623' },
-              { level: 'High', count: (chemicals || []).filter(c => c.hazard_level === 'high').length, color: '#E85D5D' },
-              { level: 'Critical', count: (chemicals || []).filter(c => c.hazard_level === 'critical').length, color: '#A02A2A' },
+              { level: lang === 'ar' ? 'منخفض' : 'Low', count: (chemicals || []).filter(c => c.hazard_level === 'low').length, color: '#5DB9A0' },
+              { level: lang === 'ar' ? 'متوسط' : 'Medium', count: (chemicals || []).filter(c => c.hazard_level === 'medium').length, color: '#F5A623' },
+              { level: lang === 'ar' ? 'مرتفع' : 'High', count: (chemicals || []).filter(c => c.hazard_level === 'high').length, color: '#E85D5D' },
+              { level: lang === 'ar' ? 'خطير' : 'Critical', count: (chemicals || []).filter(c => c.hazard_level === 'critical').length, color: '#A02A2A' },
             ]}>
               <XAxis dataKey="level" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
               <YAxis hide />

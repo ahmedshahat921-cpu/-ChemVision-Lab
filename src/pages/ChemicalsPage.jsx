@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { useChemicalStore } from '../store'
 import { QRCodeSVG as QRCode } from 'qrcode.react'
 import toast from 'react-hot-toast'
+import { useLanguage } from '../hooks/useLanguage'
 
 const hazardColors = {
   low: { bg: '#E8FBF6', color: '#2A7060', dot: '#5DB9A0' },
@@ -57,13 +58,14 @@ function MiniFlask({ hazardLevel }) {
 
 function ChemicalCard({ chemical, index }) {
   const navigate = useNavigate()
+  const { lang, t } = useLanguage()
   const h = hazardColors[chemical.hazard_level] || hazardColors.low
   const isExpiringSoon = chemical.expiry_date && (new Date(chemical.expiry_date) - new Date()) / (1000 * 60 * 60 * 24) <= 30
   const isExpired = chemical.expiry_date && new Date(chemical.expiry_date) < new Date()
 
   return (
     <motion.div
-      className="card cursor-pointer overflow-hidden group"
+      className={`card cursor-pointer overflow-hidden group text-left ${lang === 'ar' ? 'rtl' : 'ltr'}`}
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4, ease: 'easeOut' }}
@@ -80,14 +82,17 @@ function ChemicalCard({ chemical, index }) {
           <div className="flex items-center gap-3">
             {/* Clean Mini Conical Flask Icon instead of formula text */}
             <MiniFlask hazardLevel={chemical.hazard_level} />
-            <div className="min-w-0">
-              <h3 className="font-semibold text-sm leading-tight truncate" style={{ color: '#2C3E50', maxWidth: '140px' }}>{chemical.name}</h3>
-              <p className="text-xs mt-0.5" style={{ color: '#94A3B8' }}>{chemical.formula}</p>
+            <div className="min-w-0 text-left">
+              <h3 className="font-semibold text-sm leading-tight truncate text-left" style={{ color: '#2C3E50', maxWidth: '140px' }}>{chemical.name}</h3>
+              <p className="text-xs mt-0.5 text-left" style={{ color: '#94A3B8' }}>{chemical.formula}</p>
             </div>
           </div>
           {/* Hazard badge */}
           <span className="badge text-xs flex-shrink-0" style={{ background: h.bg, color: h.color }}>
-            {chemical.hazard_level}
+            {lang === 'ar' 
+              ? (chemical.hazard_level === 'safe' || chemical.hazard_level === 'low' ? 'آمن' : chemical.hazard_level === 'warning' || chemical.hazard_level === 'medium' ? 'تحذير' : 'خطر') 
+              : chemical.hazard_level
+            }
           </span>
         </div>
 
@@ -102,18 +107,18 @@ function ChemicalCard({ chemical, index }) {
         )}
 
         {/* Details */}
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 text-left">
           <div className="flex items-center justify-between text-xs">
-            <span style={{ color: '#94A3B8' }}>Quantity</span>
+            <span style={{ color: '#94A3B8' }}>{lang === 'ar' ? 'الكمية' : 'Quantity'}</span>
             <span className="font-medium" style={{ color: '#2C3E50' }}>{chemical.quantity} {chemical.quantity_unit}</span>
           </div>
           <div className="flex items-center justify-between text-xs">
-            <span style={{ color: '#94A3B8' }}>Location</span>
+            <span style={{ color: '#94A3B8' }}>{lang === 'ar' ? 'الموقع' : 'Location'}</span>
             <span className="font-medium truncate ml-2" style={{ color: '#2C3E50', maxWidth: '120px' }}>{chemical.location}</span>
           </div>
           {chemical.expiry_date && (
             <div className="flex items-center justify-between text-xs">
-              <span style={{ color: '#94A3B8' }}>Expires</span>
+              <span style={{ color: '#94A3B8' }}>{lang === 'ar' ? 'تاريخ الانتهاء' : 'Expires'}</span>
               <span className="font-medium flex items-center gap-1" style={{ color: isExpired ? '#E85D5D' : isExpiringSoon ? '#F5A623' : '#5DB9A0' }}>
                 {(isExpired || isExpiringSoon) && <Clock size={10} />}
                 {new Date(chemical.expiry_date).toLocaleDateString()}
@@ -129,7 +134,7 @@ function ChemicalCard({ chemical, index }) {
             onClick={(e) => { e.stopPropagation(); navigate(`/chemicals/${chemical.id}`) }}
             whileTap={{ scale: 0.95 }}
           >
-            View Details
+            {t('view_details')}
           </motion.button>
           <motion.button
             className="p-1.5 rounded-lg"
@@ -150,6 +155,7 @@ export default function ChemicalsPage() {
   const { filteredChemicals, fetchChemicals, loading, searchQuery, setSearch, setFilter, filters, error } = useChemicalStore()
   const [showFilters, setShowFilters] = useState(false)
   const [isSearchFocused, setIsSearchFocused] = useState(false)
+  const { lang, t } = useLanguage()
   const searchRef = useRef(null)
 
   useEffect(() => {
@@ -163,18 +169,21 @@ export default function ChemicalsPage() {
   }, [error])
 
   const filterOptions = [
-    { key: 'hazardLevel', label: 'Hazard Level', options: ['all', 'low', 'medium', 'high', 'critical'] },
-    { key: 'location', label: 'Location', options: ['all', 'Lab A', 'Lab B', 'Lab C', 'Lab D'] },
-    { key: 'expiryStatus', label: 'Expiry', options: ['all', 'expiring', 'expired'] },
+    { key: 'hazardLevel', label: lang === 'ar' ? 'مستوى الخطورة' : 'Hazard Level', options: ['all', 'low', 'medium', 'high', 'critical'] },
+    { key: 'location', label: lang === 'ar' ? 'الموقع' : 'Location', options: ['all', 'Lab A', 'Lab B', 'Lab C', 'Lab D'] },
+    { key: 'expiryStatus', label: lang === 'ar' ? 'تاريخ الانتهاء' : 'Expiry', options: ['all', 'expiring', 'expired'] },
   ]
 
   return (
-    <div className="p-4 lg:p-6">
+    <div className={`p-4 lg:p-6 ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-        <h1 className="font-heading font-bold text-2xl" style={{ color: '#2C3E50' }}>Chemical Inventory</h1>
-        <p className="text-sm mt-1" style={{ color: '#64748B' }}>
-          {(filteredChemicals || []).length} chemical{(filteredChemicals || []).length !== 1 ? 's' : ''} found
+        <h1 className="font-heading font-bold text-2xl text-left" style={{ color: '#2C3E50' }}>{t('inventory_title')}</h1>
+        <p className="text-sm mt-1 text-left" style={{ color: '#64748B' }}>
+          {lang === 'ar' 
+            ? `تم العثور على ${(filteredChemicals || []).length} مادة كيميائية` 
+            : `${(filteredChemicals || []).length} chemical${(filteredChemicals || []).length !== 1 ? 's' : ''} found`
+          }
         </p>
       </motion.div>
 
@@ -187,7 +196,7 @@ export default function ChemicalsPage() {
             animate={{ scale: isSearchFocused ? 1.01 : 1 }}
             transition={{ duration: 0.2 }}
           >
-            <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: isSearchFocused ? '#4A90E2' : '#94A3B8' }} />
+            <Search size={18} className={`absolute ${lang === 'ar' ? 'right-3.5' : 'left-3.5'} top-1/2 -translate-y-1/2`} style={{ color: isSearchFocused ? '#4A90E2' : '#94A3B8' }} />
             <input
               ref={searchRef}
               type="text"
@@ -195,12 +204,12 @@ export default function ChemicalsPage() {
               onChange={(e) => setSearch(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
-              placeholder="Search by name, formula, CAS number..."
-              className="input-field pl-11 pr-10"
+              placeholder={lang === 'ar' ? 'البحث بالاسم، الصيغة، رقم CAS...' : 'Search by name, formula, CAS number...'}
+              className={`input-field ${lang === 'ar' ? 'pr-11 pl-10' : 'pl-11 pr-10'}`}
               id="chemicals-search"
             />
             {searchQuery && (
-              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
+              <button onClick={() => setSearch('')} className={`absolute ${lang === 'ar' ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2`}>
                 <X size={16} style={{ color: '#94A3B8' }} />
               </button>
             )}
@@ -213,7 +222,7 @@ export default function ChemicalsPage() {
             whileTap={{ scale: 0.98 }}
           >
             <Filter size={16} />
-            <span className="hidden sm:inline">Filters</span>
+            <span className="hidden sm:inline">{lang === 'ar' ? 'الفلاتر' : 'Filters'}</span>
             <ChevronDown size={14} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
           </motion.button>
         </div>
@@ -227,10 +236,10 @@ export default function ChemicalsPage() {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="flex flex-wrap gap-3 p-4 rounded-xl" style={{ background: '#F8F9FA', border: '1px solid #E2E8F0' }}>
+              <div className="flex flex-wrap gap-3 p-4 rounded-xl text-left" style={{ background: '#F8F9FA', border: '1px solid #E2E8F0' }}>
                 {filterOptions.map(({ key, label, options }) => (
-                  <div key={key} className="flex flex-col gap-1.5">
-                    <label className="text-xs font-medium" style={{ color: '#64748B' }}>{label}</label>
+                  <div key={key} className="flex flex-col gap-1.5 text-left">
+                    <label className="text-xs font-medium text-left" style={{ color: '#64748B' }}>{label}</label>
                     <div className="flex gap-1.5 flex-wrap">
                       {options.map(opt => (
                         <motion.button
@@ -245,7 +254,10 @@ export default function ChemicalsPage() {
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
-                          {opt === 'all' ? 'All' : opt.charAt(0).toUpperCase() + opt.slice(1)}
+                          {opt === 'all' 
+                            ? (lang === 'ar' ? 'الكل' : 'All') 
+                            : opt.charAt(0).toUpperCase() + opt.slice(1)
+                          }
                         </motion.button>
                       ))}
                     </div>

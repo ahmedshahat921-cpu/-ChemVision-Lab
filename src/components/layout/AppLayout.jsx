@@ -9,12 +9,14 @@ import {
 import { useAuthStore } from '../../store'
 import toast from 'react-hot-toast'
 
+import { useLanguage } from '../../hooks/useLanguage'
+
 const navItems = [
-  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/chemicals', icon: FlaskConical, label: 'Chemicals' },
-  { path: '/mixing-simulator', icon: Beaker, label: 'Mixing Simulator' },
-  { path: '/qr-scanner', icon: QrCode, label: 'QR Scanner' },
-  { path: '/lab-map', icon: Map, label: 'Lab Map' },
+  { path: '/dashboard', icon: LayoutDashboard, label: 'dashboard' },
+  { path: '/chemicals', icon: FlaskConical, label: 'chemicals' },
+  { path: '/mixing-simulator', icon: Beaker, label: 'mixing_simulator' },
+  { path: '/qr-scanner', icon: QrCode, label: 'qr_scanner' },
+  { path: '/lab-map', icon: Map, label: 'lab_map' },
 ]
 
 const pageVariants = {
@@ -27,12 +29,13 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const { profile, logout } = useAuthStore()
+  const { lang, t, toggleLanguage } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
 
   const handleLogout = async () => {
     await logout()
-    toast.success('Logged out successfully')
+    toast.success(t('logout_success'))
     navigate('/login')
   }
 
@@ -40,7 +43,7 @@ export default function AppLayout() {
   useEffect(() => { setMobileOpen(false) }, [location.pathname])
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#F0F2F5' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: '#F0F2F5' }} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       {/* Mobile overlay */}
       <AnimatePresence>
         {mobileOpen && (
@@ -73,7 +76,7 @@ export default function AppLayout() {
             {!collapsed && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="overflow-hidden">
                 <h1 className="font-heading font-bold text-sm leading-tight" style={{ color: '#1B3A6B' }}>ChemVision</h1>
-                <p className="text-xs" style={{ color: '#64748B' }}>Lab Hub</p>
+                <p className="text-xs" style={{ color: '#64748B' }}>{t('lab_hub')}</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -86,13 +89,13 @@ export default function AppLayout() {
               key={path}
               to={path}
               className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-              title={collapsed ? label : ''}
+              title={collapsed ? t(label) : ''}
             >
               <Icon size={20} className="flex-shrink-0" />
               <AnimatePresence>
                 {!collapsed && (
                   <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                    {label}
+                    {t(label)}
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -101,10 +104,10 @@ export default function AppLayout() {
 
           {/* Admin link */}
           {profile?.role === 'admin' && (
-            <NavLink to="/admin" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} title={collapsed ? 'Admin' : ''}>
+            <NavLink to="/admin" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} title={collapsed ? t('admin_panel') : ''}>
               <Shield size={20} className="flex-shrink-0" />
               <AnimatePresence>
-                {!collapsed && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>Admin Panel</motion.span>}
+                {!collapsed && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>{t('admin_panel')}</motion.span>}
               </AnimatePresence>
             </NavLink>
           )}
@@ -112,7 +115,7 @@ export default function AppLayout() {
 
         {/* User section */}
         <div className="border-t p-3 space-y-1" style={{ borderColor: '#E2E8F0' }}>
-          <NavLink to="/profile" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} title={collapsed ? 'Profile' : ''}>
+          <NavLink to="/profile" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} title={collapsed ? t('profile') : ''}>
             <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-white" style={{ background: '#4A90E2' }}>
               {profile?.name?.[0]?.toUpperCase() || 'U'}
             </div>
@@ -125,10 +128,10 @@ export default function AppLayout() {
               )}
             </AnimatePresence>
           </NavLink>
-          <button onClick={handleLogout} className="sidebar-link w-full text-left" title={collapsed ? 'Logout' : ''}>
+          <button onClick={handleLogout} className="sidebar-link w-full text-left" title={collapsed ? t('logout') : ''}>
             <LogOut size={18} className="flex-shrink-0" style={{ color: '#E85D5D' }} />
             <AnimatePresence>
-              {!collapsed && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ color: '#E85D5D' }}>Logout</motion.span>}
+              {!collapsed && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ color: '#E85D5D' }}>{t('logout')}</motion.span>}
             </AnimatePresence>
           </button>
         </div>
@@ -136,11 +139,15 @@ export default function AppLayout() {
         {/* Collapse toggle */}
         <motion.button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-20 w-6 h-6 rounded-full flex items-center justify-center lg:flex hidden"
+          className={`absolute ${lang === 'ar' ? '-left-3' : '-right-3'} top-20 w-6 h-6 rounded-full flex items-center justify-center lg:flex hidden`}
           style={{ background: 'white', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
           whileHover={{ scale: 1.1 }}
         >
-          {collapsed ? <ChevronRight size={12} color="#64748B" /> : <ChevronLeft size={12} color="#64748B" />}
+          {collapsed ? (
+            lang === 'ar' ? <ChevronLeft size={12} color="#64748B" /> : <ChevronRight size={12} color="#64748B" />
+          ) : (
+            lang === 'ar' ? <ChevronRight size={12} color="#64748B" /> : <ChevronLeft size={12} color="#64748B" />
+          )}
         </motion.button>
       </motion.aside>
 
@@ -155,18 +162,28 @@ export default function AppLayout() {
             </button>
             {/* Search bar */}
             <div className="relative hidden sm:block">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
+              <Search size={15} className={`absolute ${lang === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} style={{ color: '#94A3B8' }} />
               <input
                 type="text"
-                placeholder="Quick search chemicals..."
-                className="input-field pl-9 py-2 text-sm"
+                placeholder={t('search_placeholder')}
+                className={`input-field ${lang === 'ar' ? 'pr-9' : 'pl-9'} py-2 text-sm`}
                 style={{ width: '280px', fontSize: '0.85rem' }}
                 onFocus={() => navigate('/chemicals')}
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            {/* Language Switcher Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              onClick={toggleLanguage}
+              className="px-2.5 py-1.5 rounded-lg text-xs font-bold font-mono tracking-wider transition uppercase"
+              style={{ background: '#F0F2F5', color: '#1B3A6B' }}
+            >
+              {lang === 'ar' ? 'EN' : 'العربية'}
+            </motion.button>
+
             {/* Notification bell */}
             <motion.button whileHover={{ scale: 1.05 }} className="relative p-2 rounded-lg" style={{ background: '#F0F2F5' }}>
               <Bell size={18} style={{ color: '#64748B' }} />

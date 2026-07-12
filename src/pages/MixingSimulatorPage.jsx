@@ -4,6 +4,7 @@ import { Beaker, AlertTriangle, CheckCircle, Zap, ChevronDown, ArrowRightLeft, F
 import { useChemicalStore } from '../store'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
+import { useLanguage } from '../hooks/useLanguage'
 
 const reactionStyles = {
   safe: { bg: '#E8FBF6', color: '#2A7060', border: '#5DB9A0', icon: CheckCircle, label: 'Safe Reaction ✅', emoji: '🟢' },
@@ -18,10 +19,11 @@ const reactionStyles = {
 function ChemicalSelector({ label, selected, onSelect, chemicals, exclude }) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const { lang } = useLanguage()
   const filtered = chemicals.filter(c => c.id !== exclude && (c.name.toLowerCase().includes(search.toLowerCase()) || c.formula.toLowerCase().includes(search.toLowerCase())))
 
   return (
-    <div className="relative flex-1">
+    <div className="relative flex-1 text-left">
       <label className="block text-sm font-medium mb-2" style={{ color: '#2C3E50' }}>{label}</label>
       <motion.button
         onClick={() => setOpen(!open)}
@@ -35,12 +37,14 @@ function ChemicalSelector({ label, selected, onSelect, chemicals, exclude }) {
               {selected.formula.slice(0, 3)}
             </div>
             <div>
-              <p className="font-medium text-sm" style={{ color: '#2C3E50' }}>{selected.name}</p>
-              <p className="text-xs" style={{ color: '#64748B' }}>{selected.formula}</p>
+              <p className="font-medium text-sm text-left" style={{ color: '#2C3E50' }}>{selected.name}</p>
+              <p className="text-xs text-left" style={{ color: '#64748B' }}>{selected.formula}</p>
             </div>
           </div>
         ) : (
-          <span className="text-sm" style={{ color: '#94A3B8' }}>Select a chemical...</span>
+          <span className="text-sm text-left" style={{ color: '#94A3B8' }}>
+            {lang === 'ar' ? 'اختر مادة كيميائية...' : 'Select a chemical...'}
+          </span>
         )}
         <motion.span animate={{ rotate: open ? 180 : 0 }}><ChevronDown size={16} style={{ color: '#64748B' }} /></motion.span>
       </motion.button>
@@ -59,7 +63,7 @@ function ChemicalSelector({ label, selected, onSelect, chemicals, exclude }) {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search..."
+                placeholder={lang === 'ar' ? 'بحث...' : 'Search...'}
                 className="input-field py-2 text-sm"
                 autoFocus
               />
@@ -75,11 +79,16 @@ function ChemicalSelector({ label, selected, onSelect, chemicals, exclude }) {
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold font-mono flex-shrink-0" style={{ background: '#EBF4FF', color: '#2D6A9F' }}>
                     {c.formula.slice(0, 3)}
                   </div>
-                  <div>
+                  <div className="text-left">
                     <p className="text-sm font-medium" style={{ color: '#2C3E50' }}>{c.name}</p>
                     <p className="text-xs" style={{ color: '#94A3B8' }}>{c.formula}</p>
                   </div>
-                  <span className={`badge ml-auto badge-${c.hazard_level}`}>{c.hazard_level}</span>
+                  <span className={`badge ml-auto badge-${c.hazard_level}`}>
+                    {lang === 'ar' 
+                      ? (c.hazard_level === 'safe' ? 'آمن' : c.hazard_level === 'warning' ? 'تحذير' : 'خطر') 
+                      : c.hazard_level
+                    }
+                  </span>
                 </motion.button>
               ))}
             </div>
@@ -690,6 +699,7 @@ export default function MixingSimulatorPage() {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [screenShake, setScreenShake] = useState(false)
+  const { lang, t } = useLanguage()
 
   // Animation Stage States
   const [animPhase, setAnimPhase] = useState('idle') // 'idle', 'pouring', 'reacting', 'finished'
@@ -717,6 +727,10 @@ export default function MixingSimulatorPage() {
   const exportReportPDF = () => {
     if (!chemA || !chemB || !result) return
     const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      toast.error("Failed to open print preview. Please allow popups for this site.")
+      return
+    }
     const dateStr = new Date().toLocaleString()
 
     const content = `
@@ -754,11 +768,11 @@ export default function MixingSimulatorPage() {
           <div class="chem-box">
             <div class="chem-card">
               <strong>Chemical A (المادة أ)</strong>
-              Name: ${chemA.name}<br>Formula: ${chemA.formula}<br>Hazard Level: ${chemA.hazard_level.toUpperCase()}
+              Name: ${chemA.name || 'N/A'}<br>Formula: ${chemA.formula || 'N/A'}<br>Hazard Level: ${(chemA.hazard_level || 'N/A').toUpperCase()}
             </div>
             <div class="chem-card">
               <strong>Chemical B (المادة ب)</strong>
-              Name: ${chemB.name}<br>Formula: ${chemB.formula}<br>Hazard Level: ${chemB.hazard_level.toUpperCase()}
+              Name: ${chemB.name || 'N/A'}<br>Formula: ${chemB.formula || 'N/A'}<br>Hazard Level: ${(chemB.hazard_level || 'N/A').toUpperCase()}
             </div>
           </div>
 
@@ -768,29 +782,29 @@ export default function MixingSimulatorPage() {
               <span class="badge ${result.is_safe ? 'safe' : 'danger'}">
                 ${result.is_safe ? 'SAFE MIXTURE' : 'RESTRICTED / DANGEROUS'} (Severity: ${result.severity_score}/10)
               </span>
-              <p class="description">${result.result_description}</p>
+              <p class="description">${result.result_description || 'No matching database rule found.'}</p>
             </div>
           </div>
 
           <div class="section">
             <div class="section-title">Physical & Thermal Properties (الخصائص الفيزيائية والحرارية للمزيج)</div>
-            <div class="val-text">${result.physical_properties}</div>
+            <div class="val-text">${result.physical_properties || 'Standard solution properties apply.'}</div>
           </div>
 
           <div class="section">
             <div class="section-title">Chemical Properties & Stability (الخواص الكيميائية والاستقرار)</div>
-            <div class="val-text">${result.chemical_properties}</div>
+            <div class="val-text">${result.chemical_properties || 'Compatible mixture under normal conditions.'}</div>
           </div>
 
           <div class="section" style="border-left: 4px solid #D97706; background: #FFFDF5;">
             <div class="section-title" style="color: #D97706;">Precise Lab Safety & Hazard Controls (آلية الأمان والسلامة المخبرية)</div>
-            <div class="val-text" style="font-weight: 500; color: #92400E;">${result.safety_measures}</div>
+            <div class="val-text" style="font-weight: 500; color: #92400E;">${result.safety_measures || 'Wear standard laboratory protection.'}</div>
           </div>
 
           ${result.product_name ? `
           <div class="section" style="background: #FAF5FF; border-color: #E9D5FF;">
             <div class="section-title" style="color: #8B5CF6;">Resulting Product / المركب الكيميائي المتشكل</div>
-            <div class="val-text"><strong>Product:</strong> ${result.product_name} (${result.product_formula})</div>
+            <div class="val-text"><strong>Product:</strong> ${result.product_name} (${result.product_formula || ''})</div>
           </div>
           ` : ''}
 
@@ -959,8 +973,8 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 flex justify-between items-center">
         <div>
-          <h1 className="font-heading font-bold text-2xl" style={{ color: '#2C3E50' }}>🧪 Mixing Simulator</h1>
-          <p className="text-sm mt-1" style={{ color: '#64748B' }}>Analyze molecular compatibility and safety in real-time</p>
+          <h1 className="font-heading font-bold text-2xl text-left" style={{ color: '#2C3E50' }}>{t('mixing_simulator_title')}</h1>
+          <p className="text-sm mt-1 text-left" style={{ color: '#64748B' }}>{t('mixing_simulator_sub')}</p>
         </div>
       </motion.div>
 
@@ -968,8 +982,8 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
         {/* If animPhase is 'idle', display Chemical Selectors */}
         {animPhase === 'idle' && (
           <motion.div className="card p-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <div className="flex items-end gap-4">
-              <ChemicalSelector label="Chemical A" selected={chemA} onSelect={(c) => { setChemA(c); setResult(null) }} chemicals={chemicals} exclude={chemB?.id} />
+            <div className="flex flex-col sm:flex-row items-end gap-4">
+              <ChemicalSelector label={t('chem_a')} selected={chemA} onSelect={(c) => { setChemA(c); setResult(null) }} chemicals={chemicals} exclude={chemB?.id} />
 
               {/* Swap button */}
               <motion.button
@@ -982,7 +996,7 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                 <ArrowRightLeft size={16} style={{ color: '#4A90E2' }} />
               </motion.button>
 
-              <ChemicalSelector label="Chemical B" selected={chemB} onSelect={(c) => { setChemB(c); setResult(null) }} chemicals={chemicals} exclude={chemA?.id} />
+              <ChemicalSelector label={t('chem_b')} selected={chemB} onSelect={(c) => { setChemB(c); setResult(null) }} chemicals={chemicals} exclude={chemA?.id} />
             </div>
 
             {/* Selected beakers visualization */}
@@ -1013,13 +1027,13 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
             >
-              <Beaker size={18} /> Simulate Reaction
+              <Beaker size={18} /> {t('simulate_btn')}
             </motion.button>
 
             {/* Quick Experiments Banner */}
             {chemicals && chemicals.length > 0 && (
               <div className="mt-6 pt-5 border-t" style={{ borderColor: '#E2E8F0' }}>
-                <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#94A3B8' }}>Famous Experiments / تجارب شهيرة</p>
+                <p className="text-xs font-bold uppercase tracking-wider mb-3 text-left" style={{ color: '#94A3B8' }}>{t('famous_experiments')}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     onClick={() => runTemplate('NaOH', 'H2SO4')}
@@ -1066,10 +1080,10 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                 </motion.div>
                 <div>
                   <p className="text-sm font-semibold text-slate-200">
-                    {animPhase === 'pouring' ? 'Phase 1: Pouring reagents into reaction vessel...' : 'Phase 2: Molecular kinetics & reaction in progress...'}
+                    {animPhase === 'pouring' ? t('pouring_reagents') : t('kinetics')}
                   </p>
                   <p className="text-xs text-slate-400 mt-1">
-                    Analyzing safety datasheet properties and thermodynamic changes.
+                    {t('analyzing_sds')}
                   </p>
                 </div>
               </div>
@@ -1088,10 +1102,10 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                 <div className="p-4 flex items-center justify-between" style={{ background: rStyle.bg }}>
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{rStyle.emoji}</span>
-                    <div>
+                    <div className="text-left">
                       <h3 className="font-heading font-bold text-lg" style={{ color: rStyle.color }}>{rStyle.label}</h3>
                       <p className="text-xs" style={{ color: rStyle.color, opacity: 0.8 }}>
-                        Severity: {result.severity_score}/10 – {result.reaction_type.replace('_', ' ').toUpperCase()}
+                        Severity: {result.severity_score}/10 – {(result.reaction_type || '').replace('_', ' ').toUpperCase()}
                       </p>
                     </div>
                   </div>
@@ -1105,20 +1119,20 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                     }}
                     className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-slate-800 hover:bg-slate-700 transition"
                   >
-                    Mix New / خلطة جديدة
+                    {t('mix_new')}
                   </button>
                 </div>
 
                 {/* Description Panels */}
-                <div className="p-5 space-y-4">
+                <div className="p-5 space-y-4 text-left">
                   {/* General Reaction Summary */}
                   <div className="flex gap-3 items-start">
                     <div className="p-2 rounded-lg bg-blue-50 text-blue-600 flex-shrink-0 mt-0.5" style={{ background: '#EBF4FF', color: '#4A90E2' }}>
                       <Beaker size={16} />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: '#94A3B8' }}>Reaction Summary / ملخص التفاعل</h4>
-                      <p className="text-sm mt-1 leading-relaxed font-semibold" style={{ color: '#2C3E50' }}>{result.result_description}</p>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-left" style={{ color: '#94A3B8' }}>Reaction Summary / ملخص التفاعل</h4>
+                      <p className="text-sm mt-1 leading-relaxed font-semibold text-left" style={{ color: '#2C3E50' }}>{result.result_description}</p>
                     </div>
                   </div>
 
@@ -1128,8 +1142,8 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                       <Flame size={16} />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: '#94A3B8' }}>Physical & Thermal Properties / الخصائص الفيزيائية الحرارية للمزيج</h4>
-                      <p className="text-sm mt-1 leading-relaxed" style={{ color: '#475569' }}>{result.physical_properties}</p>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-left" style={{ color: '#94A3B8' }}>Physical & Thermal Properties / الخصائص الفيزيائية الحرارية للمزيج</h4>
+                      <p className="text-sm mt-1 leading-relaxed text-left" style={{ color: '#475569' }}>{result.physical_properties}</p>
                     </div>
                   </div>
 
@@ -1139,8 +1153,8 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                       <Zap size={16} />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: '#94A3B8' }}>Chemical Properties of Mixture / الخواص الكيميائية للمزيج الناتج</h4>
-                      <p className="text-sm mt-1 leading-relaxed" style={{ color: '#475569' }}>{result.chemical_properties}</p>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-left" style={{ color: '#94A3B8' }}>Chemical Properties of Mixture / الخواص الكيميائية للمزيج الناتج</h4>
+                      <p className="text-sm mt-1 leading-relaxed text-left" style={{ color: '#475569' }}>{result.chemical_properties}</p>
                     </div>
                   </div>
 
@@ -1150,21 +1164,21 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                       <AlertTriangle size={18} />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: '#B45309' }}>Precise Lab Safety & Hazard Controls / آلية الأمان والسلامة المخبرية الدقيقة</h4>
-                      <p className="text-sm mt-1 leading-relaxed font-medium" style={{ color: '#92400E' }}>{result.safety_measures}</p>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-left" style={{ color: '#B45309' }}>Precise Lab Safety & Hazard Controls / آلية الأمان والسلامة المخبرية الدقيقة</h4>
+                      <p className="text-sm mt-1 leading-relaxed font-medium text-left" style={{ color: '#92400E' }}>{result.safety_measures}</p>
                     </div>
                   </div>
 
                   {result.product_name && (
                     <motion.div
-                      className="mt-4 p-3.5 rounded-xl border"
+                      className="mt-4 p-3.5 rounded-xl border text-left"
                       style={{ background: '#EDE9FE', borderColor: '#C084FC' }}
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ delay: 0.3, type: 'spring' }}
                     >
-                      <p className="text-xs font-semibold" style={{ color: '#7C3AED' }}>Product formed / الناتج المتكون:</p>
-                      <p className="text-sm font-bold mt-0.5" style={{ color: '#6326CA' }}>{result.product_name} {result.product_formula && `(${result.product_formula})`}</p>
+                      <p className="text-xs font-semibold text-left" style={{ color: '#7C3AED' }}>Product formed / الناتج المتكون:</p>
+                      <p className="text-sm font-bold mt-0.5 text-left" style={{ color: '#6326CA' }}>{result.product_name} {result.product_formula && `(${result.product_formula})`}</p>
                     </motion.div>
                   )}
 
@@ -1175,7 +1189,7 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                       className="flex-1 py-3 px-4 rounded-xl font-bold text-sm text-slate-700 bg-slate-100 hover:bg-slate-200 transition flex items-center justify-center gap-2 border"
                       style={{ borderColor: '#CBD5E1' }}
                     >
-                      📄 Export Laboratory Report (PDF)
+                      {t('export_report')}
                     </button>
                     <button
                       onClick={() => {
@@ -1187,7 +1201,7 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                       className="flex-1 py-3 px-4 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-lg"
                       style={{ background: '#3B82F6' }}
                     >
-                      🔄 Mix New Chemicals / خلطة جديدة
+                      {t('mix_new')}
                     </button>
                   </div>
                 </div>

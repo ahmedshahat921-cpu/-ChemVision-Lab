@@ -2,6 +2,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { MapPin, Map, Thermometer, FlaskConical } from 'lucide-react'
 import { useChemicalStore } from '../store'
+import { useLanguage } from '../hooks/useLanguage'
 
 const labLayout = [
   { id: 'lab-a', name: 'Laboratory A', x: 5, y: 5, w: 38, h: 42, color: '#EBF4FF', border: '#4A90E2' },
@@ -33,24 +34,45 @@ const levelColors = { low: '#5DB9A0', medium: '#F5A623', high: '#E85D5D', critic
 
 export default function LabMapPage() {
   const [selected, setSelected] = React.useState(null)
+  const { lang, t } = useLanguage()
+
+  const translateLevel = (lvl) => {
+    if (lang === 'ar') {
+      return lvl === 'low' ? 'منخفض' : lvl === 'medium' ? 'متوسط' : lvl === 'high' ? 'مرتفع' : 'خطير'
+    }
+    return lvl
+  }
+
+  const translateLabName = (name) => {
+    if (lang === 'ar') {
+      if (name.includes('Laboratory A')) return 'المختبر أ'
+      if (name.includes('Laboratory B')) return 'المختبر ب'
+      if (name.includes('Laboratory C')) return 'المختبر ج'
+      if (name.includes('Laboratory D')) return 'المختبر د'
+      if (name.includes('Storage')) return 'المستودع'
+    }
+    return name
+  }
 
   return (
-    <div className="p-4 lg:p-6">
+    <div className={`p-4 lg:p-6 ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-        <h1 className="font-heading font-bold text-2xl" style={{ color: '#2C3E50' }}>🗺️ Lab Map</h1>
-        <p className="text-sm mt-1" style={{ color: '#64748B' }}>Interactive chemical location heatmap</p>
+        <h1 className="font-heading font-bold text-2xl text-left" style={{ color: '#2C3E50' }}>{t('map_title')}</h1>
+        <p className="text-sm mt-1 text-left" style={{ color: '#64748B' }}>{t('map_sub')}</p>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* MAP */}
         <motion.div className="card p-5 lg:col-span-2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>Lab Floor Plan</h3>
+            <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>
+              {lang === 'ar' ? 'مخطط طابق المختبر' : 'Lab Floor Plan'}
+            </h3>
             <div className="flex gap-3">
               {Object.entries(levelColors).map(([level, color]) => (
                 <div key={level} className="flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
-                  <span className="text-xs capitalize" style={{ color: '#64748B' }}>{level}</span>
+                  <span className="text-xs" style={{ color: '#64748B' }}>{translateLevel(level)}</span>
                 </div>
               ))}
             </div>
@@ -67,7 +89,9 @@ export default function LabMapPage() {
               {labLayout.map((lab, i) => (
                 <motion.g key={lab.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.1 }}>
                   <rect x={lab.x} y={lab.y} width={lab.w} height={lab.h} rx="2" fill={lab.color} stroke={lab.border} strokeWidth="0.5" />
-                  <text x={lab.x + lab.w / 2} y={lab.y + 5} textAnchor="middle" fill={lab.border} fontSize="2.2" fontWeight="600">{lab.name}</text>
+                  <text x={lab.x + lab.w / 2} y={lab.y + 6} textAnchor="middle" fill={lab.border} fontSize="2.2" fontWeight="600">
+                    {translateLabName(lab.name)}
+                  </text>
                 </motion.g>
               ))}
 
@@ -97,14 +121,18 @@ export default function LabMapPage() {
             </svg>
           </div>
 
-          <p className="text-xs mt-2 text-center" style={{ color: '#94A3B8' }}>Click on a dot to see chemical details</p>
+          <p className="text-xs mt-2 text-center" style={{ color: '#94A3B8' }}>
+            {lang === 'ar' ? 'اضغط على نقطة لرؤية تفاصيل المادة الكيميائية' : 'Click on a dot to see chemical details'}
+          </p>
         </motion.div>
 
         {/* SIDEBAR */}
         <div className="space-y-4">
           {/* Zone summary */}
           <motion.div className="card p-5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-            <h3 className="font-semibold text-sm mb-3" style={{ color: '#2C3E50' }}>Zone Summary</h3>
+            <h3 className="font-semibold text-sm mb-3 text-left" style={{ color: '#2C3E50' }}>
+              {lang === 'ar' ? 'ملخص المناطق' : 'Zone Summary'}
+            </h3>
             <div className="space-y-2">
               {[
                 { name: 'Lab A', chemicals: 3, level: 'critical', icon: '⚠️' },
@@ -115,20 +143,24 @@ export default function LabMapPage() {
               ].map((zone, i) => (
                 <motion.div
                   key={zone.name}
-                  className="flex items-center justify-between p-2.5 rounded-lg"
+                  className="flex items-center justify-between p-2.5 rounded-lg text-left"
                   style={{ background: '#F8F9FA' }}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + i * 0.1 }}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-left">
                     <span>{zone.icon}</span>
-                    <div>
-                      <p className="text-xs font-medium" style={{ color: '#2C3E50' }}>{zone.name}</p>
-                      <p className="text-xs" style={{ color: '#94A3B8' }}>{zone.chemicals} chemicals</p>
+                    <div className="text-left">
+                      <p className="text-xs font-medium" style={{ color: '#2C3E50' }}>
+                        {lang === 'ar' ? (zone.name === 'Storage' ? 'المستودع' : `المختبر ${zone.name.split(' ')[1]}`) : zone.name}
+                      </p>
+                      <p className="text-xs text-left" style={{ color: '#94A3B8' }}>
+                        {lang === 'ar' ? `${zone.chemicals} مواد كيميائية` : `${zone.chemicals} chemicals`}
+                      </p>
                     </div>
                   </div>
-                  <span className={`badge badge-${zone.level}`}>{zone.level}</span>
+                  <span className={`badge badge-${zone.level}`}>{translateLevel(zone.level)}</span>
                 </motion.div>
               ))}
             </div>
@@ -136,27 +168,29 @@ export default function LabMapPage() {
 
           {/* Selected chemical info */}
           {selected ? (
-            <motion.div className="card p-5" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
-              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2" style={{ color: '#2C3E50' }}>
-                <MapPin size={14} style={{ color: '#4A90E2' }} /> Selected Chemical
+            <motion.div className="card p-5 text-left" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2 text-left" style={{ color: '#2C3E50' }}>
+                <MapPin size={14} style={{ color: '#4A90E2' }} /> {lang === 'ar' ? 'المادة الكيميائية المحددة' : 'Selected Chemical'}
               </h3>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 text-left">
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold" style={{ background: levelColors[selected.level] + '20', color: levelColors[selected.level] }}>
                   {selected.name.slice(0, 2)}
                 </div>
-                <div>
-                  <p className="font-medium text-sm" style={{ color: '#2C3E50' }}>{selected.name}</p>
-                  <span className={`badge badge-${selected.level}`}>{selected.level}</span>
+                <div className="text-left">
+                  <p className="font-medium text-sm text-left" style={{ color: '#2C3E50' }}>{selected.name}</p>
+                  <span className={`badge badge-${selected.level}`}>{translateLevel(selected.level)}</span>
                 </div>
               </div>
               <div className="mt-3 p-2 rounded-lg text-xs" style={{ background: '#F0F2F5', color: '#64748B' }}>
-                📍 Coordinates: ({selected.x}%, {selected.y}%)
+                📍 {lang === 'ar' ? 'الإحداثيات:' : 'Coordinates:'} ({selected.x}%, {selected.y}%)
               </div>
             </motion.div>
           ) : (
             <motion.div className="card p-5 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
               <Map size={32} style={{ color: '#CBD5E1', margin: '0 auto 0.5rem' }} />
-              <p className="text-sm" style={{ color: '#94A3B8' }}>Click a dot on the map to see chemical details</p>
+              <p className="text-sm" style={{ color: '#94A3B8' }}>
+                {lang === 'ar' ? 'اضغط على نقطة في الخريطة لرؤية التفاصيل الكيميائية' : 'Click a dot on the map to see chemical details'}
+              </p>
             </motion.div>
           )}
         </div>

@@ -4,6 +4,7 @@ import { QrCode, Camera, CheckCircle, XCircle, Zap, Upload, FileImage } from 'lu
 import { useNavigate } from 'react-router-dom'
 import { useChemicalStore } from '../store'
 import toast from 'react-hot-toast'
+import { useLanguage } from '../hooks/useLanguage'
 
 export default function QRScannerPage() {
   const [scanning, setScanning] = useState(false)
@@ -13,6 +14,7 @@ export default function QRScannerPage() {
   const html5QrRef = useRef(null)
   const navigate = useNavigate()
   const { chemicals, fetchChemicals } = useChemicalStore()
+  const { lang, t } = useLanguage()
 
   useEffect(() => { 
     fetchChemicals()
@@ -38,21 +40,25 @@ export default function QRScannerPage() {
       )
     } catch (err) {
       setScanning(false)
-      setError('Camera access denied or not available. Please allow camera permissions or upload an image.')
-      toast.error('Could not start camera')
+      setError(
+        lang === 'ar'
+          ? 'تم رفض الوصول إلى الكاميرا أو أنها غير متوفرة. يرجى السماح بصلاحيات الكاميرا أو تحميل صورة.'
+          : 'Camera access denied or not available. Please allow camera permissions or upload an image.'
+      )
+      toast.error(lang === 'ar' ? 'تعذر تشغيل الكاميرا' : 'Could not start camera')
     }
   }
 
   const handleScanSuccess = (decodedText) => {
     setDetected(true)
-    toast.success('QR Code detected!')
+    toast.success(lang === 'ar' ? 'تم رصد رمز QR بنجاح!' : 'QR Code detected!')
     setTimeout(() => {
       stopScanner()
       if (decodedText.includes('/chemicals/')) {
         const id = decodedText.split('/chemicals/')[1]
         navigate(`/chemicals/${id}`)
       } else {
-        toast('Redirecting to: ' + decodedText)
+        toast((lang === 'ar' ? 'جاري التحويل إلى: ' : 'Redirecting to: ') + decodedText)
         window.open(decodedText, '_blank')
       }
     }, 1000)
@@ -72,7 +78,7 @@ export default function QRScannerPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    const loadingToast = toast.loading('Reading QR code from image...')
+    const loadingToast = toast.loading(lang === 'ar' ? 'جاري قراءة رمز QR من الصورة...' : 'Reading QR code from image...')
     try {
       const { Html5Qrcode } = await import('html5-qrcode')
       
@@ -96,15 +102,15 @@ export default function QRScannerPage() {
       tempEl.remove()
     } catch (err) {
       toast.dismiss(loadingToast)
-      toast.error('No valid QR code found in this image')
+      toast.error(lang === 'ar' ? 'لم يتم العثور على رمز QR صالح في هذه الصورة' : 'No valid QR code found in this image')
     }
   }
 
   return (
-    <div className="p-4 lg:p-6">
+    <div className={`p-4 lg:p-6 ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-        <h1 className="font-heading font-bold text-2xl" style={{ color: '#2C3E50' }}>📷 QR Scanner</h1>
-        <p className="text-sm mt-1" style={{ color: '#64748B' }}>Scan chemical QR code using camera, file upload, or mock simulator</p>
+        <h1 className="font-heading font-bold text-2xl text-left" style={{ color: '#2C3E50' }}>{t('qr_title')}</h1>
+        <p className="text-sm mt-1 text-left" style={{ color: '#64748B' }}>{t('qr_sub')}</p>
       </motion.div>
 
       <div className="max-w-md mx-auto space-y-4">
@@ -131,7 +137,9 @@ export default function QRScannerPage() {
                 >
                   <QrCode size={80} style={{ color: '#7AB8F5' }} />
                 </motion.div>
-                <p className="text-blue-100 text-sm">Activate camera or select a local QR image file</p>
+                <p className="text-blue-100 text-sm">
+                  {lang === 'ar' ? 'قم بتنشيط الكاميرا أو حدد ملف صورة QR محلي' : 'Activate camera or select a local QR image file'}
+                </p>
               </motion.div>
             )}
 
@@ -194,7 +202,7 @@ export default function QRScannerPage() {
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Camera size={16} /> Start Camera
+                  <Camera size={16} /> {lang === 'ar' ? 'بدء الكاميرا' : 'Start Camera'}
                 </motion.button>
               ) : (
                 <motion.button
@@ -204,7 +212,7 @@ export default function QRScannerPage() {
                   whileTap={{ scale: 0.98 }}
                   style={{ background: '#E85D5D', color: 'white', borderRadius: '0.625rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}
                 >
-                  <XCircle size={16} /> Stop Camera
+                  <XCircle size={16} /> {lang === 'ar' ? 'إيقاف الكاميرا' : 'Stop Camera'}
                 </motion.button>
               )}
 
@@ -223,7 +231,7 @@ export default function QRScannerPage() {
                 whileTap={{ scale: 0.98 }}
                 disabled={scanning}
               >
-                <Upload size={16} /> Upload Image
+                <Upload size={16} /> {lang === 'ar' ? 'رفع صورة' : 'Upload Image'}
               </motion.button>
             </div>
           </div>
@@ -231,12 +239,15 @@ export default function QRScannerPage() {
 
         {/* Demo / Mock Scan Redirections for testing */}
         {chemicals && chemicals.length > 0 && (
-          <motion.div className="card p-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-            <h3 className="font-heading font-semibold text-sm mb-1.5 flex items-center gap-2" style={{ color: '#2C3E50' }}>
-              🧪 Simulator / Quick Testing (Mock Scan)
+          <motion.div className="card p-5 text-left" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+            <h3 className="font-heading font-semibold text-sm mb-1.5 flex items-center gap-2 text-left" style={{ color: '#2C3E50' }}>
+              🧪 {lang === 'ar' ? 'المحاكي الكيميائي / اختبار سريع' : 'Simulator / Quick Testing (Mock Scan)'}
             </h3>
-            <p className="text-xs mb-3" style={{ color: '#64748B' }}>
-              evaluator test: Click a chemical below to simulate scanning its physical QR code label.
+            <p className="text-xs mb-3 text-left" style={{ color: '#64748B' }}>
+              {lang === 'ar' 
+                ? 'اختبار المقيم: اضغط على مادة كيميائية أدناه لمحاكاة فحص رمز الاستجابة السريعة (QR) الخاص بها.' 
+                : 'evaluator test: Click a chemical below to simulate scanning its physical QR code label.'
+              }
             </p>
             <div className="grid grid-cols-2 gap-2">
               {chemicals.slice(0, 4).map(c => (
@@ -244,7 +255,7 @@ export default function QRScannerPage() {
                   key={c.id}
                   onClick={() => {
                     setDetected(true)
-                    toast.success(`Scanning QR label for: ${c.name}...`)
+                    toast.success(lang === 'ar' ? `جاري محاكاة مسح QR لمادة: ${c.name}...` : `Scanning QR label for: ${c.name}...`)
                     setTimeout(() => {
                       setDetected(false)
                       navigate(`/chemicals/${c.id}`)
@@ -253,7 +264,7 @@ export default function QRScannerPage() {
                   className="btn-secondary justify-center py-2 text-xs font-semibold text-center border transition-all"
                   style={{ color: '#4A90E2', background: '#F8F9FA' }}
                 >
-                  Scan {c.name.split(' ')[0]}
+                  {lang === 'ar' ? `فحص ${c.name.split(' ')[0]}` : `Scan ${c.name.split(' ')[0]}`}
                 </button>
               ))}
             </div>
@@ -261,23 +272,31 @@ export default function QRScannerPage() {
         )}
 
         {/* Instructions */}
-        <motion.div className="card p-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-          <h3 className="font-semibold text-sm mb-3 flex items-center gap-2" style={{ color: '#2C3E50' }}><Zap size={16} style={{ color: '#4A90E2' }} /> How to use</h3>
+        <motion.div className="card p-5 text-left" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+          <h3 className="font-semibold text-sm mb-3 flex items-center gap-2 text-left" style={{ color: '#2C3E50' }}>
+            <Zap size={16} style={{ color: '#4A90E2' }} /> {lang === 'ar' ? 'طريقة الاستخدام' : 'How to use'}
+          </h3>
           <div className="space-y-2">
             {[
-              'Using Camera: Click "Start Camera" (webcam required) and align code.',
-              'Using File: Download a QR from a Chemical page, click "Upload Image" and choose the file.',
-              'Using Simulator: Click any mock button above to simulate scanning instantly.',
+              lang === 'ar' 
+                ? 'باستخدام الكاميرا: انقر فوق "بدء الكاميرا" (يلزم وجود كاميرا ويب) وقم بمحاذاة الرمز الكودي.' 
+                : 'Using Camera: Click "Start Camera" (webcam required) and align code.',
+              lang === 'ar' 
+                ? 'باستخدام الملف: قم بتنزيل رمز QR للمادة من صفحتها التفصيلية، ثم انقر فوق "رفع صورة" لاختيار الملف.' 
+                : 'Using File: Download a QR from a Chemical page, click "Upload Image" and choose the file.',
+              lang === 'ar' 
+                ? 'باستخدام المحاكي: اضغط على أي زر محاكاة سريع أعلاه للفحص المباشر والسريع.' 
+                : 'Using Simulator: Click any mock button above to simulate scanning instantly.',
             ].map((step, i) => (
               <motion.div
                 key={i}
-                className="flex items-start gap-3"
+                className="flex items-start gap-3 text-left"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 + i * 0.1 }}
               >
                 <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5" style={{ background: '#EBF4FF', color: '#4A90E2' }}>{i + 1}</span>
-                <p className="text-xs leading-relaxed" style={{ color: '#64748B' }}>{step}</p>
+                <p className="text-xs leading-relaxed text-left" style={{ color: '#64748B' }}>{step}</p>
               </motion.div>
             ))}
           </div>
