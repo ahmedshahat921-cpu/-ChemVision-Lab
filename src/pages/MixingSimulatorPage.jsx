@@ -156,7 +156,9 @@ const predictReactionLocally = (chemA, chemB) => {
   const baseA = isBase(nameA)
   const baseB = isBase(nameB)
 
-  // 1. Acid + Carbonate -> Neutralization producing CO2 gas
+  // -- CHEMICAL REACTIONS --
+
+  // 1. Acid + Carbonate (e.g. HCl + CaCO3) -> produces CO2 gas
   if ((acidA && nameB.includes('carbonate')) || (acidB && nameA.includes('carbonate'))) {
     const acid = acidA ? chemA : chemB
     const carbonate = acidA ? chemB : chemA
@@ -165,8 +167,8 @@ const predictReactionLocally = (chemA, chemB) => {
       reaction_type: 'produces_gas',
       severity_score: 3,
       result_description: `Reaction between ${acid.name} (${acid.formula}) and ${carbonate.name} (${carbonate.formula}) generates Carbon Dioxide (CO2) gas bubbles. Neutralization is successful.\nتفاعل التعادل بين الحمض والكربونات ينتج غاز ثاني أكسيد الكربون.`,
-      product_name: 'Carbon Dioxide & Salt',
-      product_formula: 'CO2 + Salt'
+      product_name: 'Carbon Dioxide & Salt Solution',
+      product_formula: 'CO2 (g) + H2O (l) + Salt (aq)'
     }
   }
 
@@ -179,13 +181,13 @@ const predictReactionLocally = (chemA, chemB) => {
       reaction_type: 'safe',
       severity_score: 2,
       result_description: `Acid-base neutralization reaction between ${acid.name} and ${base.name}. Heat is released (exothermic), forming water and stable salt.\nتفاعل تعادل بين الحمض والقاعدة ينتج ملح وماء مع انطلاق حرارة.`,
-      product_name: 'Water & Salt',
-      product_formula: 'H2O + Salt'
+      product_name: 'Water & Salt Solution',
+      product_formula: 'H2O (l) + Salt (aq)'
     }
   }
 
   // 3. Oxidizer + Flammable organic solvent -> Danger of fire/explosion
-  const isOxidizer = (n) => n.includes('nitrate') || n.includes('peroxide') || n.includes('permanganate') || n.includes('oxygen')
+  const isOxidizer = (n) => n.includes('nitrate') || n.includes('peroxide') || n.includes('permanganate') || n.includes('oxygen') || n.includes('sulfuric') || n.includes('nitric')
   const isFlammable = (n) => n.includes('alcohol') || n.includes('ethanol') || n.includes('acetone') || n.includes('benzene') || n.includes('methanol') || n.includes('hydrogen')
   
   if ((isOxidizer(nameA) && isFlammable(nameB)) || (isOxidizer(nameB) && isFlammable(nameA))) {
@@ -197,7 +199,7 @@ const predictReactionLocally = (chemA, chemB) => {
       severity_score: 9,
       result_description: `CRITICAL DANGER: Mixing strong oxidizer ${ox.name} with flammable ${flam.name} results in violent oxidation, high heat release, and explosive combustion risk!\nخطر انفجار: خلط مادة مؤكسدة قوية مع مادة قابلة للاشتعال يسبب تفاعل سريع وخطر الحريق.`,
       product_name: 'Combustion Gases',
-      product_formula: 'CO2 + H2O'
+      product_formula: 'CO2 (g) + H2O (g)'
     }
   }
 
@@ -210,11 +212,61 @@ const predictReactionLocally = (chemA, chemB) => {
       severity_score: 5,
       result_description: `Exothermic acid dilution. Mixing water with concentrated ${acid.name} releases high heat. Always add acid to water slowly, never the reverse to prevent acid splash.\nتخفيف الحمض الطارد للحرارة. يجب إضافة الحمض للماء ببطء لمنع التناثر.`,
       product_name: 'Hydronium Ions',
-      product_formula: 'H3O+'
+      product_formula: 'H3O+ (aq)'
     }
   }
 
-  // 5. Default response based on Hazard levels
+  // -- PHYSICAL MIXTURES & SOLUBILITY --
+
+  // 5. Ethanol + Water -> Fully Miscible
+  if ((nameA.includes('ethanol') && nameB.includes('water')) || (nameB.includes('ethanol') && nameA.includes('water'))) {
+    return {
+      is_safe: true,
+      reaction_type: 'safe',
+      severity_score: 1,
+      result_description: `Ethanol and Water are fully miscible in all proportions. They form a homogeneous solution due to strong hydrogen bonding. A slight volume contraction occurs.\nالإيثانول والماء ممتزجان تمامًا في جميع النسب، ويشكلان محلولًا متجانسًا بسبب الروابط الهيدروجينية القوية.`,
+      product_name: 'Aqueous Ethanol Solution',
+      product_formula: 'C2H5OH (aq)'
+    }
+  }
+
+  // 6. Acetone + Water -> Fully Miscible
+  if ((nameA.includes('acetone') && nameB.includes('water')) || (nameB.includes('acetone') && nameA.includes('water'))) {
+    return {
+      is_safe: true,
+      reaction_type: 'safe',
+      severity_score: 1,
+      result_description: `Acetone and Water are completely miscible. They form a single-phase polar organic solution. Commonly used as a laboratory cleaning and drying solvent.\nالأسيتون والماء ممتزجان تمامًا، ويشكلان محلولاً متجانسًا قطبيًا أحادي الطور.`,
+      product_name: 'Aqueous Acetone Solution',
+      product_formula: 'C3H6O (aq)'
+    }
+  }
+
+  // 7. Benzene + Water -> Immiscible (Two-phase)
+  if ((nameA.includes('benzene') && nameB.includes('water')) || (nameB.includes('benzene') && nameA.includes('water'))) {
+    return {
+      is_safe: false,
+      reaction_type: 'hazardous',
+      severity_score: 4,
+      result_description: `IMMISCIBLE MIXTURE: Benzene is non-polar and hydrophobic, so it does not dissolve in polar water. It forms a distinct two-phase liquid system where Benzene (density 0.87 g/cm³) floats on top of the water layer. Flammability hazard remains.\nخليط غير ممتزج: البنزين غير قطبي لا يذوب في الماء القطبي، ويشكل طبقتين منفصلتين حيث يطفو البنزين في الأعلى لخفة كثافته.`,
+      product_name: 'Two-Phase Immiscible System',
+      product_formula: 'C6H6 (l) + H2O (l)'
+    }
+  }
+
+  // 8. Acetone + Benzene -> Fully Miscible organic solution
+  if ((nameA.includes('acetone') && nameB.includes('benzene')) || (nameB.includes('acetone') && nameA.includes('benzene'))) {
+    return {
+      is_safe: true,
+      reaction_type: 'safe',
+      severity_score: 2,
+      result_description: `Acetone and Benzene are fully miscible organic solvents. They mix to form a homogeneous organic solvent mixture. Note: Both solvents are highly flammable and volatile; handle under a fume hood.\nالأسيتون والبنزين ممتزجان تمامًا ويشكلان خليطًا متجانسًا من المذيبات العضوية القابلة للاشتعال والتطاير.`,
+      product_name: 'Acetone-Benzene Organic Solution',
+      product_formula: 'C3H6O (l) + C6H6 (l)'
+    }
+  }
+
+  // 9. Default response based on Hazard levels
   const dangerLevel = Math.max(
     chemA.hazard_level === 'danger' ? 7 : chemA.hazard_level === 'warning' ? 4 : 1,
     chemB.hazard_level === 'danger' ? 7 : chemB.hazard_level === 'warning' ? 4 : 1
