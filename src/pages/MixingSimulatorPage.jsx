@@ -599,6 +599,90 @@ function ReactionChamber({ chemA, chemB, phase, reactType }) {
   )
 }
 
+// Interactive sound effects generator using browser Web Audio API (procedural audio)
+const playLabSound = (type) => {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext
+    if (!AudioCtx) return
+    const ctx = new AudioCtx()
+
+    if (type === 'pour') {
+      // White noise sweep representing pouring liquid
+      const bufferSize = ctx.sampleRate * 1.5
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
+      const data = buffer.getChannelData(0)
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1
+      }
+      const noise = ctx.createBufferSource()
+      noise.buffer = buffer
+
+      const filter = ctx.createBiquadFilter()
+      filter.type = 'lowpass'
+      filter.frequency.setValueAtTime(300, ctx.currentTime)
+      filter.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 1.5)
+
+      const gain = ctx.createGain()
+      gain.gain.setValueAtTime(0.12, ctx.currentTime)
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.5)
+
+      noise.connect(filter)
+      filter.connect(gain)
+      gain.connect(ctx.destination)
+      noise.start()
+    } else if (type === 'bubble') {
+      // Procedural bubble popping sound effects for gas reactions
+      let time = ctx.currentTime
+      const interval = 0.08
+      for (let i = 0; i < 28; i++) {
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.type = 'sine'
+        osc.frequency.setValueAtTime(500 + Math.random() * 800, time)
+        osc.frequency.exponentialRampToValueAtTime(80, time + 0.09)
+        gain.gain.setValueAtTime(0.06, time)
+        gain.gain.exponentialRampToValueAtTime(0.005, time + 0.09)
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.start(time)
+        osc.stop(time + 0.1)
+        time += interval + Math.random() * 0.06
+      }
+    } else if (type === 'explosion') {
+      // Low rumble explosion sound for combustion/explosive reactions
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sawtooth'
+      osc.frequency.setValueAtTime(140, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + 0.9)
+      gain.gain.setValueAtTime(0.25, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.9)
+    } else if (type === 'success') {
+      // Pentatonic success chime on result generation
+      const now = ctx.currentTime
+      const freqs = [523.25, 659.25, 783.99, 1046.50]
+      freqs.forEach((freq, idx) => {
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.type = 'triangle'
+        osc.frequency.setValueAtTime(freq, now + idx * 0.07)
+        gain.gain.setValueAtTime(0.08, now + idx * 0.07)
+        gain.gain.exponentialRampToValueAtTime(0.005, now + idx * 0.07 + 0.35)
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.start(now + idx * 0.07)
+        osc.stop(now + idx * 0.07 + 0.45)
+      })
+    }
+  } catch (err) {
+    console.warn("AudioContext failed to load or play:", err)
+  }
+}
+
 export default function MixingSimulatorPage() {
   const { chemicals, fetchChemicals } = useChemicalStore()
   const [chemA, setChemA] = useState(null)
@@ -615,6 +699,119 @@ export default function MixingSimulatorPage() {
 
   const swap = () => { setChemA(chemB); setChemB(chemA); setResult(null) }
 
+  // Quick Experiment Templates
+  const runTemplate = (formulaA, formulaB) => {
+    const a = chemicals.find(c => c.formula.toUpperCase() === formulaA.toUpperCase())
+    const b = chemicals.find(c => c.formula.toUpperCase() === formulaB.toUpperCase())
+    if (a && b) {
+      setChemA(a)
+      setChemB(b)
+      setResult(null)
+      toast.success(`Selected: ${a.name} + ${b.name}`)
+    } else {
+      toast.error(`Chemicals not found in local inventory. Please add them in the Chemicals tab first.`)
+    }
+  }
+
+  // PDF Report Exporter
+  const exportReportPDF = () => {
+    if (!chemA || !chemB || !result) return
+    const printWindow = window.open('', '_blank')
+    const dateStr = new Date().toLocaleString()
+
+    const content = `
+      <html>
+        <head>
+          <title>ChemVision Lab - Experiment Report</title>
+          <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #1E293B; line-height: 1.6; }
+            .header { border-bottom: 3px solid #3B82F6; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+            .title { font-size: 26px; font-weight: bold; color: #1E3A8A; }
+            .subtitle { font-size: 13px; color: #64748B; margin-top: 4px; }
+            .meta-info { font-size: 11px; color: #64748B; }
+            .chem-box { display: flex; gap: 15px; margin-bottom: 20px; }
+            .chem-card { flex: 1; padding: 12px; border: 1px solid #E2E8F0; border-radius: 8px; background: #F8FAFC; }
+            .chem-card strong { color: #1E3A8A; display: block; font-size: 15px; }
+            .section { margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid #E2E8F0; background: #FFF; }
+            .section-title { font-size: 13px; font-weight: bold; text-transform: uppercase; color: #3B82F6; margin-bottom: 8px; border-bottom: 1px solid #F1F5F9; padding-bottom: 4px; }
+            .badge { display: inline-block; padding: 5px 10px; border-radius: 6px; font-weight: bold; font-size: 11px; text-transform: uppercase; }
+            .danger { background-color: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+            .safe { background-color: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+            .description { font-weight: 500; font-size: 13px; margin-top: 10px; }
+            .val-text { font-size: 12.5px; color: #334155; }
+            .footer-note { text-align: center; margin-top: 45px; font-size: 10px; color: #94A3B8; border-top: 1px dashed #E2E8F0; padding-top: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="title">🧪 ChemVision Lab Reports</div>
+              <div class="subtitle">Official Compatibility & Laboratory Safety Datasheet (SDS)</div>
+            </div>
+            <div class="meta-info">Report ID: CV-${Math.floor(100000 + Math.random() * 900000)}<br>Date: ${dateStr}</div>
+          </div>
+
+          <div class="chem-box">
+            <div class="chem-card">
+              <strong>Chemical A (المادة أ)</strong>
+              Name: ${chemA.name}<br>Formula: ${chemA.formula}<br>Hazard Level: ${chemA.hazard_level.toUpperCase()}
+            </div>
+            <div class="chem-card">
+              <strong>Chemical B (المادة ب)</strong>
+              Name: ${chemB.name}<br>Formula: ${chemB.formula}<br>Hazard Level: ${chemB.hazard_level.toUpperCase()}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Reaction Summary & Safety Rating</div>
+            <div class="val-text">
+              <span class="badge ${result.is_safe ? 'safe' : 'danger'}">
+                ${result.is_safe ? 'SAFE MIXTURE' : 'RESTRICTED / DANGEROUS'} (Severity: ${result.severity_score}/10)
+              </span>
+              <p class="description">${result.result_description}</p>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Physical & Thermal Properties (الخصائص الفيزيائية والحرارية للمزيج)</div>
+            <div class="val-text">${result.physical_properties}</div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Chemical Properties & Stability (الخواص الكيميائية والاستقرار)</div>
+            <div class="val-text">${result.chemical_properties}</div>
+          </div>
+
+          <div class="section" style="border-left: 4px solid #D97706; background: #FFFDF5;">
+            <div class="section-title" style="color: #D97706;">Precise Lab Safety & Hazard Controls (آلية الأمان والسلامة المخبرية)</div>
+            <div class="val-text" style="font-weight: 500; color: #92400E;">${result.safety_measures}</div>
+          </div>
+
+          ${result.product_name ? `
+          <div class="section" style="background: #FAF5FF; border-color: #E9D5FF;">
+            <div class="section-title" style="color: #8B5CF6;">Resulting Product / المركب الكيميائي المتشكل</div>
+            <div class="val-text"><strong>Product:</strong> ${result.product_name} (${result.product_formula})</div>
+          </div>
+          ` : ''}
+
+          <div class="footer-note">
+            ChemVision Academic Simulator. All values generated represent simulation scenarios. Verify all safety protocols before conducting wet-lab assays.
+          </div>
+
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() { window.close(); }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `
+
+    printWindow.document.write(content)
+    printWindow.document.close()
+  }
+
   const simulate = async () => {
     if (!chemA || !chemB) { toast.error('Please select both chemicals'); return }
     if (chemA.id === chemB.id) { toast.error('Cannot mix a chemical with itself'); return }
@@ -622,6 +819,7 @@ export default function MixingSimulatorPage() {
     setLoading(true)
     setResult(null)
     setAnimPhase('pouring')
+    playLabSound('pour') // Play laboratory liquid pouring sound effect
     
     // Instantly predict locally to get reaction type for animating appropriate effects
     const localResult = predictReactionLocally(chemA, chemB)
@@ -631,9 +829,17 @@ export default function MixingSimulatorPage() {
     setTimeout(() => {
       setAnimPhase('reacting')
       
+      // Trigger appropriate reaction sounds
+      if (localResult.reaction_type === 'produces_gas' || localResult.reaction_type === 'toxic' || localResult.reaction_type === 'hazardous') {
+        playLabSound('bubble')
+      } else if (localResult.reaction_type === 'explosive') {
+        playLabSound('explosion')
+      }
+      
       // Phase 2: Reaction mixing & kinetics animation (lasts 2.3 seconds)
       setTimeout(async () => {
         setAnimPhase('finished')
+        playLabSound('success') // Chime when result is complete
 
         try {
           // 1. Check local static database rules first
@@ -809,6 +1015,36 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
             >
               <Beaker size={18} /> Simulate Reaction
             </motion.button>
+
+            {/* Quick Experiments Banner */}
+            {chemicals && chemicals.length > 0 && (
+              <div className="mt-6 pt-5 border-t" style={{ borderColor: '#E2E8F0' }}>
+                <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#94A3B8' }}>Famous Experiments / تجارب شهيرة</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button
+                    onClick={() => runTemplate('NaOH', 'H2SO4')}
+                    className="p-2.5 rounded-xl border text-xs font-semibold text-left transition hover:bg-slate-50"
+                    style={{ borderColor: '#E2E8F0', color: '#334155' }}
+                  >
+                    🧪 Neutralization (NaOH + H2SO4)
+                  </button>
+                  <button
+                    onClick={() => runTemplate('CaCO3', 'HCl')}
+                    className="p-2.5 rounded-xl border text-xs font-semibold text-left transition hover:bg-slate-50"
+                    style={{ borderColor: '#E2E8F0', color: '#334155' }}
+                  >
+                    💨 Gas Volcano (CaCO3 + HCl)
+                  </button>
+                  <button
+                    onClick={() => runTemplate('C3H6O', 'C6H6')}
+                    className="p-2.5 rounded-xl border text-xs font-semibold text-left transition hover:bg-slate-50"
+                    style={{ borderColor: '#E2E8F0', color: '#334155' }}
+                  >
+                    🟢 Organic Blend (Acetone + Benzene)
+                  </button>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 
@@ -822,7 +1058,7 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
             {(animPhase === 'pouring' || animPhase === 'reacting') && (
               <div className="card p-5 flex flex-col items-center justify-center text-center space-y-3" style={{ background: '#0F172A', borderColor: '#1E293B' }}>
                 <motion.div 
-                  className="w-10 h-10 rounded-full border-t-2 border-r-2 border-emerald-500 flex items-center justify-center"
+                  className="w-10 h-10 rounded-full border-t-2 border-r-2 border-emerald-500 flex items-center justify-center text-lg"
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
                 >
@@ -931,6 +1167,29 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                       <p className="text-sm font-bold mt-0.5" style={{ color: '#6326CA' }}>{result.product_name} {result.product_formula && `(${result.product_formula})`}</p>
                     </motion.div>
                   )}
+
+                  {/* PDF Exporter & Big Mix Again button at the very bottom */}
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t" style={{ borderColor: '#E2E8F0' }}>
+                    <button
+                      onClick={exportReportPDF}
+                      className="flex-1 py-3 px-4 rounded-xl font-bold text-sm text-slate-700 bg-slate-100 hover:bg-slate-200 transition flex items-center justify-center gap-2 border"
+                      style={{ borderColor: '#CBD5E1' }}
+                    >
+                      📄 Export Laboratory Report (PDF)
+                    </button>
+                    <button
+                      onClick={() => {
+                        setChemA(null)
+                        setChemB(null)
+                        setResult(null)
+                        setAnimPhase('idle')
+                      }}
+                      className="flex-1 py-3 px-4 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-lg"
+                      style={{ background: '#3B82F6' }}
+                    >
+                      🔄 Mix New Chemicals / خلطة جديدة
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -940,3 +1199,4 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
     </motion.div>
   )
 }
+
