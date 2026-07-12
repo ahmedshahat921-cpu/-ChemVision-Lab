@@ -648,11 +648,12 @@ export default function ChemicalDetailPage() {
   const detailedData = getChemicalData(chemical.name)
 
   return (
-    <div className={`p-4 lg:p-6 max-w-5xl mx-auto ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
+    <div className={`p-4 lg:p-6 max-w-6xl mx-auto ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
+
       {/* Back */}
       <motion.button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 mb-6 text-sm font-medium group"
+        className="flex items-center gap-2 mb-5 text-sm font-medium group"
         style={{ color: '#64748B' }}
         whileHover={lang === 'ar' ? { x: 3 } : { x: -3 }}
       >
@@ -660,26 +661,28 @@ export default function ChemicalDetailPage() {
         {lang === 'ar' ? 'العودة إلى المواد الكيميائية' : 'Back to chemicals'}
       </motion.button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* LEFT: 3D Viewer + NFPA Diamond + QR */}
+      {/* ══════════════════════════════════════════════
+          ZONE 1: Top — Viewer LEFT  +  Header RIGHT
+         ══════════════════════════════════════════════ */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 mb-5">
+
+        {/* LEFT column */}
         <div className="lg:col-span-2 space-y-4">
           <motion.div className="card overflow-hidden" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <MoleculeViewer formula={chemical.formula} name={chemical.name} hazardLevel={chemical.hazard_level} />
           </motion.div>
 
-          {/* NFPA Hazard Diamond */}
           {detailedData?.nfpa && (
-            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
               <NfpaDiamond ratings={detailedData.nfpa} lang={lang} />
             </motion.div>
           )}
 
-          {/* QR Code Section (Only for Admins) */}
           {isAdmin && (
-            <motion.div className="card p-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+            <motion.div className="card p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-sm" style={{ color: '#2C3E50' }}>
-                  {lang === 'ar' ? 'رمز الاستجابة السريعة (QR)' : 'QR Code'}
+                  {lang === 'ar' ? 'رمز QR' : 'QR Code'}
                 </h3>
                 <motion.button
                   onClick={() => setShowQR(!showQR)}
@@ -687,24 +690,19 @@ export default function ChemicalDetailPage() {
                   style={{ background: '#EDE9FE', color: '#7C3AED' }}
                   whileHover={{ scale: 1.05 }}
                 >
-                  {showQR ? (lang === 'ar' ? 'إخفاء' : 'Hide') : (lang === 'ar' ? 'عرض الرمز' : 'Show QR')}
+                  {showQR ? (lang === 'ar' ? 'إخفاء' : 'Hide') : (lang === 'ar' ? 'عرض' : 'Show')}
                 </motion.button>
               </div>
               <AnimatePresence>
                 {showQR && (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ type: 'spring', stiffness: 200 }}
+                    initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }} transition={{ type: 'spring', stiffness: 200 }}
                     className="flex flex-col items-center gap-3"
                   >
                     <div className="p-3 rounded-xl" style={{ background: 'white', border: '2px solid #EDE9FE' }}>
-                      <QRCode value={qrUrl} size={140} fgColor="#0F2D52" bgColor="#FFFFFF" level="H" />
+                      <QRCode value={qrUrl} size={130} fgColor="#0F2D52" bgColor="#FFFFFF" level="H" />
                     </div>
-                    <p className="text-xs text-center font-medium" style={{ color: '#94A3B8' }}>
-                      {lang === 'ar' ? 'افحص لعرض تفاصيل المادة' : 'Scan to view details'}
-                    </p>
                     <button
                       className="btn-secondary w-full justify-center py-2 text-xs"
                       onClick={() => {
@@ -717,74 +715,67 @@ export default function ChemicalDetailPage() {
                         }
                       }}
                     >
-                      <Download size={13} /> {lang === 'ar' ? 'تحميل رمز QR' : 'Download QR'}
+                      <Download size={13} /> {lang === 'ar' ? 'تحميل QR' : 'Download QR'}
                     </button>
                   </motion.div>
                 )}
               </AnimatePresence>
               {!showQR && (
                 <p className="text-xs" style={{ color: '#94A3B8' }}>
-                  {lang === 'ar' 
-                    ? 'اضغط على "عرض الرمز" لتوليد رمز الاستجابة السريعة (QR) الخاص بهذه المادة الكيميائية.' 
-                    : 'Click "Show QR" to generate the QR code for this chemical.'
-                  }
+                  {lang === 'ar' ? 'اضغط "عرض" لتوليد رمز QR لهذه المادة.' : 'Click "Show" to generate the QR code.'}
                 </p>
               )}
             </motion.div>
           )}
 
-          {/* External PubChem Link */}
           {chemical.pubchem_cid && (
             <motion.a
               href={`https://pubchem.ncbi.nlm.nih.gov/compound/${chemical.pubchem_cid}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-between p-4 rounded-xl border transition-all text-xs font-semibold"
+              target="_blank" rel="noopener noreferrer"
+              className="flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition-all"
               style={{ background: '#F8FAFC', borderColor: '#E2E8F0', color: '#1E293B' }}
               whileHover={{ scale: 1.02, borderColor: '#3B82F6', background: '#EFF6FF' }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
             >
               <div className="flex items-center gap-2">
-                <Info size={15} style={{ color: '#3B82F6' }} />
-                <span>{lang === 'ar' ? 'عرض المركب على PubChem' : 'Explore on PubChem'}</span>
+                <Info size={14} style={{ color: '#3B82F6' }} />
+                <span>{lang === 'ar' ? 'استعراض على PubChem' : 'Explore on PubChem'}</span>
               </div>
-              <ExternalLink size={14} style={{ color: '#64748B' }} />
+              <ExternalLink size={13} style={{ color: '#94A3B8' }} />
             </motion.a>
           )}
         </div>
 
-        {/* RIGHT: Details */}
+        {/* RIGHT column */}
         <div className="lg:col-span-3 space-y-4">
-          {/* Header Card */}
           <motion.div className="card p-5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="flex items-start justify-between gap-4 mb-4">
               <div>
                 <h1 className="font-heading font-bold text-2xl" style={{ color: '#2C3E50' }}>{translatedName}</h1>
-                <p className="text-lg font-mono mt-1" style={{ color: '#4A90E2' }}>{chemical.formula}</p>
-                {chemical.cas_number && <p className="text-xs mt-1" style={{ color: '#94A3B8' }}>CAS: {chemical.cas_number}</p>}
+                <p className="text-base font-mono mt-0.5" style={{ color: '#4A90E2' }}>{chemical.formula}</p>
+                {chemical.cas_number && <p className="text-xs mt-0.5" style={{ color: '#94A3B8' }}>CAS: {chemical.cas_number}</p>}
               </div>
-              <span className="badge text-sm flex-shrink-0" style={{ background: h.bg, color: h.color, padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>
+              <span className="badge flex-shrink-0" style={{ background: h.bg, color: h.color, padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}>
                 ⚠️ {getHazardLabel(chemical.hazard_level, lang)}
               </span>
             </div>
 
-            {/* GHS icons */}
             {chemical.ghs_codes?.length > 0 && (
               <div className="mb-4">
-                <p className="text-xs font-medium mb-2" style={{ color: '#64748B' }}>
-                  {lang === 'ar' ? 'رموز ووسوم خطورة GHS الكيميائية' : 'GHS Hazard Pictograms'}
+                <p className="text-xs font-semibold mb-2" style={{ color: '#64748B' }}>
+                  {lang === 'ar' ? 'رموز خطورة GHS' : 'GHS Hazard Pictograms'}
                 </p>
-                <div className="flex gap-3 flex-wrap">
+                <div className="flex gap-2 flex-wrap">
                   {chemical.ghs_codes.map((code, i) => (
                     <motion.div
                       key={code}
-                      initial={{ opacity: 0, scale: 0, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      transition={{ delay: i * 0.1, type: 'spring' }}
+                      initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.08, type: 'spring' }}
                       className="flex flex-col items-center gap-1 p-2 rounded-xl"
-                      style={{ background: h.bg, minWidth: '56px' }}
+                      style={{ background: h.bg, minWidth: '52px' }}
                     >
-                      <span className="text-2xl">{GHSInfo[code]?.icon || '⚗️'}</span>
-                      <span className="text-[10px] text-center font-bold" style={{ color: h.color, fontSize: '0.65rem' }}>
+                      <span className="text-xl">{GHSInfo[code]?.icon || '⚗️'}</span>
+                      <span className="text-center font-bold" style={{ color: h.color, fontSize: '0.6rem' }}>
                         {getGHSName(code, lang)}
                       </span>
                     </motion.div>
@@ -793,47 +784,30 @@ export default function ChemicalDetailPage() {
               </div>
             )}
 
-            {/* Properties grid */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {[
-                { 
-                  label: lang === 'ar' ? 'الوزن الجزيئي' : 'Molecular Weight', 
-                  value: chemical.molecular_weight ? `${chemical.molecular_weight} g/mol` : (lang === 'ar' ? 'غير متوفر' : 'N/A'), 
-                  icon: FlaskConical 
-                },
-                { 
-                  label: lang === 'ar' ? 'الكمية المتوفرة' : 'Quantity', 
-                  value: `${chemical.quantity} ${chemical.quantity_unit}`, 
-                  icon: Package 
-                },
-                { 
-                  label: lang === 'ar' ? 'موقع التخزين' : 'Location', 
-                  value: translatedLocation, 
-                  icon: MapPin 
-                },
-                { 
-                  label: lang === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date', 
-                  value: chemical.expiry_date ? new Date(chemical.expiry_date).toLocaleDateString() : (lang === 'ar' ? 'غير محدد' : 'N/A'), 
-                  icon: Calendar 
-                },
+                { label: lang === 'ar' ? 'الوزن الجزيئي' : 'Molecular Weight', value: chemical.molecular_weight ? `${chemical.molecular_weight} g/mol` : (lang === 'ar' ? 'غير متوفر' : 'N/A'), icon: FlaskConical },
+                { label: lang === 'ar' ? 'الكمية المتوفرة' : 'Quantity', value: `${chemical.quantity} ${chemical.quantity_unit}`, icon: Package },
+                { label: lang === 'ar' ? 'موقع التخزين' : 'Location', value: translatedLocation, icon: MapPin },
+                { label: lang === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date', value: chemical.expiry_date ? new Date(chemical.expiry_date).toLocaleDateString() : (lang === 'ar' ? 'غير محدد' : 'N/A'), icon: Calendar },
               ].map(({ label, value, icon: Icon }) => (
-                <div key={label} className="flex items-start gap-2 p-3 rounded-xl text-left" style={{ background: '#F8F9FA' }}>
-                  <Icon size={15} style={{ color: '#4A90E2', marginTop: '2px', flexShrink: 0 }} />
+                <div key={label} className="flex items-start gap-2 p-2.5 rounded-xl" style={{ background: '#F8F9FA' }}>
+                  <Icon size={14} style={{ color: '#4A90E2', marginTop: '2px', flexShrink: 0 }} />
                   <div className="min-w-0">
-                    <p className="text-xs truncate" style={{ color: '#94A3B8' }}>{label}</p>
-                    <p className="text-sm font-semibold mt-0.5 truncate" style={{ color: '#2C3E50' }}>{value}</p>
+                    <p className="text-xs" style={{ color: '#94A3B8' }}>{label}</p>
+                    <p className="text-sm font-semibold mt-0.5 break-words" style={{ color: '#2C3E50' }}>{value}</p>
                   </div>
                 </div>
               ))}
             </div>
           </motion.div>
 
-          {/* Accordion – Safety Info */}
-          <motion.div className="card overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+          <motion.div className="card overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
             {accordionItems.map(({ key, title, content }, i) => (
               <div key={key} style={{ borderBottom: i < accordionItems.length - 1 ? '1px solid #F0F2F5' : 'none' }}>
                 <motion.button
-                  className="w-full flex items-center justify-between p-4 text-left font-semibold text-sm"
+                  className="w-full flex items-center justify-between p-4 font-semibold text-sm"
+                  style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}
                   onClick={() => setOpenAccordion(openAccordion === key ? null : key)}
                   whileHover={{ background: '#F8F9FA' }}
                 >
@@ -843,166 +817,173 @@ export default function ChemicalDetailPage() {
                 <AnimatePresence>
                   {openAccordion === key && (
                     <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
+                      initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}
                       className="overflow-hidden"
                     >
-                      <p className="px-4 pb-4 text-sm leading-relaxed text-left" style={{ color: '#64748B' }}>{content}</p>
+                      <p className="px-4 pb-4 text-sm leading-relaxed" style={{ color: '#64748B', textAlign: lang === 'ar' ? 'right' : 'left' }}>{content}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
             ))}
           </motion.div>
-
-          {/* NEW: Physical & Chemical Properties Card */}
-          {detailedData && (
-            <motion.div className="card p-5 space-y-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
-              <div className="flex items-center gap-2 border-b pb-2 mb-1" style={{ borderColor: '#F0F2F5' }}>
-                <FlaskConical size={18} style={{ color: '#4A90E2' }} />
-                <h3 className="font-heading font-bold text-sm" style={{ color: '#2C3E50' }}>
-                  {lang === 'ar' ? 'الخصائص الفيزيائية والكيميائية المتقدمة' : 'Physical & Chemical Properties'}
-                </h3>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                {[
-                  { label: lang === 'ar' ? 'درجة الغليان' : 'Boiling Point', value: detailedData.physical.boilingPoint[lang] || detailedData.physical.boilingPoint.en },
-                  { label: lang === 'ar' ? 'درجة الانصهار' : 'Melting Point', value: detailedData.physical.meltingPoint[lang] || detailedData.physical.meltingPoint.en },
-                  { label: lang === 'ar' ? 'الكثافة' : 'Density', value: detailedData.physical.density[lang] || detailedData.physical.density.en },
-                  { label: lang === 'ar' ? 'الذوبانية' : 'Solubility', value: detailedData.physical.solubility[lang] || detailedData.physical.solubility.en },
-                  { label: lang === 'ar' ? 'المظهر' : 'Appearance', value: detailedData.physical.appearance[lang] || detailedData.physical.appearance.en },
-                  { label: lang === 'ar' ? 'الرائحة' : 'Odor', value: detailedData.physical.odor[lang] || detailedData.physical.odor.en },
-                  { label: lang === 'ar' ? 'نقطة الوميض' : 'Flash Point', value: detailedData.physical.flashPoint[lang] || detailedData.physical.flashPoint.en },
-                  { label: lang === 'ar' ? 'الضغوط البخارية' : 'Vapor Pressure', value: detailedData.physical.vaporPressure[lang] || detailedData.physical.vaporPressure.en },
-                  { label: lang === 'ar' ? 'الأس الهيدروجيني pH' : 'pH Level', value: detailedData.physical.ph[lang] || detailedData.physical.ph.en },
-                  { label: lang === 'ar' ? 'التصنيف الكيميائي' : 'Chemical Class', value: detailedData.chemical.class[lang] || detailedData.chemical.class.en },
-                ].map(({ label, value }) => (
-                  <div key={label} className="flex justify-between py-1.5 border-b" style={{ borderColor: '#F8F9FA' }}>
-                    <span className="font-semibold text-neutral-500">{label}</span>
-                    <span className="font-medium text-neutral-800 text-right">{value}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* NEW: Required PPE & Safety Limits */}
-          {detailedData && (
-            <motion.div className="card p-5 space-y-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-              <div className="flex items-center gap-2 border-b pb-2 mb-1" style={{ borderColor: '#F0F2F5' }}>
-                <Shield size={18} style={{ color: '#E85D5D' }} />
-                <h3 className="font-heading font-bold text-sm" style={{ color: '#2C3E50' }}>
-                  {lang === 'ar' ? 'بيانات السلامة ومعدات الحماية (PPE)' : 'Safety Equipment & PPE'}
-                </h3>
-              </div>
-
-              {/* PPE Items list */}
-              <div className="flex gap-2 flex-wrap mb-2">
-                {(detailedData.safety.ppe[lang] || detailedData.safety.ppe.en).map((item, i) => (
-                  <span 
-                    key={i} 
-                    className="text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border"
-                    style={{ background: '#FEF2F2', color: '#991B1B', borderColor: '#FCA5A5' }}
-                  >
-                    🛡️ {item}
-                  </span>
-                ))}
-              </div>
-
-              {/* Limits table */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 text-xs">
-                <div className="p-3 rounded-xl" style={{ background: '#F8FAFC' }}>
-                  <p className="font-bold mb-1" style={{ color: '#64748B' }}>
-                    {lang === 'ar' ? 'حدود التعرض الآمنة:' : 'Exposure Limits:'}
-                  </p>
-                  <p className="font-semibold" style={{ color: '#2C3E50' }}>
-                    {detailedData.safety.exposureLimits[lang] || detailedData.safety.exposureLimits.en}
-                  </p>
-                </div>
-                <div className="p-3 rounded-xl" style={{ background: '#F8FAFC' }}>
-                  <p className="font-bold mb-1" style={{ color: '#64748B' }}>
-                    {lang === 'ar' ? 'السمية الحادة (LD₅₀):' : 'Acute Toxicity (LD₅₀):'}
-                  </p>
-                  <p className="font-semibold" style={{ color: '#2C3E50' }}>
-                    {detailedData.safety.ldValue[lang] || detailedData.safety.ldValue.en}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* NEW: Common Uses Card */}
-          {detailedData && (
-            <motion.div className="card p-5 space-y-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }}>
-              <div className="flex items-center gap-2 border-b pb-2 mb-2" style={{ borderColor: '#F0F2F5' }}>
-                <Activity size={18} style={{ color: '#5DB9A0' }} />
-                <h3 className="font-heading font-bold text-sm" style={{ color: '#2C3E50' }}>
-                  {lang === 'ar' ? 'الاستخدامات الشائعة والتطبيقات المعملية' : 'Common Uses & Applications'}
-                </h3>
-              </div>
-              <ul className="space-y-1.5 text-xs text-neutral-600 list-none pl-0">
-                {(detailedData.uses[lang] || detailedData.uses.en).map((use, i) => (
-                  <li key={i} className="flex items-start gap-2 py-0.5">
-                    <span className="text-emerald-500 select-none mt-0.5">•</span>
-                    <span className="font-medium leading-relaxed">{use}</span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          )}
-
-          {/* NEW: Usage History timeline */}
-          <motion.div className="card p-5 space-y-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-            <div className="flex items-center gap-2 border-b pb-2 mb-2" style={{ borderColor: '#F0F2F5' }}>
-              <FileText size={18} style={{ color: '#7C3AED' }} />
-              <h3 className="font-heading font-bold text-sm" style={{ color: '#2C3E50' }}>
-                {lang === 'ar' ? 'سجل الاستهلاك والعمليات الأخيرة' : 'Usage & History Log'}
-              </h3>
-            </div>
-            
-            {usageHistory.length === 0 ? (
-              <p className="text-xs text-center py-4 font-semibold" style={{ color: '#94A3B8' }}>
-                {lang === 'ar' ? 'لا توجد أي عمليات استهلاك مسجلة لهذه المادة.' : 'No logged usage records for this chemical.'}
-              </p>
-            ) : (
-              <div className="space-y-3 text-left">
-                {usageHistory.map((log) => (
-                  <div key={log.id} className="p-3 rounded-xl border border-neutral-100 bg-[#FAFBFD] flex justify-between items-center text-xs">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-bold text-neutral-700">{log.profiles?.name || (lang === 'ar' ? 'مستخدم' : 'User')}</span>
-                        <span className="text-[10px] text-neutral-400 font-semibold">{new Date(log.timestamp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</span>
-                      </div>
-                      <p className="text-neutral-500 font-semibold">
-                        {lang === 'ar' ? 'السبب:' : 'Purpose:'} {log.purpose || (lang === 'ar' ? 'غير محدد' : 'Not specified')}
-                      </p>
-                    </div>
-                    <span className="font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
-                      -{log.amount_used} {log.unit}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </motion.div>
-
-          {/* Report Usage Button */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}>
-            <motion.button
-              className="btn-primary w-full justify-center py-3.5 ripple shadow-lg"
-              style={{ fontSize: '1rem' }}
-              onClick={() => setShowReportModal(true)}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Package size={18} /> {lang === 'ar' ? 'تسجيل استهلاك المادة' : 'Report Usage'}
-            </motion.button>
-          </motion.div>
         </div>
       </div>
+
+      {/* ══════════════════════════════════════════════
+          ZONE 2: Middle — 3 equal info cards
+         ══════════════════════════════════════════════ */}
+      {detailedData && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
+
+          {/* Physical & Chemical Properties */}
+          <motion.div className="card p-4" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: '#F0F2F5' }}>
+              <FlaskConical size={16} style={{ color: '#4A90E2' }} />
+              <h3 className="font-bold text-sm" style={{ color: '#2C3E50' }}>
+                {lang === 'ar' ? 'الخصائص الفيزيائية والكيميائية' : 'Physical & Chemical Props'}
+              </h3>
+            </div>
+            <div className="space-y-2 text-xs">
+              {[
+                { label: lang === 'ar' ? 'درجة الغليان' : 'Boiling Point', value: detailedData.physical.boilingPoint[lang] || detailedData.physical.boilingPoint.en },
+                { label: lang === 'ar' ? 'درجة الانصهار' : 'Melting Point', value: detailedData.physical.meltingPoint[lang] || detailedData.physical.meltingPoint.en },
+                { label: lang === 'ar' ? 'الكثافة' : 'Density', value: detailedData.physical.density[lang] || detailedData.physical.density.en },
+                { label: lang === 'ar' ? 'الذوبانية' : 'Solubility', value: detailedData.physical.solubility[lang] || detailedData.physical.solubility.en },
+                { label: lang === 'ar' ? 'المظهر' : 'Appearance', value: detailedData.physical.appearance[lang] || detailedData.physical.appearance.en },
+                { label: lang === 'ar' ? 'الرائحة' : 'Odor', value: detailedData.physical.odor[lang] || detailedData.physical.odor.en },
+                { label: lang === 'ar' ? 'نقطة الوميض' : 'Flash Point', value: detailedData.physical.flashPoint[lang] || detailedData.physical.flashPoint.en },
+                { label: lang === 'ar' ? 'الضغط البخاري' : 'Vapor Pressure', value: detailedData.physical.vaporPressure[lang] || detailedData.physical.vaporPressure.en },
+                { label: lang === 'ar' ? 'الأس الهيدروجيني pH' : 'pH Level', value: detailedData.physical.ph[lang] || detailedData.physical.ph.en },
+                { label: lang === 'ar' ? 'التصنيف الكيميائي' : 'Chemical Class', value: detailedData.chemical.class[lang] || detailedData.chemical.class.en },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex flex-col py-1.5 border-b last:border-0" style={{ borderColor: '#F8F9FA' }}>
+                  <span className="font-semibold" style={{ color: '#94A3B8', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
+                  <span className="font-medium mt-0.5 leading-snug" style={{ color: '#2C3E50' }}>{value}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Safety & PPE */}
+          <motion.div className="card p-4" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: '#F0F2F5' }}>
+              <Shield size={16} style={{ color: '#E85D5D' }} />
+              <h3 className="font-bold text-sm" style={{ color: '#2C3E50' }}>
+                {lang === 'ar' ? 'السلامة ومعدات الحماية' : 'Safety & PPE'}
+              </h3>
+            </div>
+            <div className="flex gap-1.5 flex-wrap mb-3">
+              {(detailedData.safety.ppe[lang] || detailedData.safety.ppe.en).map((item, i) => (
+                <span key={i} className="text-[10px] font-bold px-2 py-0.5 rounded-full border"
+                  style={{ background: '#FEF2F2', color: '#991B1B', borderColor: '#FCA5A5' }}>
+                  🛡️ {item}
+                </span>
+              ))}
+            </div>
+            <div className="space-y-2 text-xs">
+              <div className="p-2.5 rounded-lg" style={{ background: '#FFF7ED' }}>
+                <p className="font-bold mb-0.5" style={{ color: '#92400E', fontSize: '0.62rem', textTransform: 'uppercase' }}>
+                  {lang === 'ar' ? 'حدود التعرض الآمنة' : 'Exposure Limits'}
+                </p>
+                <p className="font-semibold leading-snug" style={{ color: '#78350F' }}>
+                  {detailedData.safety.exposureLimits[lang] || detailedData.safety.exposureLimits.en}
+                </p>
+              </div>
+              <div className="p-2.5 rounded-lg" style={{ background: '#FFF1F2' }}>
+                <p className="font-bold mb-0.5" style={{ color: '#9F1239', fontSize: '0.62rem', textTransform: 'uppercase' }}>
+                  {lang === 'ar' ? 'السمية الحادة (LD₅₀)' : 'Acute Toxicity (LD₅₀)'}
+                </p>
+                <p className="font-semibold leading-snug" style={{ color: '#881337' }}>
+                  {detailedData.safety.ldValue[lang] || detailedData.safety.ldValue.en}
+                </p>
+              </div>
+              <div className="p-2.5 rounded-lg" style={{ background: '#F0FFF4' }}>
+                <p className="font-bold mb-0.5" style={{ color: '#166534', fontSize: '0.62rem', textTransform: 'uppercase' }}>
+                  {lang === 'ar' ? 'إطفاء الحريق' : 'Fire Extinguishing'}
+                </p>
+                <p className="font-semibold leading-snug" style={{ color: '#15803D' }}>
+                  {detailedData.safety.fireExtinguishing[lang] || detailedData.safety.fireExtinguishing.en}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Common Uses */}
+          <motion.div className="card p-4" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: '#F0F2F5' }}>
+              <Activity size={16} style={{ color: '#5DB9A0' }} />
+              <h3 className="font-bold text-sm" style={{ color: '#2C3E50' }}>
+                {lang === 'ar' ? 'الاستخدامات والتطبيقات' : 'Uses & Applications'}
+              </h3>
+            </div>
+            <ul className="space-y-2">
+              {(detailedData.uses[lang] || detailedData.uses.en).map((use, i) => (
+                <li key={i} className="flex items-start gap-2 text-xs">
+                  <span className="text-emerald-500 font-bold mt-0.5 select-none flex-shrink-0">•</span>
+                  <span className="font-medium leading-snug" style={{ color: '#374151' }}>{use}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════
+          ZONE 3: Full-width — History + Report Button
+         ══════════════════════════════════════════════ */}
+      <motion.div className="card p-5 mb-4" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
+        <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: '#F0F2F5' }}>
+          <FileText size={16} style={{ color: '#7C3AED' }} />
+          <h3 className="font-bold text-sm" style={{ color: '#2C3E50' }}>
+            {lang === 'ar' ? 'سجل الاستهلاك والعمليات الأخيرة' : 'Usage & History Log'}
+          </h3>
+          {usageHistory.length > 0 && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: '#EDE9FE', color: '#7C3AED', marginInlineStart: 'auto' }}>
+              {usageHistory.length}
+            </span>
+          )}
+        </div>
+
+        {usageHistory.length === 0 ? (
+          <p className="text-xs text-center py-6 font-semibold" style={{ color: '#94A3B8' }}>
+            {lang === 'ar' ? 'لا توجد أي عمليات استهلاك مسجلة لهذه المادة.' : 'No logged usage records for this chemical.'}
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {usageHistory.map((log) => (
+              <div key={log.id} className="p-3 rounded-xl border" style={{ background: '#FAFBFD', borderColor: '#F0F2F5' }}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-bold text-xs" style={{ color: '#374151' }}>
+                    {log.profiles?.name || (lang === 'ar' ? 'مستخدم' : 'User')}
+                  </span>
+                  <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg text-xs">
+                    -{log.amount_used} {log.unit}
+                  </span>
+                </div>
+                <p className="text-xs font-medium mb-1" style={{ color: '#64748B' }}>
+                  {log.purpose || (lang === 'ar' ? 'غير محدد' : 'Not specified')}
+                </p>
+                <p className="font-semibold" style={{ color: '#94A3B8', fontSize: '0.65rem' }}>
+                  {new Date(log.timestamp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </motion.div>
+
+      <motion.button
+        className="btn-primary w-full justify-center py-3.5 ripple shadow-md mb-2"
+        style={{ fontSize: '1rem' }}
+        onClick={() => setShowReportModal(true)}
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.98 }}
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+      >
+        <Package size={18} /> {lang === 'ar' ? 'تسجيل استهلاك المادة' : 'Report Usage'}
+      </motion.button>
 
       <AnimatePresence>
         {showReportModal && (
@@ -1019,3 +1000,4 @@ export default function ChemicalDetailPage() {
     </div>
   )
 }
+
