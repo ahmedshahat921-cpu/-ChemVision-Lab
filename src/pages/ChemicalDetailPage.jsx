@@ -575,6 +575,7 @@ export default function ChemicalDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { chemicals, fetchChemicals } = useChemicalStore()
+  const { profile } = useAuthStore()
   const [chemical, setChemical] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showQR, setShowQR] = useState(false)
@@ -584,6 +585,7 @@ export default function ChemicalDetailPage() {
   const [openAccordion, setOpenAccordion] = useState(null)
   const [usageHistory, setUsageHistory] = useState([])
   const { lang } = useLanguage()
+  const isAdmin = profile?.role === 'admin'
 
   const fetchChemicalAndLogs = async () => {
     if (chemicals.length === 0) await fetchChemicals()
@@ -632,8 +634,7 @@ export default function ChemicalDetailPage() {
     </div>
   )
 
-  const { profile } = useAuthStore()
-  const isAdmin = profile?.role === 'admin'
+
   const h = hazardColors[chemical.hazard_level] || hazardColors.low
   const qrUrl = `${window.location.origin}/chemicals/${chemical.id}`
   const accordionItems = [
