@@ -6,7 +6,7 @@ import { useChemicalStore, useAuthStore } from '../store'
 import { supabase } from '../lib/supabase'
 import { QRCodeCanvas as QRCode } from 'qrcode.react'
 import toast from 'react-hot-toast'
-import Confetti from 'react-confetti'
+
 import { useLanguage } from '../hooks/useLanguage'
 
 const hazardColors = {
@@ -524,7 +524,7 @@ export default function ChemicalDetailPage() {
   const [loading, setLoading] = useState(true)
   const [showQR, setShowQR] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
-  const [showConfetti, setShowConfetti] = useState(false)
+
   const [pubchemData, setPubchemData] = useState(null)
   const [openAccordion, setOpenAccordion] = useState(null)
   const { lang } = useLanguage()
@@ -577,7 +577,7 @@ export default function ChemicalDetailPage() {
 
   return (
     <div className={`p-4 lg:p-6 max-w-5xl mx-auto ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
-      {showConfetti && <Confetti recycle={false} numberOfPieces={200} onConfettiComplete={() => setShowConfetti(false)} />}
+
 
       {/* Back */}
       <motion.button
@@ -781,7 +781,6 @@ export default function ChemicalDetailPage() {
             chemical={chemical}
             onClose={() => setShowReportModal(false)}
             onSuccess={async () => {
-              setShowConfetti(true)
               await fetchChemicals(true)
               const { data } = await supabase.from('chemicals').select('*').eq('id', id).single()
               if (data) setChemical(data)

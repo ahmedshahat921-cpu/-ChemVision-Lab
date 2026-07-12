@@ -116,6 +116,47 @@ export const useChemicalStore = create((set, get) => ({
   filters: { hazardLevel: 'all', location: 'all', expiryStatus: 'all' },
   loading: false,
   error: null,
+  realtimeChannel: null,
+
+  // Subscribe to realtime changes on the chemicals table
+  subscribeRealtime: () => {
+    // Avoid duplicate subscriptions
+    if (get().realtimeChannel) return
+
+    const channel = supabase
+      .channel('chemicals-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chemicals' }, (payload) => {
+        const { eventType, new: newRecord, old: oldRecord } = payload
+
+        if (eventType === 'INSERT' && newRecord.is_active) {
+          const { chemicals } = get()
+          const exists = chemicals.find(c => c.id === newRecord.id)
+          if (!exists) {
+            set({ chemicals: [...chemicals, newRecord].sort((a, b) => a.name.localeCompare(b.name)) })
+            get().applyFilters(get().searchQuery, get().filters)
+          }
+        } else if (eventType === 'UPDATE') {
+          const { chemicals } = get()
+          set({ chemicals: chemicals.map(c => c.id === newRecord.id ? newRecord : c) })
+          get().applyFilters(get().searchQuery, get().filters)
+        } else if (eventType === 'DELETE') {
+          const { chemicals } = get()
+          set({ chemicals: chemicals.filter(c => c.id !== oldRecord.id) })
+          get().applyFilters(get().searchQuery, get().filters)
+        }
+      })
+      .subscribe()
+
+    set({ realtimeChannel: channel })
+  },
+
+  unsubscribeRealtime: () => {
+    const { realtimeChannel } = get()
+    if (realtimeChannel) {
+      supabase.removeChannel(realtimeChannel)
+      set({ realtimeChannel: null })
+    }
+  },
 
   fetchChemicals: async (force = false) => {
     const { chemicals } = get()
@@ -143,6 +184,9 @@ export const useChemicalStore = create((set, get) => ({
       .order('name')
     if (error) { set({ error: error.message, loading: false }); return }
     set({ chemicals: data || [], filteredChemicals: data || [], loading: false })
+
+    // Start realtime after initial fetch
+    get().subscribeRealtime()
   },
 
   setSearch: (query) => {
