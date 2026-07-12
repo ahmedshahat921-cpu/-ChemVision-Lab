@@ -648,7 +648,7 @@ export default function ChemicalDetailPage() {
   const detailedData = getChemicalData(chemical.name)
 
   return (
-    <div className={`p-4 lg:p-6 max-w-6xl mx-auto ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
+    <div className={`p-4 lg:p-6 max-w-7xl mx-auto ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
 
       {/* Back */}
       <motion.button
@@ -662,12 +662,12 @@ export default function ChemicalDetailPage() {
       </motion.button>
 
       {/* ══════════════════════════════════════════════
-          ZONE 1: Top — Viewer LEFT  +  Header RIGHT
+          ZONE 1: Top — Viewer LEFT (col-span-6)  +  Header RIGHT (col-span-6)
          ══════════════════════════════════════════════ */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 mb-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-5">
 
-        {/* LEFT column */}
-        <div className="lg:col-span-2 space-y-4">
+        {/* LEFT column (col-span-6) */}
+        <div className="lg:col-span-6 space-y-4">
           <motion.div className="card overflow-hidden" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <MoleculeViewer formula={chemical.formula} name={chemical.name} hazardLevel={chemical.hazard_level} />
           </motion.div>
@@ -746,8 +746,8 @@ export default function ChemicalDetailPage() {
           )}
         </div>
 
-        {/* RIGHT column */}
-        <div className="lg:col-span-3 space-y-4">
+        {/* RIGHT column (col-span-6) */}
+        <div className="lg:col-span-6 space-y-4">
           <motion.div className="card p-5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="flex items-start justify-between gap-4 mb-4">
               <div>
@@ -800,33 +800,6 @@ export default function ChemicalDetailPage() {
                 </div>
               ))}
             </div>
-          </motion.div>
-
-          <motion.div className="card overflow-hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-            {accordionItems.map(({ key, title, content }, i) => (
-              <div key={key} style={{ borderBottom: i < accordionItems.length - 1 ? '1px solid #F0F2F5' : 'none' }}>
-                <motion.button
-                  className="w-full flex items-center justify-between p-4 font-semibold text-sm"
-                  style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}
-                  onClick={() => setOpenAccordion(openAccordion === key ? null : key)}
-                  whileHover={{ background: '#F8F9FA' }}
-                >
-                  <span style={{ color: '#2C3E50' }}>{title}</span>
-                  <motion.span animate={{ rotate: openAccordion === key ? 180 : 0 }} style={{ color: '#94A3B8' }}>▼</motion.span>
-                </motion.button>
-                <AnimatePresence>
-                  {openAccordion === key && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}
-                      className="overflow-hidden"
-                    >
-                      <p className="px-4 pb-4 text-sm leading-relaxed" style={{ color: '#64748B', textAlign: lang === 'ar' ? 'right' : 'left' }}>{content}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
           </motion.div>
         </div>
       </div>
@@ -931,9 +904,39 @@ export default function ChemicalDetailPage() {
       )}
 
       {/* ══════════════════════════════════════════════
-          ZONE 3: Full-width — History + Report Button
+          ZONE 3: Bottom Full-width Area (Accordions + History Log)
          ══════════════════════════════════════════════ */}
-      <motion.div className="card p-5 mb-4" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
+      
+      {/* Accordions Card (Full-width) */}
+      <motion.div className="card overflow-hidden mb-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.42 }}>
+        {accordionItems.map(({ key, title, content }, i) => (
+          <div key={key} style={{ borderBottom: i < accordionItems.length - 1 ? '1px solid #F0F2F5' : 'none' }}>
+            <motion.button
+              className="w-full flex items-center justify-between p-4 font-semibold text-sm"
+              style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}
+              onClick={() => setOpenAccordion(openAccordion === key ? null : key)}
+              whileHover={{ background: '#F8F9FA' }}
+            >
+              <span style={{ color: '#2C3E50' }}>{title}</span>
+              <motion.span animate={{ rotate: openAccordion === key ? 180 : 0 }} style={{ color: '#94A3B8' }}>▼</motion.span>
+            </motion.button>
+            <AnimatePresence>
+              {openAccordion === key && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}
+                  className="overflow-hidden"
+                >
+                  <p className="px-4 pb-4 text-sm leading-relaxed" style={{ color: '#64748B', textAlign: lang === 'ar' ? 'right' : 'left' }}>{content}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* Usage & History Log Card (Full-width) */}
+      <motion.div className="card p-5 mb-5" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
         <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: '#F0F2F5' }}>
           <FileText size={16} style={{ color: '#7C3AED' }} />
           <h3 className="font-bold text-sm" style={{ color: '#2C3E50' }}>
