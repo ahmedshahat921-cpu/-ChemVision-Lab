@@ -201,8 +201,8 @@ function NfpaDiamond({ ratings, lang }) {
   const { health = 0, flammability = 0, reactivity = 0, special = '' } = ratings
 
   return (
-    <div className="flex flex-col items-center p-4 bg-white rounded-2xl border border-neutral-100 shadow-sm">
-      <h4 className="text-xs font-bold text-neutral-400 mb-5 uppercase tracking-wider text-center">
+    <div className="card p-4 flex flex-col items-center">
+      <h4 className="text-xs font-bold mb-4 uppercase tracking-wider text-center" style={{ color: '#94A3B8' }}>
         {lang === 'ar' ? 'معيار الجمعية الوطنية للحماية من الحرائق (NFPA)' : 'NFPA 704 Safety Diamond'}
       </h4>
       
@@ -662,24 +662,74 @@ export default function ChemicalDetailPage() {
       </motion.button>
 
       {/* ══════════════════════════════════════════════
-          ZONE 1: Top — Viewer LEFT (col-span-6)  +  Header RIGHT (col-span-6)
+          ZONE 1: Two balanced parallel columns (col-span-6 + col-span-6)
          ══════════════════════════════════════════════ */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-5">
 
         {/* LEFT column (col-span-6) */}
         <div className="lg:col-span-6 space-y-4">
+          
+          {/* Molecule 3D Model Card */}
           <motion.div className="card overflow-hidden" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <MoleculeViewer formula={chemical.formula} name={chemical.name} hazardLevel={chemical.hazard_level} />
           </motion.div>
 
+          {/* NFPA Diamond Card */}
           {detailedData?.nfpa && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
               <NfpaDiamond ratings={detailedData.nfpa} lang={lang} />
             </motion.div>
           )}
 
+          {/* Safety & PPE (Moved from middle section for balance) */}
+          {detailedData && (
+            <motion.div className="card p-4" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: '#F0F2F5' }}>
+                <Shield size={16} style={{ color: '#E85D5D' }} />
+                <h3 className="font-bold text-sm" style={{ color: '#2C3E50' }}>
+                  {lang === 'ar' ? 'السلامة ومعدات الحماية' : 'Safety & PPE'}
+                </h3>
+              </div>
+              <div className="flex gap-1.5 flex-wrap mb-3">
+                {(detailedData.safety.ppe[lang] || detailedData.safety.ppe.en).map((item, i) => (
+                  <span key={i} className="text-[10px] font-bold px-2 py-0.5 rounded-full border"
+                    style={{ background: '#FEF2F2', color: '#991B1B', borderColor: '#FCA5A5' }}>
+                    🛡️ {item}
+                  </span>
+                ))}
+              </div>
+              <div className="space-y-2 text-xs">
+                <div className="p-2.5 rounded-lg" style={{ background: '#FFF7ED' }}>
+                  <p className="font-bold mb-0.5" style={{ color: '#92400E', fontSize: '0.62rem', textTransform: 'uppercase' }}>
+                    {lang === 'ar' ? 'حدود التعرض الآمنة' : 'Exposure Limits'}
+                  </p>
+                  <p className="font-semibold leading-snug" style={{ color: '#78350F' }}>
+                    {detailedData.safety.exposureLimits[lang] || detailedData.safety.exposureLimits.en}
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-lg" style={{ background: '#FFF1F2' }}>
+                  <p className="font-bold mb-0.5" style={{ color: '#9F1239', fontSize: '0.62rem', textTransform: 'uppercase' }}>
+                    {lang === 'ar' ? 'السمية الحادة (LD₅₀)' : 'Acute Toxicity (LD₅₀)'}
+                  </p>
+                  <p className="font-semibold leading-snug" style={{ color: '#881337' }}>
+                    {detailedData.safety.ldValue[lang] || detailedData.safety.ldValue.en}
+                  </p>
+                </div>
+                <div className="p-2.5 rounded-lg" style={{ background: '#F0FFF4' }}>
+                  <p className="font-bold mb-0.5" style={{ color: '#166534', fontSize: '0.62rem', textTransform: 'uppercase' }}>
+                    {lang === 'ar' ? 'إطفاء الحريق' : 'Fire Extinguishing'}
+                  </p>
+                  <p className="font-semibold leading-snug" style={{ color: '#15803D' }}>
+                    {detailedData.safety.fireExtinguishing[lang] || detailedData.safety.fireExtinguishing.en}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* QR Code (Admin only) */}
           {isAdmin && (
-            <motion.div className="card p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
+            <motion.div className="card p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-sm" style={{ color: '#2C3E50' }}>
                   {lang === 'ar' ? 'رمز QR' : 'QR Code'}
@@ -728,14 +778,15 @@ export default function ChemicalDetailPage() {
             </motion.div>
           )}
 
+          {/* PubChem explore card */}
           {chemical.pubchem_cid && (
             <motion.a
               href={`https://pubchem.ncbi.nlm.nih.gov/compound/${chemical.pubchem_cid}`}
               target="_blank" rel="noopener noreferrer"
-              className="flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition-all"
+              className="flex items-center justify-between p-3 rounded-xl border text-xs font-semibold transition-all shadow-sm"
               style={{ background: '#F8FAFC', borderColor: '#E2E8F0', color: '#1E293B' }}
               whileHover={{ scale: 1.02, borderColor: '#3B82F6', background: '#EFF6FF' }}
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.22 }}
             >
               <div className="flex items-center gap-2">
                 <Info size={14} style={{ color: '#3B82F6' }} />
@@ -748,6 +799,8 @@ export default function ChemicalDetailPage() {
 
         {/* RIGHT column (col-span-6) */}
         <div className="lg:col-span-6 space-y-4">
+          
+          {/* Main Info Card (name, formula, hazard, expiry etc) */}
           <motion.div className="card p-5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="flex items-start justify-between gap-4 mb-4">
               <div>
@@ -801,107 +854,59 @@ export default function ChemicalDetailPage() {
               ))}
             </div>
           </motion.div>
+
+          {/* Physical & Chemical Properties Card */}
+          {detailedData && (
+            <motion.div className="card p-4" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: '#F0F2F5' }}>
+                <FlaskConical size={16} style={{ color: '#4A90E2' }} />
+                <h3 className="font-bold text-sm" style={{ color: '#2C3E50' }}>
+                  {lang === 'ar' ? 'الخصائص الفيزيائية والكيميائية' : 'Physical & Chemical Props'}
+                </h3>
+              </div>
+              <div className="space-y-2 text-xs">
+                {[
+                  { label: lang === 'ar' ? 'درجة الغليان' : 'Boiling Point', value: detailedData.physical.boilingPoint[lang] || detailedData.physical.boilingPoint.en },
+                  { label: lang === 'ar' ? 'درجة الانصهار' : 'Melting Point', value: detailedData.physical.meltingPoint[lang] || detailedData.physical.meltingPoint.en },
+                  { label: lang === 'ar' ? 'الكثافة' : 'Density', value: detailedData.physical.density[lang] || detailedData.physical.density.en },
+                  { label: lang === 'ar' ? 'الذوبانية' : 'Solubility', value: detailedData.physical.solubility[lang] || detailedData.physical.solubility.en },
+                  { label: lang === 'ar' ? 'المظهر' : 'Appearance', value: detailedData.physical.appearance[lang] || detailedData.physical.appearance.en },
+                  { label: lang === 'ar' ? 'الرائحة' : 'Odor', value: detailedData.physical.odor[lang] || detailedData.physical.odor.en },
+                  { label: lang === 'ar' ? 'نقطة الوميض' : 'Flash Point', value: detailedData.physical.flashPoint[lang] || detailedData.physical.flashPoint.en },
+                  { label: lang === 'ar' ? 'الضغط البخاري' : 'Vapor Pressure', value: detailedData.physical.vaporPressure[lang] || detailedData.physical.vaporPressure.en },
+                  { label: lang === 'ar' ? 'الأس الهيدروجيني pH' : 'pH Level', value: detailedData.physical.ph[lang] || detailedData.physical.ph.en },
+                  { label: lang === 'ar' ? 'التصنيف الكيميائي' : 'Chemical Class', value: detailedData.chemical.class[lang] || detailedData.chemical.class.en },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex flex-col py-1.5 border-b last:border-0" style={{ borderColor: '#F8F9FA' }}>
+                    <span className="font-semibold" style={{ color: '#94A3B8', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
+                    <span className="font-medium mt-0.5 leading-snug" style={{ color: '#2C3E50' }}>{value}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Uses & Applications Card */}
+          {detailedData && (
+            <motion.div className="card p-4" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: '#F0F2F5' }}>
+                <Activity size={16} style={{ color: '#5DB9A0' }} />
+                <h3 className="font-bold text-sm" style={{ color: '#2C3E50' }}>
+                  {lang === 'ar' ? 'الاستخدامات والتطبيقات' : 'Uses & Applications'}
+                </h3>
+              </div>
+              <ul className="space-y-2">
+                {(detailedData.uses[lang] || detailedData.uses.en).map((use, i) => (
+                  <li key={i} className="flex items-start gap-2 text-xs">
+                    <span className="text-emerald-500 font-bold mt-0.5 select-none flex-shrink-0">•</span>
+                    <span className="font-medium leading-snug" style={{ color: '#374151' }}>{use}</span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
         </div>
       </div>
-
-      {/* ══════════════════════════════════════════════
-          ZONE 2: Middle — 3 equal info cards
-         ══════════════════════════════════════════════ */}
-      {detailedData && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
-
-          {/* Physical & Chemical Properties */}
-          <motion.div className="card p-4" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: '#F0F2F5' }}>
-              <FlaskConical size={16} style={{ color: '#4A90E2' }} />
-              <h3 className="font-bold text-sm" style={{ color: '#2C3E50' }}>
-                {lang === 'ar' ? 'الخصائص الفيزيائية والكيميائية' : 'Physical & Chemical Props'}
-              </h3>
-            </div>
-            <div className="space-y-2 text-xs">
-              {[
-                { label: lang === 'ar' ? 'درجة الغليان' : 'Boiling Point', value: detailedData.physical.boilingPoint[lang] || detailedData.physical.boilingPoint.en },
-                { label: lang === 'ar' ? 'درجة الانصهار' : 'Melting Point', value: detailedData.physical.meltingPoint[lang] || detailedData.physical.meltingPoint.en },
-                { label: lang === 'ar' ? 'الكثافة' : 'Density', value: detailedData.physical.density[lang] || detailedData.physical.density.en },
-                { label: lang === 'ar' ? 'الذوبانية' : 'Solubility', value: detailedData.physical.solubility[lang] || detailedData.physical.solubility.en },
-                { label: lang === 'ar' ? 'المظهر' : 'Appearance', value: detailedData.physical.appearance[lang] || detailedData.physical.appearance.en },
-                { label: lang === 'ar' ? 'الرائحة' : 'Odor', value: detailedData.physical.odor[lang] || detailedData.physical.odor.en },
-                { label: lang === 'ar' ? 'نقطة الوميض' : 'Flash Point', value: detailedData.physical.flashPoint[lang] || detailedData.physical.flashPoint.en },
-                { label: lang === 'ar' ? 'الضغط البخاري' : 'Vapor Pressure', value: detailedData.physical.vaporPressure[lang] || detailedData.physical.vaporPressure.en },
-                { label: lang === 'ar' ? 'الأس الهيدروجيني pH' : 'pH Level', value: detailedData.physical.ph[lang] || detailedData.physical.ph.en },
-                { label: lang === 'ar' ? 'التصنيف الكيميائي' : 'Chemical Class', value: detailedData.chemical.class[lang] || detailedData.chemical.class.en },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex flex-col py-1.5 border-b last:border-0" style={{ borderColor: '#F8F9FA' }}>
-                  <span className="font-semibold" style={{ color: '#94A3B8', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
-                  <span className="font-medium mt-0.5 leading-snug" style={{ color: '#2C3E50' }}>{value}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Safety & PPE */}
-          <motion.div className="card p-4" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-            <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: '#F0F2F5' }}>
-              <Shield size={16} style={{ color: '#E85D5D' }} />
-              <h3 className="font-bold text-sm" style={{ color: '#2C3E50' }}>
-                {lang === 'ar' ? 'السلامة ومعدات الحماية' : 'Safety & PPE'}
-              </h3>
-            </div>
-            <div className="flex gap-1.5 flex-wrap mb-3">
-              {(detailedData.safety.ppe[lang] || detailedData.safety.ppe.en).map((item, i) => (
-                <span key={i} className="text-[10px] font-bold px-2 py-0.5 rounded-full border"
-                  style={{ background: '#FEF2F2', color: '#991B1B', borderColor: '#FCA5A5' }}>
-                  🛡️ {item}
-                </span>
-              ))}
-            </div>
-            <div className="space-y-2 text-xs">
-              <div className="p-2.5 rounded-lg" style={{ background: '#FFF7ED' }}>
-                <p className="font-bold mb-0.5" style={{ color: '#92400E', fontSize: '0.62rem', textTransform: 'uppercase' }}>
-                  {lang === 'ar' ? 'حدود التعرض الآمنة' : 'Exposure Limits'}
-                </p>
-                <p className="font-semibold leading-snug" style={{ color: '#78350F' }}>
-                  {detailedData.safety.exposureLimits[lang] || detailedData.safety.exposureLimits.en}
-                </p>
-              </div>
-              <div className="p-2.5 rounded-lg" style={{ background: '#FFF1F2' }}>
-                <p className="font-bold mb-0.5" style={{ color: '#9F1239', fontSize: '0.62rem', textTransform: 'uppercase' }}>
-                  {lang === 'ar' ? 'السمية الحادة (LD₅₀)' : 'Acute Toxicity (LD₅₀)'}
-                </p>
-                <p className="font-semibold leading-snug" style={{ color: '#881337' }}>
-                  {detailedData.safety.ldValue[lang] || detailedData.safety.ldValue.en}
-                </p>
-              </div>
-              <div className="p-2.5 rounded-lg" style={{ background: '#F0FFF4' }}>
-                <p className="font-bold mb-0.5" style={{ color: '#166534', fontSize: '0.62rem', textTransform: 'uppercase' }}>
-                  {lang === 'ar' ? 'إطفاء الحريق' : 'Fire Extinguishing'}
-                </p>
-                <p className="font-semibold leading-snug" style={{ color: '#15803D' }}>
-                  {detailedData.safety.fireExtinguishing[lang] || detailedData.safety.fireExtinguishing.en}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Common Uses */}
-          <motion.div className="card p-4" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: '#F0F2F5' }}>
-              <Activity size={16} style={{ color: '#5DB9A0' }} />
-              <h3 className="font-bold text-sm" style={{ color: '#2C3E50' }}>
-                {lang === 'ar' ? 'الاستخدامات والتطبيقات' : 'Uses & Applications'}
-              </h3>
-            </div>
-            <ul className="space-y-2">
-              {(detailedData.uses[lang] || detailedData.uses.en).map((use, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs">
-                  <span className="text-emerald-500 font-bold mt-0.5 select-none flex-shrink-0">•</span>
-                  <span className="font-medium leading-snug" style={{ color: '#374151' }}>{use}</span>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-        </div>
-      )}
 
       {/* ══════════════════════════════════════════════
           ZONE 3: Bottom Full-width Area (Accordions + History Log)
