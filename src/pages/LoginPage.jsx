@@ -45,7 +45,7 @@ export default function LoginPage() {
 
     const result = await login(email, password)
     if (result.success) {
-      toast.success(`Welcome back! 🧪`)
+      toast.success(`Welcome back!`)
       navigate('/dashboard')
     } else {
       setShake(true)
@@ -157,7 +157,7 @@ export default function LoginPage() {
 
           {/* Heading */}
           <motion.div variants={fieldVariants} className="mb-8">
-            <h2 className="font-heading font-bold text-3xl mb-2" style={{ color: '#2C3E50' }}>Welcome back 👋</h2>
+            <h2 className="font-heading font-bold text-3xl mb-2" style={{ color: '#2C3E50' }}>Welcome back</h2>
             <p style={{ color: '#64748B' }} className="text-sm">Sign in to your Lab Hub account</p>
           </motion.div>
 

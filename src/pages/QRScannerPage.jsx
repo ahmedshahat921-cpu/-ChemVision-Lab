@@ -241,7 +241,7 @@ export default function QRScannerPage() {
         {chemicals && chemicals.length > 0 && (
           <motion.div className="card p-5 text-left" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
             <h3 className="font-heading font-semibold text-sm mb-1.5 flex items-center gap-2 text-left" style={{ color: '#2C3E50' }}>
-              🧪 {lang === 'ar' ? 'المحاكي الكيميائي / اختبار سريع' : 'Simulator / Quick Testing (Mock Scan)'}
+              {lang === 'ar' ? 'المحاكي الكيميائي / اختبار سريع' : 'Simulator / Quick Testing (Mock Scan)'}
             </h3>
             <p className="text-xs mb-3 text-left" style={{ color: '#64748B' }}>
               {lang === 'ar' 

@@ -187,7 +187,7 @@ export default function DashboardPage() {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="font-heading font-bold text-2xl" style={{ color: '#2C3E50' }}>
           {getGreeting()}{' '}
-          <span className="gradient-text">{profile?.name?.split(' ')[0] || 'there'}</span> 👋
+          <span className="gradient-text">{profile?.name?.split(' ')[0] || 'there'}</span>
         </h1>
         <p style={{ color: '#64748B' }} className="text-sm mt-1">
           {lang === 'ar' ? 'إليك آخر مستجدات مختبرك اليوم' : "Here's what's happening in your lab today"}

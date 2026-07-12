@@ -39,17 +39,17 @@ export function useLanguage() {
         system_status: 'System Status: Active',
 
         // Mixing Simulator
-        mixing_simulator_title: '🧪 Mixing Simulator',
+        mixing_simulator_title: 'Mixing Simulator',
         mixing_simulator_sub: 'Analyze molecular compatibility and safety in real-time',
         chem_a: 'Chemical A',
         chem_b: 'Chemical B',
         simulate_btn: 'Simulate Reaction',
-        famous_experiments: 'Famous Experiments / تجارب شهيرة',
+        famous_experiments: 'Famous Experiments',
         pouring_reagents: 'Phase 1: Pouring reagents into reaction vessel...',
         kinetics: 'Phase 2: Molecular kinetics & reaction in progress...',
         analyzing_sds: 'Analyzing safety datasheet properties and thermodynamic changes.',
-        export_report: '📄 Export Laboratory Report (PDF)',
-        mix_new: '🔄 Mix New Chemicals / خلطة جديدة',
+        export_report: 'Download Laboratory Report (PDF)',
+        mix_new: 'Mix New Chemicals',
         
         // Chemicals inventory
         inventory_title: 'Chemicals Inventory',
@@ -105,7 +105,7 @@ export function useLanguage() {
         system_status: 'حالة النظام: نشط',
 
         // Mixing Simulator
-        mixing_simulator_title: '🧪 محاكي خلط المواد',
+        mixing_simulator_title: 'محاكي خلط المواد',
         mixing_simulator_sub: 'تحليل توافق الجزيئات والسلامة الكيميائية في الوقت الفعلي',
         chem_a: 'المادة الكيميائية أ',
         chem_b: 'المادة الكيميائية ب',
@@ -114,8 +114,8 @@ export function useLanguage() {
         pouring_reagents: 'المرحلة 1: صب الكواشف في وعاء التفاعل...',
         kinetics: 'المرحلة 2: الحركة الجزيئية والتفاعل قيد التقدم...',
         analyzing_sds: 'جاري تحليل خصائص ورقة بيانات السلامة والتغيرات الديناميكية الحرارية.',
-        export_report: '📄 تصدير تقرير المختبر (PDF)',
-        mix_new: '🔄 خلط مواد جديدة',
+        export_report: 'تحميل تقرير المختبر (PDF)',
+        mix_new: 'خلط مواد جديدة',
 
         // Chemicals inventory
         inventory_title: 'مستودع المواد الكيميائية',

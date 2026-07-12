@@ -117,7 +117,24 @@ export const useChemicalStore = create((set, get) => ({
   loading: false,
   error: null,
 
-  fetchChemicals: async () => {
+  fetchChemicals: async (force = false) => {
+    const { chemicals } = get()
+    if (chemicals.length > 0 && !force) {
+      // Quietly fetch in background to sync latest changes
+      supabase
+        .from('chemicals')
+        .select('*')
+        .eq('is_active', true)
+        .order('name')
+        .then(({ data, error }) => {
+          if (!error && data) {
+            set({ chemicals: data })
+            get().applyFilters(get().searchQuery, get().filters)
+          }
+        })
+      return
+    }
+
     set({ loading: true, error: null })
     const { data, error } = await supabase
       .from('chemicals')

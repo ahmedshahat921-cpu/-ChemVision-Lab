@@ -54,7 +54,7 @@ export default function RegisterPage() {
     if (result.success) {
       if (result.autoLogin) {
         // Email confirm is off → logged in directly
-        toast.success(`Welcome to ChemVision, ${form.name}! 🧪`)
+        toast.success(`Welcome to ChemVision, ${form.name}!`)
         navigate('/dashboard')
       } else if (result.needsConfirm) {
         // Email confirm is on → show confirmation screen
@@ -96,14 +96,14 @@ export default function RegisterPage() {
           >
             <CheckCircle size={40} style={{ color: '#5DB9A0' }} />
           </motion.div>
-          <h2 className="font-heading font-bold text-2xl mb-2" style={{ color: '#2C3E50' }}>Check your email! 📧</h2>
+          <h2 className="font-heading font-bold text-2xl mb-2" style={{ color: '#2C3E50' }}>Check your email!</h2>
           <p className="text-sm mb-6 leading-relaxed" style={{ color: '#64748B' }}>
             We sent a confirmation link to <strong>{form.email}</strong>.<br />
             Click the link in your email to activate your account.
           </p>
           <div className="p-4 rounded-xl mb-6" style={{ background: '#EBF4FF', border: '1px solid #7AB8F5' }}>
             <p className="text-xs" style={{ color: '#2D6A9F' }}>
-              💡 Didn't receive the email? Check your spam folder or wait a few minutes.
+              Didn't receive the email? Check your spam folder or wait a few minutes.
             </p>
           </div>
           <button className="btn-primary w-full justify-center" onClick={() => navigate('/login')}>
@@ -135,9 +135,9 @@ export default function RegisterPage() {
           <p className="text-blue-200 leading-relaxed">Create your account and start managing chemicals with confidence and precision.</p>
           <div className="mt-8 space-y-3">
             {[
-              { icon: '🧪', text: 'Access 15+ chemical entries' },
-              { icon: '⚗️', text: 'Real-time mixing safety checks' },
-              { icon: '📱', text: 'QR code scanner & generator' },
+              { icon: '✓', text: 'Access 15+ chemical entries' },
+              { icon: '✓', text: 'Real-time mixing safety checks' },
+              { icon: '✓', text: 'QR code scanner & generator' },
             ].map((f, i) => (
               <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7 + i * 0.1 }} className="flex items-center gap-3">
                 <span className="text-lg">{f.icon}</span>

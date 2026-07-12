@@ -5,14 +5,15 @@ import { useChemicalStore } from '../store'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 import { useLanguage } from '../hooks/useLanguage'
+import html2pdf from 'html2pdf.js'
 
 const reactionStyles = {
-  safe: { bg: '#E8FBF6', color: '#2A7060', border: '#5DB9A0', icon: CheckCircle, label: 'Safe Reaction ✅', emoji: '🟢' },
-  hazardous: { bg: '#FDEAEA', color: '#A02A2A', border: '#E85D5D', icon: AlertTriangle, label: 'Hazardous! ⚠️', emoji: '🔴' },
-  explosive: { bg: '#FDEAEA', color: '#7F1D1D', border: '#A02A2A', icon: Flame, label: 'EXPLOSIVE! 💥', emoji: '💥' },
-  toxic: { bg: '#FDEAEA', color: '#A02A2A', border: '#E85D5D', icon: AlertTriangle, label: 'Toxic! ☠️', emoji: '☠️' },
-  produces_gas: { bg: '#FEF3DC', color: '#A66410', border: '#F5A623', icon: Wind, label: 'Produces Gas! 💨', emoji: '💨' },
-  new_product: { bg: '#EDE9FE', color: '#6326CA', border: '#7C3AED', icon: Zap, label: 'New Product Formed 🧪', emoji: '⚗️' },
+  safe: { bg: '#E8FBF6', color: '#2A7060', border: '#5DB9A0', icon: CheckCircle, label: 'Safe Reaction', emoji: '' },
+  hazardous: { bg: '#FDEAEA', color: '#A02A2A', border: '#E85D5D', icon: AlertTriangle, label: 'Hazardous!', emoji: '' },
+  explosive: { bg: '#FDEAEA', color: '#7F1D1D', border: '#A02A2A', icon: Flame, label: 'EXPLOSIVE!', emoji: '' },
+  toxic: { bg: '#FDEAEA', color: '#A02A2A', border: '#E85D5D', icon: AlertTriangle, label: 'Toxic!', emoji: '' },
+  produces_gas: { bg: '#FEF3DC', color: '#A66410', border: '#F5A623', icon: Wind, label: 'Produces Gas!', emoji: '' },
+  new_product: { bg: '#EDE9FE', color: '#6326CA', border: '#7C3AED', icon: Zap, label: 'New Product Formed', emoji: '' },
 }
 
 // Chemical Selector
@@ -767,119 +768,111 @@ export default function MixingSimulatorPage() {
   const exportReportPDF = () => {
     if (!chemA || !chemB || !result) return
     
-    // Check if printing iframe exists, else create it
-    let iframe = document.getElementById('print-iframe')
-    if (!iframe) {
-      iframe = document.createElement('iframe')
-      iframe.id = 'print-iframe'
-      iframe.style.position = 'fixed'
-      iframe.style.right = '0'
-      iframe.style.bottom = '0'
-      iframe.style.width = '0'
-      iframe.style.height = '0'
-      iframe.style.border = 'none'
-      document.body.appendChild(iframe)
-    }
-
-    const printDoc = iframe.contentWindow.document
-    printDoc.open()
-    const dateStr = new Date().toLocaleString()
-
     const resultDesc = lang === 'ar' ? (result.result_description_ar || result.result_description) : (result.result_description_en || result.result_description)
     const physProps = lang === 'ar' ? (result.physical_properties_ar || result.physical_properties) : (result.physical_properties_en || result.physical_properties)
     const chemProps = lang === 'ar' ? (result.chemical_properties_ar || result.chemical_properties) : (result.chemical_properties_en || result.chemical_properties)
     const safetyMeasures = lang === 'ar' ? (result.safety_measures_ar || result.safety_measures) : (result.safety_measures_en || result.safety_measures)
 
-    const content = `
-      <html>
-        <head>
-          <title>ChemVision Lab - Experiment Report</title>
-          <style>
-            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #1E293B; line-height: 1.6; direction: ${lang === 'ar' ? 'rtl' : 'ltr'}; text-align: ${lang === 'ar' ? 'right' : 'left'}; }
-            .header { border-bottom: 3px solid #3B82F6; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
-            .title { font-size: 26px; font-weight: bold; color: #1E3A8A; }
-            .subtitle { font-size: 13px; color: #64748B; margin-top: 4px; }
-            .meta-info { font-size: 11px; color: #64748B; text-align: ${lang === 'ar' ? 'left' : 'right'}; }
-            .chem-box { display: flex; gap: 15px; margin-bottom: 20px; }
-            .chem-card { flex: 1; padding: 12px; border: 1px solid #E2E8F0; border-radius: 8px; background: #F8FAFC; }
-            .chem-card strong { color: #1E3A8A; display: block; font-size: 15px; }
-            .section { margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid #E2E8F0; background: #FFF; }
-            .section-title { font-size: 13px; font-weight: bold; text-transform: uppercase; color: #3B82F6; margin-bottom: 8px; border-bottom: 1px solid #F1F5F9; padding-bottom: 4px; }
-            .badge { display: inline-block; padding: 5px 10px; border-radius: 6px; font-weight: bold; font-size: 11px; text-transform: uppercase; }
-            .danger { background-color: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
-            .safe { background-color: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
-            .description { font-weight: 500; font-size: 13px; margin-top: 10px; }
-            .val-text { font-size: 12.5px; color: #334155; }
-            .footer-note { text-align: center; margin-top: 45px; font-size: 10px; color: #94A3B8; border-top: 1px dashed #E2E8F0; padding-top: 12px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div>
-              <div class="title">${lang === 'ar' ? '🧪 تقارير مختبر ChemVision' : '🧪 ChemVision Lab Reports'}</div>
-              <div class="subtitle">${lang === 'ar' ? 'صحيفة سلامة التوافق الكيميائي والمخبري الرسمية (SDS)' : 'Official Compatibility & Laboratory Safety Datasheet (SDS)'}</div>
-            </div>
-            <div class="meta-info">${lang === 'ar' ? 'رقم التقرير:' : 'Report ID:'} CV-${Math.floor(100000 + Math.random() * 900000)}<br>${lang === 'ar' ? 'التاريخ:' : 'Date:'} ${dateStr}</div>
-          </div>
+    const element = document.createElement('div')
+    element.style.padding = '30px'
+    element.style.fontFamily = 'Segoe UI, Arial, sans-serif'
+    element.style.color = '#1E293B'
+    element.style.lineHeight = '1.6'
+    element.style.direction = lang === 'ar' ? 'rtl' : 'ltr'
+    element.style.textAlign = lang === 'ar' ? 'right' : 'left'
+    
+    element.innerHTML = `
+      <div style="border-bottom: 3px solid #3B82F6; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; direction: ${lang === 'ar' ? 'rtl' : 'ltr'};">
+        <div>
+          <div style="font-size: 24px; font-weight: bold; color: #1E3A8A;">${lang === 'ar' ? 'تقارير مختبر ChemVision' : 'ChemVision Lab Reports'}</div>
+          <div style="font-size: 12px; color: #64748B; margin-top: 4px;">${lang === 'ar' ? 'صحيفة سلامة التوافق الكيميائي والمخبري الرسمية (SDS)' : 'Official Compatibility & Laboratory Safety Datasheet (SDS)'}</div>
+        </div>
+        <div style="font-size: 10px; color: #64748B; text-align: ${lang === 'ar' ? 'left' : 'right'};">
+          ${lang === 'ar' ? 'رقم التقرير:' : 'Report ID:'} CV-${Math.floor(100000 + Math.random() * 900000)}<br>
+          ${lang === 'ar' ? 'التاريخ:' : 'Date:'} ${new Date().toLocaleString()}
+        </div>
+      </div>
 
-          <div class="chem-box">
-            <div class="chem-card">
-              <strong>${lang === 'ar' ? 'المادة الكيميائية أ' : 'Chemical A'}</strong>
-              ${lang === 'ar' ? 'الاسم' : 'Name'}: ${chemA.name || 'N/A'}<br>${lang === 'ar' ? 'الصيغة الكيميائية' : 'Formula'}: ${chemA.formula || 'N/A'}<br>${lang === 'ar' ? 'درجة الخطورة' : 'Hazard Level'}: ${(chemA.hazard_level || 'N/A').toUpperCase()}
-            </div>
-            <div class="chem-card">
-              <strong>${lang === 'ar' ? 'المادة الكيميائية ب' : 'Chemical B'}</strong>
-              ${lang === 'ar' ? 'الاسم' : 'Name'}: ${chemB.name || 'N/A'}<br>${lang === 'ar' ? 'الصيغة الكيميائية' : 'Formula'}: ${chemB.formula || 'N/A'}<br>${lang === 'ar' ? 'درجة الخطورة' : 'Hazard Level'}: ${(chemB.hazard_level || 'N/A').toUpperCase()}
-            </div>
-          </div>
+      <div style="display: flex; gap: 15px; margin-bottom: 20px; direction: ${lang === 'ar' ? 'rtl' : 'ltr'};">
+        <div style="flex: 1; padding: 12px; border: 1px solid #E2E8F0; border-radius: 8px; background: #F8FAFC;">
+          <strong style="color: #1E3A8A; display: block; font-size: 14px; margin-bottom: 6px;">${lang === 'ar' ? 'المادة الكيميائية أ' : 'Chemical A'}</strong>
+          ${lang === 'ar' ? 'الاسم' : 'Name'}: ${chemA.name || 'N/A'}<br>
+          ${lang === 'ar' ? 'الصيغة' : 'Formula'}: ${chemA.formula || 'N/A'}<br>
+          ${lang === 'ar' ? 'مستوى الخطورة' : 'Hazard Level'}: ${(chemA.hazard_level || 'N/A').toUpperCase()}
+        </div>
+        <div style="flex: 1; padding: 12px; border: 1px solid #E2E8F0; border-radius: 8px; background: #F8FAFC;">
+          <strong style="color: #1E3A8A; display: block; font-size: 14px; margin-bottom: 6px;">${lang === 'ar' ? 'المادة الكيميائية ب' : 'Chemical B'}</strong>
+          ${lang === 'ar' ? 'الاسم' : 'Name'}: ${chemB.name || 'N/A'}<br>
+          ${lang === 'ar' ? 'الصيغة' : 'Formula'}: ${chemB.formula || 'N/A'}<br>
+          ${lang === 'ar' ? 'مستوى الخطورة' : 'Hazard Level'}: ${(chemB.hazard_level || 'N/A').toUpperCase()}
+        </div>
+      </div>
 
-          <div class="section">
-            <div class="section-title">${lang === 'ar' ? 'ملخص التفاعل وتقييم السلامة' : 'Reaction Summary & Safety Rating'}</div>
-            <div class="val-text">
-              <span class="badge ${result.is_safe ? 'safe' : 'danger'}">
-                ${result.is_safe ? (lang === 'ar' ? 'خليط آمن' : 'SAFE MIXTURE') : (lang === 'ar' ? 'خلط محظور / خطير' : 'RESTRICTED / DANGEROUS')} (${lang === 'ar' ? 'الخطورة:' : 'Severity:'} ${result.severity_score}/10)
-              </span>
-              <p class="description">${resultDesc || 'No matching database rule found.'}</p>
-            </div>
-          </div>
+      <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid #E2E8F0; background: #FFF; direction: ${lang === 'ar' ? 'rtl' : 'ltr'};">
+        <div style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: #3B82F6; margin-bottom: 8px; border-bottom: 1px solid #F1F5F9; padding-bottom: 4px;">
+          ${lang === 'ar' ? 'ملخص التفاعل وتقييم السلامة' : 'Reaction Summary & Safety Rating'}
+        </div>
+        <div style="font-size: 12px; color: #334155;">
+          <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 10px; margin-bottom: 8px; background-color: ${result.is_safe ? '#D1FAE5' : '#FEE2E2'}; color: ${result.is_safe ? '#065F46' : '#991B1B'}; border: 1px solid ${result.is_safe ? '#6EE7B7' : '#FCA5A5'};">
+            ${result.is_safe ? (lang === 'ar' ? 'خليط آمن' : 'SAFE MIXTURE') : (lang === 'ar' ? 'خلط محظور / خطير' : 'RESTRICTED / DANGEROUS')} (${lang === 'ar' ? 'الخطورة:' : 'Severity:'} ${result.severity_score}/10)
+          </span>
+          <p style="font-weight: 500; font-size: 13px; margin-top: 6px;">${resultDesc}</p>
+        </div>
+      </div>
 
-          <div class="section">
-            <div class="section-title">${lang === 'ar' ? 'الخصائص الفيزيائية والحرارية للمزيج' : 'Physical & Thermal Properties'}</div>
-            <div class="val-text">${physProps || 'Standard solution properties apply.'}</div>
-          </div>
+      <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid #E2E8F0; background: #FFF; direction: ${lang === 'ar' ? 'rtl' : 'ltr'};">
+        <div style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: #3B82F6; margin-bottom: 8px; border-bottom: 1px solid #F1F5F9; padding-bottom: 4px;">
+          ${lang === 'ar' ? 'الخصائص الفيزيائية والحرارية للمزيج' : 'Physical & Thermal Properties'}
+        </div>
+        <div style="font-size: 12px; color: #334155;">${physProps}</div>
+      </div>
 
-          <div class="section">
-            <div class="section-title">${lang === 'ar' ? 'الخواص الكيميائية والاستقرار' : 'Chemical Properties & Stability'}</div>
-            <div class="val-text">${chemProps || 'Compatible mixture under normal conditions.'}</div>
-          </div>
+      <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid #E2E8F0; background: #FFF; direction: ${lang === 'ar' ? 'rtl' : 'ltr'};">
+        <div style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: #3B82F6; margin-bottom: 8px; border-bottom: 1px solid #F1F5F9; padding-bottom: 4px;">
+          ${lang === 'ar' ? 'الخواص الكيميائية والاستقرار' : 'Chemical Properties & Stability'}
+        </div>
+        <div style="font-size: 12px; color: #334155;">${chemProps}</div>
+      </div>
 
-          <div class="section" style="border-left: 4px solid #D97706; background: #FFFDF5; border-right: ${lang === 'ar' ? '4px solid #D97706' : 'none'}; border-left: ${lang === 'ar' ? 'none' : '4px solid #D97706'};">
-            <div class="section-title" style="color: #D97706;">${lang === 'ar' ? 'آلية الأمان والسلامة المخبرية الدقيقة' : 'Precise Lab Safety & Hazard Controls'}</div>
-            <div class="val-text" style="font-weight: 500; color: #92400E;">${safetyMeasures || 'Wear standard laboratory protection.'}</div>
-          </div>
+      <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid #FFE082; background: #FFFDF5; border-right: ${lang === 'ar' ? '4px solid #D97706' : 'none'}; border-left: ${lang === 'ar' ? 'none' : '4px solid #D97706'}; direction: ${lang === 'ar' ? 'rtl' : 'ltr'};">
+        <div style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: #D97706; margin-bottom: 8px; border-bottom: 1px solid #FFF8E1; padding-bottom: 4px;">
+          ${lang === 'ar' ? 'آلية الأمان والسلامة المخبرية الدقيقة' : 'Precise Lab Safety & Hazard Controls'}
+        </div>
+        <div style="font-size: 12px; font-weight: 500; color: #92400E;">${safetyMeasures}</div>
+      </div>
 
-          ${result.product_name ? `
-          <div class="section" style="background: #FAF5FF; border-color: #E9D5FF;">
-            <div class="section-title" style="color: #8B5CF6;">${lang === 'ar' ? 'المركب الناتج المتكون' : 'Resulting Product'}</div>
-            <div class="val-text"><strong>${lang === 'ar' ? 'الناتج:' : 'Product:'}</strong> ${result.product_name} (${result.product_formula || ''})</div>
-          </div>
-          ` : ''}
+      ${result.product_name ? `
+      <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid #E9D5FF; background: #FAF5FF; direction: ${lang === 'ar' ? 'rtl' : 'ltr'};">
+        <div style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: #8B5CF6; margin-bottom: 8px; border-bottom: 1px solid #F3E8FF; padding-bottom: 4px;">
+          ${lang === 'ar' ? 'المركب الناتج المتكون' : 'Resulting Product'}
+        </div>
+        <div style="font-size: 12px; color: #5B21B6;">
+          <strong>${lang === 'ar' ? 'الناتج:' : 'Product:'}</strong> ${result.product_name} (${result.product_formula || ''})
+        </div>
+      </div>
+      ` : ''}
 
-          <div class="footer-note">
-            ChemVision Academic Simulator. All values generated represent simulation scenarios. Verify all safety protocols before conducting wet-lab assays.
-          </div>
-        </body>
-      </html>
+      <div style="text-align: center; margin-top: 40px; font-size: 10px; color: #94A3B8; border-top: 1px dashed #E2E8F0; padding-top: 12px; direction: ${lang === 'ar' ? 'rtl' : 'ltr'};">
+        ChemVision Academic Simulator. All values generated represent simulation scenarios. Verify all safety protocols before conducting wet-lab assays.
+      </div>
     `
 
-    printDoc.write(content)
-    printDoc.close()
-    
-    // Trigger print on the iframe
-    setTimeout(() => {
-      iframe.contentWindow.focus()
-      iframe.contentWindow.print()
-    }, 200)
+    const opt = {
+      margin:       15,
+      filename:     `ChemVision_Report_${chemA.formula}_${chemB.formula}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }
+
+    toast.promise(
+      html2pdf().set(opt).from(element).save(),
+      {
+        loading: lang === 'ar' ? 'جاري إنشاء التقرير وتحميله...' : 'Generating and downloading PDF report...',
+        success: lang === 'ar' ? 'تم تحميل التقرير بنجاح! 📄' : 'Report downloaded successfully! 📄',
+        error: lang === 'ar' ? 'فشل تحميل التقرير' : 'Failed to download report'
+      }
+    )
   }
 
   const simulate = async () => {
@@ -1100,21 +1093,21 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                     className="p-2.5 rounded-xl border text-xs font-semibold text-left transition hover:bg-slate-50"
                     style={{ borderColor: '#E2E8F0', color: '#334155' }}
                   >
-                    🧪 Neutralization (NaOH + H2SO4)
+                    Neutralization (NaOH + H2SO4)
                   </button>
                   <button
                     onClick={() => runTemplate('CaCO3', 'HCl')}
                     className="p-2.5 rounded-xl border text-xs font-semibold text-left transition hover:bg-slate-50"
                     style={{ borderColor: '#E2E8F0', color: '#334155' }}
                   >
-                    💨 Gas Volcano (CaCO3 + HCl)
+                    Gas Volcano (CaCO3 + HCl)
                   </button>
                   <button
                     onClick={() => runTemplate('C3H6O', 'C6H6')}
                     className="p-2.5 rounded-xl border text-xs font-semibold text-left transition hover:bg-slate-50"
                     style={{ borderColor: '#E2E8F0', color: '#334155' }}
                   >
-                    🟢 Organic Blend (Acetone + Benzene)
+                    Organic Blend (Acetone + Benzene)
                   </button>
                 </div>
               </div>
