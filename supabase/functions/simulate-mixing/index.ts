@@ -37,13 +37,17 @@ You MUST respond with a valid JSON object matching this schema:
 {
   "is_safe": boolean,
   "reaction_type": "safe" | "hazardous" | "explosive" | "toxic" | "produces_gas" | "new_product",
-  "result_description": "A detailed, professional, easy-to-understand explanation of the reaction, listing hazards, safety measures, and chemical products in Arabic and English.",
   "severity_score": number (1 to 10 scale of danger),
   "product_name": "Name of the resulting product if any (leave empty if none)",
   "product_formula": "Formula of the resulting product if any (leave empty if none)",
-  "physical_properties": "Detailed physical and thermal properties of the mixture (e.g. exothermic heat of reaction, temperature changes, miscibility/solubility behavior) in Arabic and English.",
-  "safety_measures": "Precise lab safety measures and hazard controls (e.g. required PPE like gloves/goggles type, ventilation/fume hood rules) in Arabic and English.",
-  "chemical_properties": "Chemical properties and stability of the resulting mixture (e.g. pH shifts, chemical stability, reactive danger) in Arabic and English."
+  "result_description_en": "A detailed, professional, easy-to-understand explanation of the reaction in English.",
+  "result_description_ar": "A detailed, professional, easy-to-understand explanation of the reaction in Arabic (شرح مفصل للتفاعل باللغة العربية).",
+  "physical_properties_en": "Detailed physical and thermal properties of the mixture (e.g. density/solubility shifts) in English.",
+  "physical_properties_ar": "Detailed physical and thermal properties of the mixture in Arabic (الخصائص الفيزيائية والحرارية باللغة العربية).",
+  "safety_measures_en": "Precise lab safety measures and hazard controls (e.g. required PPE types) in English.",
+  "safety_measures_ar": "Precise lab safety measures and hazard controls in Arabic (آلية الأمان والسلامة المخبرية باللغة العربية).",
+  "chemical_properties_en": "Chemical properties and stability of the resulting mixture in English.",
+  "chemical_properties_ar": "Chemical properties and stability of the resulting mixture in Arabic (الخواص الكيميائية باللغة العربية)."
 }
 
 Do not include any markdown styling or extra text. Return ONLY the raw JSON string.`

@@ -175,12 +175,16 @@ const predictReactionLocally = (chemA, chemB) => {
       is_safe: true,
       reaction_type: 'produces_gas',
       severity_score: 3,
-      result_description: `Reaction between ${acid.name} (${acid.formula}) and ${carbonate.name} (${carbonate.formula}) generates Carbon Dioxide (CO2) gas bubbles. Neutralization is successful.\nتفاعل التعادل بين الحمض والكربونات ينتج غاز ثاني أكسيد الكربون.`,
+      result_description_en: `Reaction between ${acid.name} (${acid.formula}) and ${carbonate.name} (${carbonate.formula}) generates Carbon Dioxide (CO2) gas bubbles. Neutralization is successful.`,
+      result_description_ar: `التفاعل بين ${acid.name} و ${carbonate.name} ينتج فقاعات غاز ثاني أكسيد الكربون (CO2). عملية التعادل ناجحة.`,
       product_name: 'Carbon Dioxide & Salt Solution',
       product_formula: 'CO2 (g) + H2O (l) + Salt (aq)',
-      physical_properties: `Exothermic neutralization (ΔH < 0). Active gas evolution causes effervescence (bubbling). Solution temperature rises moderately. High solubility of the formed calcium salt in water.\nتغير طارد للحرارة مع انطلاق فقاعات غاز CO2 مسبباً فوراناً وارتفاعاً معتدلاً في حرارة المحلول.`,
-      safety_measures: `Wear splash goggles, protective laboratory coat, and nitrile gloves. Perform in a fume hood to vent CO2. Ensure closed vessels are vented to avoid pressure explosion.\nارتدِ نظارات الحماية المخبرية، قفازات النيتريل، ومعطف المختبر. يُجرى في هود تهوية لمنع تراكم الغاز.`,
-      chemical_properties: `pH shifts from strong acid (pH < 1) towards weakly acidic/neutral (pH 5-6) depending on ratio. Carbonate ions convert to gaseous CO2 and H2O, leaving chloride/sulfate salts in solution.\nتغير قيمة الـ pH من حمضي قوي إلى حمضي ضعيف أو متعادل حسب النسب، وتتحلل أيونات الكربونات تماماً.`
+      physical_properties_en: `Exothermic neutralization (ΔH < 0). Active gas evolution causes effervescence (bubbling). Solution temperature rises moderately. High solubility of the formed calcium salt in water.`,
+      physical_properties_ar: `تفاعل طارد للحرارة مع فوران نشط وانطلاق فقاعات الغاز. ترتفع درجة حرارة المحلول بشكل معتدل مع ذوبانية عالية للملح المتشكل.`,
+      safety_measures_en: `Wear splash goggles, protective laboratory coat, and nitrile gloves. Perform in a fume hood to vent CO2. Ensure closed vessels are vented to avoid pressure explosion.`,
+      safety_measures_ar: `ارتدِ نظارات الحماية، معطف المختبر، وقفازات النيتريل. يُجرى تحت الشفاط لتفريغ الغاز، وتجنب إغلاق الأوعية بإحكام منعاً للانفجار بسبب الضغط.`,
+      chemical_properties_en: `pH shifts from strong acid (pH < 1) towards weakly acidic/neutral (pH 5-6) depending on ratio. Carbonate ions convert to gaseous CO2 and H2O, leaving chloride/sulfate salts in solution.`,
+      chemical_properties_ar: `يتغير الرقم الهيدروجيني pH من حمضي قوي (أقل من 1) نحو حموضة خفيفة أو تعادل (5-6) حسب النسب. تتحول أيونات الكربونات إلى غاز وثاني أكسيد كربون وماء.`
     }
   }
 
@@ -192,12 +196,16 @@ const predictReactionLocally = (chemA, chemB) => {
       is_safe: true,
       reaction_type: 'safe',
       severity_score: 2,
-      result_description: `Acid-base neutralization reaction between ${acid.name} and ${base.name}. Heat is released (exothermic), forming water and stable salt.\nتفاعل تعادل بين الحمض والقاعدة ينتج ملح وماء مع انطلاق حرارة.`,
+      result_description_en: `Acid-base neutralization reaction between ${acid.name} and ${base.name}. Heat is released (exothermic), forming water and stable salt.`,
+      result_description_ar: `تفاعل تعادل بين الحمض (${acid.name}) والقاعدة (${base.name}). ينطلق تفاعل طارد للحرارة لإنتاج الملح والماء المستقر.`,
       product_name: 'Water & Salt Solution',
       product_formula: 'H2O (l) + Salt (aq)',
-      physical_properties: `Highly exothermic heat of neutralization (~57 kJ/mol). Rapid increase in mixture temperature. Transparent homogeneous liquid phase.\nانطلاق حرارة تعادل عالية جداً تؤدي لارتفاع سريع في حرارة الخليط السائل المتجانس.`,
-      safety_measures: `Wear chemical splash goggles, heavy nitrile gloves, and protective apron. Always add acid to base slowly with stirring. Cool container if needed to prevent boiling splash.\nارتدِ نظارات واقية، قفازات نيتريل سميكة. أضف الحمض إلى القاعدة ببطء مع التحريك المستمر لتجنب الغليان المفاجئ.`,
-      chemical_properties: `Rapid neutralization reaction resulting in pH shift to ~7. Electrolytes dissociate completely into active spectator ions (e.g., Na+, Cl-, SO4^2-).\nتغير سريع في الرقم الهيدروجيني pH باتجاه التعادل (~7)، وتتفكك الإلكتروليتات بالكامل إلى أيونات ذائبة مستقرة.`
+      physical_properties_en: `Highly exothermic heat of neutralization (~57 kJ/mol). Rapid increase in mixture temperature. Transparent homogeneous liquid phase.`,
+      physical_properties_ar: `حرارة تعادل طاردة للحرارة بشكل كبير (~57 كيلو جول/مول). ارتفاع سريع في درجة الحرارة وينتج محلول سائل متجانس رائق.`,
+      safety_measures_en: `Wear chemical splash goggles, heavy nitrile gloves, and protective apron. Always add acid to base slowly with stirring. Cool container if needed to prevent boiling splash.`,
+      safety_measures_ar: `ارتدِ نظارات واقية للمواد الكيميائية، قفازات نيتريل سميكة، ومريلة واقية. أضف الحمض دائماً إلى القاعدة ببطء مع التحريك. برّد الوعاء إذا لزم الأمر.`,
+      chemical_properties_en: `Rapid neutralization reaction resulting in pH shift to ~7. Electrolytes dissociate completely into active spectator ions (e.g., Na+, Cl-, SO4^2-).`,
+      chemical_properties_ar: `تفاعل تعادل سريع يؤدي إلى تغير الرقم الهيدروجيني pH إلى حوالي 7. تتفكك الإلكتروليتات بالكامل إلى أيونات ذائبة مستقرة.`
     }
   }
 
@@ -212,12 +220,16 @@ const predictReactionLocally = (chemA, chemB) => {
       is_safe: false,
       reaction_type: 'explosive',
       severity_score: 9,
-      result_description: `CRITICAL DANGER: Mixing strong oxidizer ${ox.name} with flammable ${flam.name} results in violent oxidation, high heat release, and explosive combustion risk!\nخطر انفجار: خلط مادة مؤكسدة قوية مع مادة قابلة للاشتعال يسبب تفاعل سريع وخطر الحريق.`,
+      result_description_en: `CRITICAL DANGER: Mixing strong oxidizer ${ox.name} with flammable ${flam.name} results in violent oxidation, high heat release, and explosive combustion risk!`,
+      result_description_ar: `خطر حرج للغاية: خلط المؤكسد القوي (${ox.name}) مع المادة القابلة للاشتعال (${flam.name}) يسبب أكسدة عنيفة وانطلاق حرارة عالية وخطر انفجار واشتعال!`,
       product_name: 'Combustion Gases',
       product_formula: 'CO2 (g) + H2O (g)',
-      physical_properties: `Extremely high exothermic heat release (ΔH << 0). Instantaneous boiling and vaporization of organic solvents. Immediate expansion of combustion gases.\nانطلاق حرارة هائلة طاردة للحرارة، وتبخر فوري للمذيبات العضوية مع تمدد سريع للغازات الناتجة.`,
-      safety_measures: `DO NOT MIX. Requires blast shield, self-contained breathing apparatus (SCBA), chemical suit, and Class B fire extinguisher ready.\nممنوع الخلط بتاتاً. يتطلب درع حماية من الانفجار، وجهاز تنفس مستقل، وبدلة كيميائية مع توفير طفاية حريق مناسبة.`,
-      chemical_properties: `Rapid destructive redox oxidation-reduction reaction. Complete cleavage of carbon-carbon bonds, yielding gaseous carbon dioxide, toxic nitrogen/sulfur oxides, and steam.\nتفاعل أكسدة واختزال تدميري سريع، يتفكك فيه المذيب العضوي تماماً وينتج غازات احتراق سامة وبخار ماء.`
+      physical_properties_en: `Extremely high exothermic heat release (ΔH << 0). Instantaneous boiling and vaporization of organic solvents. Immediate expansion of combustion gases.`,
+      physical_properties_ar: `انطلاق حرارة هائل طارد للحرارة بشدة. غليان وتبخر فوري للمذيبات العضوية مع تمدد سريع لغازات الاحتراق.`,
+      safety_measures_en: `DO NOT MIX. Requires blast shield, self-contained breathing apparatus (SCBA), chemical suit, and Class B fire extinguisher ready.`,
+      safety_measures_ar: `يمنع الخلط نهائياً. يتطلب درع واقي من الانفجار، جهاز تنفس مستقل، بدلة حماية كيميائية، ووجود طفاية حريق من الفئة B جاهزة للاستخدام.`,
+      chemical_properties_en: `Rapid destructive redox oxidation-reduction reaction. Complete cleavage of carbon-carbon bonds, yielding gaseous carbon dioxide, toxic nitrogen/sulfur oxides, and steam.`,
+      chemical_properties_ar: `تفاعل أكسدة واختزال تدميري سريع. تفكك الروابط الكيميائية بالكامل لينتج غاز ثاني أكسيد الكربون، وأكاسيد النيتروجين/الكبريت السامة وبخار الماء.`
     }
   }
 
@@ -228,12 +240,16 @@ const predictReactionLocally = (chemA, chemB) => {
       is_safe: false,
       reaction_type: 'hazardous',
       severity_score: 5,
-      result_description: `Exothermic acid dilution. Mixing water with concentrated ${acid.name} releases high heat. Always add acid to water slowly, never the reverse to prevent acid splash.\nتخفيف الحمض الطارد للحرارة. يجب إضافة الحمض للماء ببطء لمنع التناثر.`,
+      result_description_en: `Exothermic acid dilution. Mixing water with concentrated ${acid.name} releases high heat. Always add acid to water slowly, never the reverse to prevent acid splash.`,
+      result_description_ar: `تخفيف الحمض طارد للحرارة. خلط الماء مع الحمض المركز (${acid.name}) يطلق حرارة عالية. أضف الحمض دائماً إلى الماء ببطء لمنع تناثر الحمض.`,
       product_name: 'Hydronium Ions',
       product_formula: 'H3O+ (aq)',
-      physical_properties: `Exothermic hydration energy release. Viscosity changes, and temperature rises. Risk of localized boiling and acid splattering.\nانطلاق طاقة هيدرة طاردة للحرارة مسببة لارتفاع درجة الحرارة وتغير اللزوجة مع خطر فوران الحمض.`,
-      safety_measures: `Follow standard laboratory rule: Always add Acid to Water (A&W - never add water to acid!). Wear full face shield and acid-resistant gloves. Work inside a fume hood.\nقاعدة مخبرية صارمة: أضف الحمض دائماً إلى الماء ببطء وتجنب إضافة الماء للحمض المركز مطلقاً. ارتدِ واقي الوجه بالكامل.`,
-      chemical_properties: `Strong ionization. The acid dissociates completely, increasing hydronium ion concentration (pH drops to < 1).\nتأين قوي جداً، يتفكك فيه الحمض كلياً مما يرفع تركيز أيونات الهيدرونيوم ويهبط بالـ pH إلى أقل من 1.`
+      physical_properties_en: `Exothermic hydration energy release. Viscosity changes, and temperature rises. Risk of localized boiling and acid splattering.`,
+      physical_properties_ar: `انطلاق طاقة هيدرة طاردة للحرارة. تغير اللزوجة وارتفاع درجة الحرارة مع خطر غليان موضعي وتناثر الحمض الحارق.`,
+      safety_measures_en: `Follow standard laboratory rule: Always add Acid to Water (A&W - never add water to acid!). Wear full face shield and acid-resistant gloves. Work inside a fume hood.`,
+      safety_measures_ar: `اتبع القاعدة المخبرية الصارمة: أضف الحمض دائماً إلى الماء (A&W - لا تضف الماء للحمض مطلقاً!). ارتدِ واقي الوجه بالكامل وقفازات مقاومة للأحماض.`,
+      chemical_properties_en: `Strong ionization. The acid dissociates completely, increasing hydronium ion concentration (pH drops to < 1).`,
+      chemical_properties_ar: `تأين قوي. يتفكك الحمض كلياً مما يرفع تركيز أيونات الهيدرونيوم ويهبط بالرقم الهيدروجيني pH لأقل من 1.`
     }
   }
 
@@ -245,12 +261,16 @@ const predictReactionLocally = (chemA, chemB) => {
       is_safe: true,
       reaction_type: 'safe',
       severity_score: 1,
-      result_description: `Ethanol and Water are fully miscible in all proportions. They form a homogeneous solution due to strong hydrogen bonding. A slight volume contraction occurs.\nالإيثانول والماء ممتزجان تمامًا في جميع النسب، ويشكلان محلولًا متجانسًا بسبب الروابط الهيدروجينية القوية.`,
+      result_description_en: `Ethanol and Water are fully miscible in all proportions. They form a homogeneous solution due to strong hydrogen bonding. A slight volume contraction occurs.`,
+      result_description_ar: `الإيثانول والماء ممتزجان تماماً في جميع النسب. يشكلان محلولاً متجانسًا نتيجة الروابط الهيدروجينية القوية، مع انكماش طفيف في الحجم.`,
       product_name: 'Aqueous Ethanol Solution',
       product_formula: 'C2H5OH (aq)',
-      physical_properties: `Slight exothermic heat of mixing. Density decreases, and volume contracts (e.g., 50ml + 50ml yields ~96ml of solution).\nانطلاق حرارة خلط طفيفة جداً، مع انكماش في الحجم الكلي للمزيج ونقصان الكثافة الناتجة عن تداخل الجزيئات.`,
-      safety_measures: `Keep away from heat, open sparks, and hot surfaces. Wear standard eye protection and lab gloves.\nخليط قابل للاشتعال حسب التركيز. يُحفظ بعيداً عن مصادر الحرارة والشرر المفتوح مع ارتداء قفازات المختبر القياسية.`,
-      chemical_properties: `Highly stable, non-reactive mixture. The solution is flammable depending on ethanol concentration (flash point decreases as ethanol percentage rises).\nمزيج فيزيائي مستقر تماماً ولا يوجد أي تفاعل كيميائي، تقل درجة الوميض للمزيج مع زيادة تركيز الكحول.`
+      physical_properties_en: `Slight exothermic heat of mixing. Density decreases, and volume contracts (e.g., 50ml + 50ml yields ~96ml of solution).`,
+      physical_properties_ar: `انطلاق حرارة خلط طفيفة. تنخفض الكثافة وينكمش الحجم الكلي قليلاً (مثلاً 50 مل + 50 مل ينتج حوالي 96 مل من المحلول).`,
+      safety_measures_en: `Keep away from heat, open sparks, and hot surfaces. Wear standard eye protection and lab gloves.`,
+      safety_measures_ar: `يُحفظ بعيداً عن الحرارة والشرر والأسطح الساخنة. ارتدِ واقي العينين المعياري وقفازات المختبر.`,
+      chemical_properties_en: `Highly stable, non-reactive mixture. The solution is flammable depending on ethanol concentration (flash point decreases as ethanol percentage rises).`,
+      chemical_properties_ar: `مزيج فيزيائي مستقر وغير تفاعلي تماماً. المحلول قابل للاشتعال حسب تركيز الإيثانول (تنخفض نقطة الوميض مع ارتفاع نسبة الكحول).`
     }
   }
 
@@ -260,12 +280,16 @@ const predictReactionLocally = (chemA, chemB) => {
       is_safe: true,
       reaction_type: 'safe',
       severity_score: 1,
-      result_description: `Acetone and Water are completely miscible. They form a single-phase polar organic solution. Commonly used as a laboratory cleaning and drying solvent.\nالأسيتون والماء ممتزجان تمامًا، ويشكلان محلولاً متجانسًا قطبيًا أحادي الطور.`,
+      result_description_en: `Acetone and Water are completely miscible. They form a single-phase polar organic solution. Commonly used as a laboratory cleaning and drying solvent.`,
+      result_description_ar: `الأسيتون والماء ممتزجان تماماً، ويشكلان محلولاً متجانساً قطبياً أحادي الطور. يُستخدم عادة كمذيب للتنظيف والتجفيف في المختبر.`,
       product_name: 'Aqueous Acetone Solution',
       product_formula: 'C3H6O (aq)',
-      physical_properties: `Negligible heat of mixing. Highly volatile; vapors are heavier than air. Clear, homogeneous solution.\nحرارة خلط مهملة، الخليط ذو تطايرية عالية وتنتشر أبخرته العضوية في الهواء بسهولة وهو محلول رائق تماماً.`,
-      safety_measures: `Ensure proper ventilation to prevent inhalation of volatile acetone vapors. Wear solvent-resistant gloves. Avoid spark sources.\nتأكد من التهوية الجيدة للغرفة لتفادي استنشاق أبخرة الأسيتون المتطايرة، ارتدِ قفازات النيتريل وتجنب الشرر.`,
-      chemical_properties: `Stable mixture. Polar organic solvent remains flammable. No chemical reaction occurs under standard laboratory conditions.\nمزيج فيزيائي مستقر وقطبي غير تفاعلي، يظل الأسيتون قابلاً للاشتعال والتفاعل مع المؤكسدات القوية فقط.`
+      physical_properties_en: `Negligible heat of mixing. Highly volatile; vapors are heavier than air. Clear, homogeneous solution.`,
+      physical_properties_ar: `حرارة خلط مهملة. متطاير للغاية وتعتبر أبخرته أثقل من الهواء. ينتج محلول رائق متجانس بالكامل.`,
+      safety_measures_en: `Ensure proper ventilation to prevent inhalation of volatile acetone vapors. Wear solvent-resistant gloves. Avoid spark sources.`,
+      safety_measures_ar: `تأكد من التهوية الجيدة للغرفة لتفادي استنشاق أبخرة الأسيتون المتطايرة. ارتدِ قفازات النيتريل وتجنب مصادر الشرر.`,
+      chemical_properties_en: `Stable mixture. Polar organic solvent remains flammable. No chemical reaction occurs under standard laboratory conditions.`,
+      chemical_properties_ar: `مزيج مستقر. يظل المذيب العضوي القطبي قابلاً للاشتعال. لا يحدث تفاعل كيميائي في الظروف المعيارية.`
     }
   }
 
@@ -275,12 +299,16 @@ const predictReactionLocally = (chemA, chemB) => {
       is_safe: false,
       reaction_type: 'hazardous',
       severity_score: 4,
-      result_description: `IMMISCIBLE MIXTURE: Benzene is non-polar and hydrophobic, so it does not dissolve in polar water. It forms a distinct two-phase liquid system where Benzene (density 0.87 g/cm³) floats on top of the water layer. Flammability hazard remains.\nخليط غير ممتزج: البنزين غير قطبي لا يذوب في الماء القطبي، ويشكل طبقتين منفصلتين حيث يطفو البنزين في الأعلى لخفة كثافته.`,
+      result_description_en: `IMMISCIBLE MIXTURE: Benzene is non-polar and hydrophobic, so it does not dissolve in polar water. It forms a distinct two-phase liquid system where Benzene (density 0.87 g/cm³) floats on top of the water layer. Flammability hazard remains.`,
+      result_description_ar: `مزيج غير قابل للامتزاج: البنزين غير قطبي كاره للماء فلا يذوب في الماء القطبي. يشكل طبقتين سائلتين منفصلتين حيث يطفو البنزين (كثافة 0.87) في الأعلى.`,
       product_name: 'Two-Phase Immiscible System',
       product_formula: 'C6H6 (l) + H2O (l)',
-      physical_properties: `Zero miscibility. Forms two distinct liquid phases. Benzene (density 0.87 g/cm³) floats on top of water (density 1.0 g/cm³).\nانعدام تام للامتزاج، ينفصل الخليط إلى طورين سائلين، يطفو البنزين في الأعلى بسبب كثافته الأقل من الماء.`,
-      safety_measures: `Benzene is a known human carcinogen. Wear viton gloves, safety goggles, and handle exclusively in a certified fume hood.\nالبنزين مادة مسرطنة وسامة جداً بالاستنشاق. ارتدِ قفازات الفيتون الخاصة وحرك السائل داخل هود المختبر حصراً.`,
-      chemical_properties: `No chemical interaction. High chemical stability of both phases. Hydrophobic non-polar phase remains highly flammable.\nلا يوجد أي تآثر أو رابطة كيميائية بين الطورين، ويحتفظ كل سائل بخصائصه الكيميائية دون تغيير.`
+      physical_properties_en: `Zero miscibility. Forms two distinct liquid phases. Benzene (density 0.87 g/cm³) floats on top of water (density 1.0 g/cm³).`,
+      physical_properties_ar: `انعدام تام للامتزاج. ينفصل السائل لطورين منفصلين تماماً، يطفو البنزين فوق الماء نظراً لاختلاف الكثافة.`,
+      safety_measures_en: `Benzene is a known human carcinogen. Wear viton gloves, safety goggles, and handle exclusively in a certified fume hood.`,
+      safety_measures_ar: `البنزين مادة مسرطنة معروفة للبشر. ارتدِ قفازات فيتون ونظارات حماية، وتعامل معه حصرياً داخل شفاط الغاز المعتمد.`,
+      chemical_properties_en: `No chemical interaction. High chemical stability of both phases. Hydrophobic non-polar phase remains highly flammable.`,
+      chemical_properties_ar: `لا يوجد أي تآثر كيميائي بين الطورين. استقرار كيميائي عالٍ لكلا الطورين، وتظل الطبقة العضوية الكارهة للماء قابلة للاشتعال.`
     }
   }
 
@@ -290,12 +318,16 @@ const predictReactionLocally = (chemA, chemB) => {
       is_safe: true,
       reaction_type: 'safe',
       severity_score: 2,
-      result_description: `Acetone and Benzene are fully miscible organic solvents. They mix to form a homogeneous organic solvent mixture. Note: Both solvents are highly flammable and volatile; handle under a fume hood.\nالأسيتون والبنزين ممتزجان تمامًا ويشكلان خليطًا متجانسًا من المذيبات العضوية القابلة للاشتعال والتطاير.`,
+      result_description_en: `Acetone and Benzene are fully miscible organic solvents. They mix to form a homogeneous organic solvent mixture. Note: Both solvents are highly flammable and volatile; handle under a fume hood.`,
+      result_description_ar: `الأسيتون والبنزين مذيبات عضوية ممتزجة تماماً. يختلطان لتكوين محلول عضوي متجانس. كلا المذيبين شديدا الاشتعال والتطاير.`,
       product_name: 'Acetone-Benzene Organic Solution',
       product_formula: 'C3H6O (l) + C6H6 (l)',
-      physical_properties: `Homogeneous organic phase. Very low boiling point and high vapor pressure. Volatile organic smell.\nطور عضوي متجانس ذو درجة غليان منخفضة وتطايرية عالية مع انبعاث رائحة عطرية للمذيبات العضوية.`,
-      safety_measures: `Highly flammable organic mixture. Wear solvent-resistant nitrile or viton gloves. Use static-free equipment and handle inside a fume hood.\nخليط شديد الاشتعال والتطاير. ارتدِ قفازات النيتريل المقاومة للمذيبات واستخدم أدوات خالية من الكهرباء الساكنة.`,
-      chemical_properties: `Stable mixture. Polar/non-polar aprotic organic blend. No chemical reaction occurs.\nمزيج مستقر فيزيائياً بدون تفاعل كيميائي، يسلك المحلول سلوك الخليط المذيب العضوي غير المتفاعل.`
+      physical_properties_en: `Homogeneous organic phase. Very low boiling point and high vapor pressure. Volatile organic smell.`,
+      physical_properties_ar: `مزيج عضوي متجانس. درجة غليان منخفضة جداً وضغط بخاري مرتفع، مع انبعاث رائحة المذيبات العضوية المتطايرة.`,
+      safety_measures_en: `Highly flammable organic mixture. Wear solvent-resistant nitrile or viton gloves. Use static-free equipment and handle inside a fume hood.`,
+      safety_measures_ar: `مزيج عضوي شديد الاشتعال. ارتدِ قفازات نيتريل أو فيتون المقاومة للمذيبات. استخدم أدوات مضادة للشرر الساكن وتحت الشفاط.`,
+      chemical_properties_en: `Stable mixture. Polar/non-polar aprotic organic blend. No chemical reaction occurs.`,
+      chemical_properties_ar: `مزيج مستقر فيزيائياً. خليط عضوي قطبي وغير قطبي لا بروتوني. لا يحدث تفاعل كيميائي.`
     }
   }
 
@@ -310,12 +342,16 @@ const predictReactionLocally = (chemA, chemB) => {
       is_safe: false,
       reaction_type: 'hazardous',
       severity_score: dangerLevel,
-      result_description: `Potential hazard detected. Mixing ${chemA.name} and ${chemB.name} is restricted. Proceed with certified personal protective equipment under ventilation.\nتفاعل محتمل الخطورة بسبب وجود مواد عالية السمية أو الكاوية.`,
+      result_description_en: `Potential hazard detected. Mixing ${chemA.name} and ${chemB.name} is restricted. Proceed with certified personal protective equipment under ventilation.`,
+      result_description_ar: `خطر محتمل. خلط ${chemA.name} مع ${chemB.name} خاضع للقيود. يرجى المتابعة فقط باستخدام أدوات الوقاية الشخصية المعتمدة وتحت التهوية.`,
       product_name: 'Unstable Complex',
       product_formula: 'Complex',
-      physical_properties: `Reaction enthalpy and temperature rise vary based on actual concentration levels. Vapor pressure may increase.\nتعتمد الخصائص الحرارية للخلط على تركيز المواد المخلوطة ودرجة الحرارة في الغرفة.`,
-      safety_measures: `Handle with extreme care. Wear standard personal protective equipment (PPE) including safety goggles, lab coat, and chemical-resistant gloves under hood.\nيجب التعامل بحذر شديد مع ارتداء معدات الوقاية الشخصية بالكامل (نظارات معطف قفازات كيميائية) وتحت الشفاط الهوائي.`,
-      chemical_properties: `Avoid contact with heat, incompatibles, and open atmosphere. Mixture properties are unknown; assume reactive.\nتجنب الحرارة والشرر، المزيج يعتبر غير مستقر كيميائياً ويجب افتراض تفاعليته العالية لتفادي الخطر.`
+      physical_properties_en: `Reaction enthalpy and temperature rise vary based on actual concentration levels. Vapor pressure may increase.`,
+      physical_properties_ar: `تتفاوت درجة الحرارة والحرارة المنطلقة بناءً على التركيز الفعلي. قد يرتفع الضغط البخاري للمزيج.`,
+      safety_measures_en: `Handle with extreme care. Wear standard personal protective equipment (PPE) including safety goggles, lab coat, and chemical-resistant gloves under hood.`,
+      safety_measures_ar: `تعامل مع المزيج بحذر شديد. ارتدِ معدات الوقاية الشخصية (PPE) الكاملة ونظارات الأمان وتحت شفاط الغاز حصراً.`,
+      chemical_properties_en: `Avoid contact with heat, incompatibles, and open atmosphere. Mixture properties are unknown; assume reactive.`,
+      chemical_properties_ar: `تجنب ملامسة مصادر الحرارة والمواد غير المتوافقة والجو المفتوح. خصائص المزيج مجهولة ويجب فرض تفاعليته.`
     }
   }
 
@@ -323,12 +359,16 @@ const predictReactionLocally = (chemA, chemB) => {
     is_safe: true,
     reaction_type: 'safe',
     severity_score: 1,
-    result_description: `No active reaction expected. ${chemA.name} and ${chemB.name} are compatible for mixing under standard lab conditions.\nخلط آمن ومستقر. لا يوجد تفاعل كيميائي نشط متوقع تحت الظروف العادية.`,
+    result_description_en: `No active reaction expected. ${chemA.name} and ${chemB.name} are compatible for mixing under standard lab conditions.`,
+    result_description_ar: `لا يتوقع حدوث تفاعل نشط. المواد ${chemA.name} و ${chemB.name} متوافقة للخلط تحت الظروف المخبرية القياسية.`,
     product_name: 'Stable Mixture',
     product_formula: `${formulaA} + ${formulaB}`,
-    physical_properties: `No significant temperature changes. Solution remains stable at room temperature.\nلا يوجد أي تغير حراري ملحوظ أو تغير في الكثافة الكلية للخليط السائل.`,
-    safety_measures: `Wear standard lab protection (goggles, coat, nitrile gloves). Work in a clean laboratory environment.\nارتدِ معدات الوقاية الشخصية المعيارية للمختبر (نظارات واقية، معطف المختبر، قفازات النيتريل).`,
-    chemical_properties: `Compatible mixture. Highly stable chemical properties under normal atmosphere.\nخليط مستقر كيميائياً ومتوافق تماماً ولا يظهر أي علامات للتفكك أو النشاط الكيميائي الفوري.`
+    physical_properties_en: `No significant temperature changes. Solution remains stable at room temperature.`,
+    physical_properties_ar: `لا توجد تغيرات حرارية ملحوظة. يظل المحلول مستقراً في درجة حرارة الغرفة.`,
+    safety_measures_en: `Wear standard lab protection (goggles, coat, nitrile gloves). Work in a clean laboratory environment.`,
+    safety_measures_ar: `ارتدِ ملابس الوقاية المعيارية (نظارات واقية، معطف المختبر، قفازات). اعمل في بيئة مخبرية نظيفة.`,
+    chemical_properties_en: `Compatible mixture. Highly stable chemical properties under normal atmosphere.`,
+    chemical_properties_ar: `مزيج متوافق. خصائص كيميائية مستقرة للغاية تحت الضغط الجوي العادي.`
   }
 }
 
@@ -726,23 +766,40 @@ export default function MixingSimulatorPage() {
   // PDF Report Exporter
   const exportReportPDF = () => {
     if (!chemA || !chemB || !result) return
-    const printWindow = window.open('', '_blank')
-    if (!printWindow) {
-      toast.error("Failed to open print preview. Please allow popups for this site.")
-      return
+    
+    // Check if printing iframe exists, else create it
+    let iframe = document.getElementById('print-iframe')
+    if (!iframe) {
+      iframe = document.createElement('iframe')
+      iframe.id = 'print-iframe'
+      iframe.style.position = 'fixed'
+      iframe.style.right = '0'
+      iframe.style.bottom = '0'
+      iframe.style.width = '0'
+      iframe.style.height = '0'
+      iframe.style.border = 'none'
+      document.body.appendChild(iframe)
     }
+
+    const printDoc = iframe.contentWindow.document
+    printDoc.open()
     const dateStr = new Date().toLocaleString()
+
+    const resultDesc = lang === 'ar' ? (result.result_description_ar || result.result_description) : (result.result_description_en || result.result_description)
+    const physProps = lang === 'ar' ? (result.physical_properties_ar || result.physical_properties) : (result.physical_properties_en || result.physical_properties)
+    const chemProps = lang === 'ar' ? (result.chemical_properties_ar || result.chemical_properties) : (result.chemical_properties_en || result.chemical_properties)
+    const safetyMeasures = lang === 'ar' ? (result.safety_measures_ar || result.safety_measures) : (result.safety_measures_en || result.safety_measures)
 
     const content = `
       <html>
         <head>
           <title>ChemVision Lab - Experiment Report</title>
           <style>
-            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #1E293B; line-height: 1.6; }
+            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #1E293B; line-height: 1.6; direction: ${lang === 'ar' ? 'rtl' : 'ltr'}; text-align: ${lang === 'ar' ? 'right' : 'left'}; }
             .header { border-bottom: 3px solid #3B82F6; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
             .title { font-size: 26px; font-weight: bold; color: #1E3A8A; }
             .subtitle { font-size: 13px; color: #64748B; margin-top: 4px; }
-            .meta-info { font-size: 11px; color: #64748B; }
+            .meta-info { font-size: 11px; color: #64748B; text-align: ${lang === 'ar' ? 'left' : 'right'}; }
             .chem-box { display: flex; gap: 15px; margin-bottom: 20px; }
             .chem-card { flex: 1; padding: 12px; border: 1px solid #E2E8F0; border-radius: 8px; background: #F8FAFC; }
             .chem-card strong { color: #1E3A8A; display: block; font-size: 15px; }
@@ -759,71 +816,70 @@ export default function MixingSimulatorPage() {
         <body>
           <div class="header">
             <div>
-              <div class="title">🧪 ChemVision Lab Reports</div>
-              <div class="subtitle">Official Compatibility & Laboratory Safety Datasheet (SDS)</div>
+              <div class="title">${lang === 'ar' ? '🧪 تقارير مختبر ChemVision' : '🧪 ChemVision Lab Reports'}</div>
+              <div class="subtitle">${lang === 'ar' ? 'صحيفة سلامة التوافق الكيميائي والمخبري الرسمية (SDS)' : 'Official Compatibility & Laboratory Safety Datasheet (SDS)'}</div>
             </div>
-            <div class="meta-info">Report ID: CV-${Math.floor(100000 + Math.random() * 900000)}<br>Date: ${dateStr}</div>
+            <div class="meta-info">${lang === 'ar' ? 'رقم التقرير:' : 'Report ID:'} CV-${Math.floor(100000 + Math.random() * 900000)}<br>${lang === 'ar' ? 'التاريخ:' : 'Date:'} ${dateStr}</div>
           </div>
 
           <div class="chem-box">
             <div class="chem-card">
-              <strong>Chemical A (المادة أ)</strong>
-              Name: ${chemA.name || 'N/A'}<br>Formula: ${chemA.formula || 'N/A'}<br>Hazard Level: ${(chemA.hazard_level || 'N/A').toUpperCase()}
+              <strong>${lang === 'ar' ? 'المادة الكيميائية أ' : 'Chemical A'}</strong>
+              ${lang === 'ar' ? 'الاسم' : 'Name'}: ${chemA.name || 'N/A'}<br>${lang === 'ar' ? 'الصيغة الكيميائية' : 'Formula'}: ${chemA.formula || 'N/A'}<br>${lang === 'ar' ? 'درجة الخطورة' : 'Hazard Level'}: ${(chemA.hazard_level || 'N/A').toUpperCase()}
             </div>
             <div class="chem-card">
-              <strong>Chemical B (المادة ب)</strong>
-              Name: ${chemB.name || 'N/A'}<br>Formula: ${chemB.formula || 'N/A'}<br>Hazard Level: ${(chemB.hazard_level || 'N/A').toUpperCase()}
+              <strong>${lang === 'ar' ? 'المادة الكيميائية ب' : 'Chemical B'}</strong>
+              ${lang === 'ar' ? 'الاسم' : 'Name'}: ${chemB.name || 'N/A'}<br>${lang === 'ar' ? 'الصيغة الكيميائية' : 'Formula'}: ${chemB.formula || 'N/A'}<br>${lang === 'ar' ? 'درجة الخطورة' : 'Hazard Level'}: ${(chemB.hazard_level || 'N/A').toUpperCase()}
             </div>
           </div>
 
           <div class="section">
-            <div class="section-title">Reaction Summary & Safety Rating</div>
+            <div class="section-title">${lang === 'ar' ? 'ملخص التفاعل وتقييم السلامة' : 'Reaction Summary & Safety Rating'}</div>
             <div class="val-text">
               <span class="badge ${result.is_safe ? 'safe' : 'danger'}">
-                ${result.is_safe ? 'SAFE MIXTURE' : 'RESTRICTED / DANGEROUS'} (Severity: ${result.severity_score}/10)
+                ${result.is_safe ? (lang === 'ar' ? 'خليط آمن' : 'SAFE MIXTURE') : (lang === 'ar' ? 'خلط محظور / خطير' : 'RESTRICTED / DANGEROUS')} (${lang === 'ar' ? 'الخطورة:' : 'Severity:'} ${result.severity_score}/10)
               </span>
-              <p class="description">${result.result_description || 'No matching database rule found.'}</p>
+              <p class="description">${resultDesc || 'No matching database rule found.'}</p>
             </div>
           </div>
 
           <div class="section">
-            <div class="section-title">Physical & Thermal Properties (الخصائص الفيزيائية والحرارية للمزيج)</div>
-            <div class="val-text">${result.physical_properties || 'Standard solution properties apply.'}</div>
+            <div class="section-title">${lang === 'ar' ? 'الخصائص الفيزيائية والحرارية للمزيج' : 'Physical & Thermal Properties'}</div>
+            <div class="val-text">${physProps || 'Standard solution properties apply.'}</div>
           </div>
 
           <div class="section">
-            <div class="section-title">Chemical Properties & Stability (الخواص الكيميائية والاستقرار)</div>
-            <div class="val-text">${result.chemical_properties || 'Compatible mixture under normal conditions.'}</div>
+            <div class="section-title">${lang === 'ar' ? 'الخواص الكيميائية والاستقرار' : 'Chemical Properties & Stability'}</div>
+            <div class="val-text">${chemProps || 'Compatible mixture under normal conditions.'}</div>
           </div>
 
-          <div class="section" style="border-left: 4px solid #D97706; background: #FFFDF5;">
-            <div class="section-title" style="color: #D97706;">Precise Lab Safety & Hazard Controls (آلية الأمان والسلامة المخبرية)</div>
-            <div class="val-text" style="font-weight: 500; color: #92400E;">${result.safety_measures || 'Wear standard laboratory protection.'}</div>
+          <div class="section" style="border-left: 4px solid #D97706; background: #FFFDF5; border-right: ${lang === 'ar' ? '4px solid #D97706' : 'none'}; border-left: ${lang === 'ar' ? 'none' : '4px solid #D97706'};">
+            <div class="section-title" style="color: #D97706;">${lang === 'ar' ? 'آلية الأمان والسلامة المخبرية الدقيقة' : 'Precise Lab Safety & Hazard Controls'}</div>
+            <div class="val-text" style="font-weight: 500; color: #92400E;">${safetyMeasures || 'Wear standard laboratory protection.'}</div>
           </div>
 
           ${result.product_name ? `
           <div class="section" style="background: #FAF5FF; border-color: #E9D5FF;">
-            <div class="section-title" style="color: #8B5CF6;">Resulting Product / المركب الكيميائي المتشكل</div>
-            <div class="val-text"><strong>Product:</strong> ${result.product_name} (${result.product_formula || ''})</div>
+            <div class="section-title" style="color: #8B5CF6;">${lang === 'ar' ? 'المركب الناتج المتكون' : 'Resulting Product'}</div>
+            <div class="val-text"><strong>${lang === 'ar' ? 'الناتج:' : 'Product:'}</strong> ${result.product_name} (${result.product_formula || ''})</div>
           </div>
           ` : ''}
 
           <div class="footer-note">
             ChemVision Academic Simulator. All values generated represent simulation scenarios. Verify all safety protocols before conducting wet-lab assays.
           </div>
-
-          <script>
-            window.onload = function() {
-              window.print();
-              setTimeout(function() { window.close(); }, 500);
-            };
-          </script>
         </body>
       </html>
     `
 
-    printWindow.document.write(content)
-    printWindow.document.close()
+    printDoc.write(content)
+    printDoc.close()
+    
+    // Trigger print on the iframe
+    setTimeout(() => {
+      iframe.contentWindow.focus()
+      iframe.contentWindow.print()
+    }, 200)
   }
 
   const simulate = async () => {
@@ -839,7 +895,7 @@ export default function MixingSimulatorPage() {
     const localResult = predictReactionLocally(chemA, chemB)
     setAnimType(localResult.reaction_type)
 
-    // Phase 1: Pouring animation (lasts 1.5 seconds)
+    // Phase 1: Pouring animation (lasts 0.8 seconds)
     setTimeout(() => {
       setAnimPhase('reacting')
       
@@ -850,7 +906,7 @@ export default function MixingSimulatorPage() {
         playLabSound('explosion')
       }
       
-      // Phase 2: Reaction mixing & kinetics animation (lasts 2.3 seconds)
+      // Phase 2: Reaction mixing & kinetics animation (lasts 1.2 seconds)
       setTimeout(async () => {
         setAnimPhase('finished')
         playLabSound('success') // Chime when result is complete
@@ -909,13 +965,17 @@ You MUST respond with a valid JSON object matching this schema:
 {
   "is_safe": boolean,
   "reaction_type": "safe" | "hazardous" | "explosive" | "toxic" | "produces_gas" | "new_product",
-  "result_description": "A detailed, professional, easy-to-understand explanation of the reaction, listing hazards, safety measures, and chemical products in Arabic and English.",
   "severity_score": number (1 to 10 scale of danger),
   "product_name": "Name of the resulting product if any (leave empty if none)",
   "product_formula": "Formula of the resulting product if any (leave empty if none)",
-  "physical_properties": "Detailed physical and thermal properties of the mixture in Arabic and English.",
-  "safety_measures": "Precise lab safety measures and hazard controls in Arabic and English.",
-  "chemical_properties": "Chemical properties and stability of the resulting mixture in Arabic and English."
+  "result_description_en": "A detailed, professional, easy-to-understand explanation of the reaction in English.",
+  "result_description_ar": "A detailed, professional, easy-to-understand explanation of the reaction in Arabic (شرح مفصل للتفاعل باللغة العربية).",
+  "physical_properties_en": "Detailed physical and thermal properties of the mixture in English.",
+  "physical_properties_ar": "Detailed physical and thermal properties of the mixture in Arabic (الخصائص الفيزيائية والحرارية باللغة العربية).",
+  "safety_measures_en": "Precise lab safety measures and hazard controls in English.",
+  "safety_measures_ar": "Precise lab safety measures and hazard controls in Arabic (آلية الأمان والسلامة المخبرية باللغة العربية).",
+  "chemical_properties_en": "Chemical properties and stability of the resulting mixture in English.",
+  "chemical_properties_ar": "Chemical properties and stability of the resulting mixture in Arabic (الخواص الكيميائية باللغة العربية)."
 }
 
 Do not include any markdown styling or extra text. Return ONLY the raw JSON string.`
@@ -958,8 +1018,8 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
         } finally {
           setLoading(false)
         }
-      }, 2300)
-    }, 1500)
+      }, 1200)
+    }, 800)
   }
 
   const rStyle = result ? (reactionStyles[result.reaction_type] || reactionStyles.safe) : null
@@ -1131,8 +1191,15 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                       <Beaker size={16} />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-left" style={{ color: '#94A3B8' }}>Reaction Summary / ملخص التفاعل</h4>
-                      <p className="text-sm mt-1 leading-relaxed font-semibold text-left" style={{ color: '#2C3E50' }}>{result.result_description}</p>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-left" style={{ color: '#94A3B8' }}>
+                        {lang === 'ar' ? 'ملخص التفاعل الكيميائي' : 'Reaction Summary'}
+                      </h4>
+                      <p className="text-sm mt-1 leading-relaxed font-semibold text-left" style={{ color: '#2C3E50' }}>
+                        {lang === 'ar' 
+                          ? (result.result_description_ar || result.result_description) 
+                          : (result.result_description_en || result.result_description)
+                        }
+                      </p>
                     </div>
                   </div>
 
@@ -1142,8 +1209,15 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                       <Flame size={16} />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-left" style={{ color: '#94A3B8' }}>Physical & Thermal Properties / الخصائص الفيزيائية الحرارية للمزيج</h4>
-                      <p className="text-sm mt-1 leading-relaxed text-left" style={{ color: '#475569' }}>{result.physical_properties}</p>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-left" style={{ color: '#94A3B8' }}>
+                        {lang === 'ar' ? 'الخصائص الفيزيائية والحرارية للمزيج' : 'Physical & Thermal Properties'}
+                      </h4>
+                      <p className="text-sm mt-1 leading-relaxed text-left" style={{ color: '#475569' }}>
+                        {lang === 'ar' 
+                          ? (result.physical_properties_ar || result.physical_properties) 
+                          : (result.physical_properties_en || result.physical_properties)
+                        }
+                      </p>
                     </div>
                   </div>
 
@@ -1153,8 +1227,15 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                       <Zap size={16} />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-left" style={{ color: '#94A3B8' }}>Chemical Properties of Mixture / الخواص الكيميائية للمزيج الناتج</h4>
-                      <p className="text-sm mt-1 leading-relaxed text-left" style={{ color: '#475569' }}>{result.chemical_properties}</p>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-left" style={{ color: '#94A3B8' }}>
+                        {lang === 'ar' ? 'الخواص الكيميائية للمزيج الناتج' : 'Chemical Properties of Mixture'}
+                      </h4>
+                      <p className="text-sm mt-1 leading-relaxed text-left" style={{ color: '#475569' }}>
+                        {lang === 'ar' 
+                          ? (result.chemical_properties_ar || result.chemical_properties) 
+                          : (result.chemical_properties_en || result.chemical_properties)
+                        }
+                      </p>
                     </div>
                   </div>
 
@@ -1164,8 +1245,15 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                       <AlertTriangle size={18} />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-left" style={{ color: '#B45309' }}>Precise Lab Safety & Hazard Controls / آلية الأمان والسلامة المخبرية الدقيقة</h4>
-                      <p className="text-sm mt-1 leading-relaxed font-medium text-left" style={{ color: '#92400E' }}>{result.safety_measures}</p>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-left" style={{ color: '#B45309' }}>
+                        {lang === 'ar' ? 'آلية الأمان والسلامة المخبرية الدقيقة' : 'Precise Lab Safety & Hazard Controls'}
+                      </h4>
+                      <p className="text-sm mt-1 leading-relaxed font-medium text-left" style={{ color: '#92400E' }}>
+                        {lang === 'ar' 
+                          ? (result.safety_measures_ar || result.safety_measures) 
+                          : (result.safety_measures_en || result.safety_measures)
+                        }
+                      </p>
                     </div>
                   </div>
 
@@ -1177,8 +1265,12 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                       animate={{ scale: 1 }}
                       transition={{ delay: 0.3, type: 'spring' }}
                     >
-                      <p className="text-xs font-semibold text-left" style={{ color: '#7C3AED' }}>Product formed / الناتج المتكون:</p>
-                      <p className="text-sm font-bold mt-0.5 text-left" style={{ color: '#6326CA' }}>{result.product_name} {result.product_formula && `(${result.product_formula})`}</p>
+                      <p className="text-xs font-semibold text-left" style={{ color: '#7C3AED' }}>
+                        {lang === 'ar' ? 'المنتج المتشكل:' : 'Product formed:'}
+                      </p>
+                      <p className="text-sm font-bold mt-0.5 text-left" style={{ color: '#6326CA' }}>
+                        {result.product_name} {result.product_formula && `(${result.product_formula})`}
+                      </p>
                     </motion.div>
                   )}
 
