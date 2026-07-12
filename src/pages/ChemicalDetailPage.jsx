@@ -632,6 +632,8 @@ export default function ChemicalDetailPage() {
     </div>
   )
 
+  const { profile } = useAuthStore()
+  const isAdmin = profile?.role === 'admin'
   const h = hazardColors[chemical.hazard_level] || hazardColors.low
   const qrUrl = `${window.location.origin}/chemicals/${chemical.id}`
   const accordionItems = [
@@ -671,62 +673,64 @@ export default function ChemicalDetailPage() {
             </motion.div>
           )}
 
-          {/* QR Code Section */}
-          <motion.div className="card p-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-sm" style={{ color: '#2C3E50' }}>
-                {lang === 'ar' ? 'رمز الاستجابة السريعة (QR)' : 'QR Code'}
-              </h3>
-              <motion.button
-                onClick={() => setShowQR(!showQR)}
-                className="text-xs px-2 py-1 rounded-lg font-semibold"
-                style={{ background: '#EDE9FE', color: '#7C3AED' }}
-                whileHover={{ scale: 1.05 }}
-              >
-                {showQR ? (lang === 'ar' ? 'إخفاء' : 'Hide') : (lang === 'ar' ? 'عرض الرمز' : 'Show QR')}
-              </motion.button>
-            </div>
-            <AnimatePresence>
-              {showQR && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ type: 'spring', stiffness: 200 }}
-                  className="flex flex-col items-center gap-3"
+          {/* QR Code Section (Only for Admins) */}
+          {isAdmin && (
+            <motion.div className="card p-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-sm" style={{ color: '#2C3E50' }}>
+                  {lang === 'ar' ? 'رمز الاستجابة السريعة (QR)' : 'QR Code'}
+                </h3>
+                <motion.button
+                  onClick={() => setShowQR(!showQR)}
+                  className="text-xs px-2 py-1 rounded-lg font-semibold"
+                  style={{ background: '#EDE9FE', color: '#7C3AED' }}
+                  whileHover={{ scale: 1.05 }}
                 >
-                  <div className="p-3 rounded-xl" style={{ background: 'white', border: '2px solid #EDE9FE' }}>
-                    <QRCode value={qrUrl} size={140} fgColor="#0F2D52" bgColor="#FFFFFF" level="H" />
-                  </div>
-                  <p className="text-xs text-center font-medium" style={{ color: '#94A3B8' }}>
-                    {lang === 'ar' ? 'افحص لعرض تفاصيل المادة' : 'Scan to view details'}
-                  </p>
-                  <button
-                    className="btn-secondary w-full justify-center py-2 text-xs"
-                    onClick={() => {
-                      const canvas = document.querySelector('canvas')
-                      if (canvas) {
-                        const link = document.createElement('a')
-                        link.download = `${chemical.name}-QR.png`
-                        link.href = canvas.toDataURL()
-                        link.click()
-                      }
-                    }}
+                  {showQR ? (lang === 'ar' ? 'إخفاء' : 'Hide') : (lang === 'ar' ? 'عرض الرمز' : 'Show QR')}
+                </motion.button>
+              </div>
+              <AnimatePresence>
+                {showQR && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ type: 'spring', stiffness: 200 }}
+                    className="flex flex-col items-center gap-3"
                   >
-                    <Download size={13} /> {lang === 'ar' ? 'تحميل رمز QR' : 'Download QR'}
-                  </button>
-                </motion.div>
+                    <div className="p-3 rounded-xl" style={{ background: 'white', border: '2px solid #EDE9FE' }}>
+                      <QRCode value={qrUrl} size={140} fgColor="#0F2D52" bgColor="#FFFFFF" level="H" />
+                    </div>
+                    <p className="text-xs text-center font-medium" style={{ color: '#94A3B8' }}>
+                      {lang === 'ar' ? 'افحص لعرض تفاصيل المادة' : 'Scan to view details'}
+                    </p>
+                    <button
+                      className="btn-secondary w-full justify-center py-2 text-xs"
+                      onClick={() => {
+                        const canvas = document.querySelector('canvas')
+                        if (canvas) {
+                          const link = document.createElement('a')
+                          link.download = `${chemical.name}-QR.png`
+                          link.href = canvas.toDataURL()
+                          link.click()
+                        }
+                      }}
+                    >
+                      <Download size={13} /> {lang === 'ar' ? 'تحميل رمز QR' : 'Download QR'}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              {!showQR && (
+                <p className="text-xs" style={{ color: '#94A3B8' }}>
+                  {lang === 'ar' 
+                    ? 'اضغط على "عرض الرمز" لتوليد رمز الاستجابة السريعة (QR) الخاص بهذه المادة الكيميائية.' 
+                    : 'Click "Show QR" to generate the QR code for this chemical.'
+                  }
+                </p>
               )}
-            </AnimatePresence>
-            {!showQR && (
-              <p className="text-xs" style={{ color: '#94A3B8' }}>
-                {lang === 'ar' 
-                  ? 'اضغط على "عرض الرمز" لتوليد رمز الاستجابة السريعة (QR) الخاص بهذه المادة الكيميائية.' 
-                  : 'Click "Show QR" to generate the QR code for this chemical.'
-                }
-              </p>
-            )}
-          </motion.div>
+            </motion.div>
+          )}
 
           {/* External PubChem Link */}
           {chemical.pubchem_cid && (
