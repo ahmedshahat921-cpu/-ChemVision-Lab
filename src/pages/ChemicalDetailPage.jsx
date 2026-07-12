@@ -696,13 +696,17 @@ export default function ChemicalDetailPage() {
         </div>
       </div>
 
-      {/* Report Usage Modal */}
       <AnimatePresence>
         {showReportModal && (
           <ReportUsageModal
             chemical={chemical}
             onClose={() => setShowReportModal(false)}
-            onSuccess={() => { setShowConfetti(true); fetchChemicals() }}
+            onSuccess={async () => {
+              setShowConfetti(true)
+              await fetchChemicals(true)
+              const { data } = await supabase.from('chemicals').select('*').eq('id', id).single()
+              if (data) setChemical(data)
+            }}
           />
         )}
       </AnimatePresence>
