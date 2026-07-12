@@ -219,7 +219,7 @@ export default function DashboardPage() {
             value={expiringCount} 
             color="#F5A623" 
             bg="#FEF3DC" 
-            onClick={() => navigate('/chemicals')} 
+            onClick={() => navigate('/chemicals?filter=expiring')} 
           />
         </motion.div>
         <motion.div variants={itemVariants}>
@@ -229,7 +229,7 @@ export default function DashboardPage() {
             value={hazardCount} 
             color="#E85D5D" 
             bg="#FDEAEA" 
-            onClick={() => navigate('/chemicals')} 
+            onClick={() => navigate('/chemicals?filter=hazardous')} 
           />
         </motion.div>
         <motion.div variants={itemVariants}>
@@ -240,7 +240,10 @@ export default function DashboardPage() {
             color="#5DB9A0" 
             bg="#E8FBF6" 
             trend={lang === 'ar' ? 'مختبرات نشطة' : 'Active labs'} 
-            onClick={() => navigate('/chemicals')} 
+            onClick={() => {
+              const usedIds = [...new Set(recentLogs.map(log => log.chemical_id))].filter(Boolean).join(',')
+              navigate(`/chemicals?filter=used&ids=${usedIds}`)
+            }} 
           />
         </motion.div>
       </motion.div>

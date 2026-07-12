@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Filter, X, FlaskConical, QrCode, AlertTriangle, Clock, ChevronDown } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useChemicalStore } from '../store'
 import { QRCodeSVG as QRCode } from 'qrcode.react'
 import toast from 'react-hot-toast'
@@ -157,16 +157,43 @@ export default function ChemicalsPage() {
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const { lang, t } = useLanguage()
   const searchRef = useRef(null)
+  const [searchParams] = useSearchParams()
+
+  const filterParam = searchParams.get('filter')
+  const usedIdsStr = searchParams.get('ids')
 
   useEffect(() => {
     fetchChemicals()
-  }, [])
+    
+    // Clear any previous filters before applying new parameters
+    setFilter('hazardLevel', 'all')
+    setFilter('location', 'all')
+    setFilter('expiryStatus', 'all')
+    setSearch('')
+    
+    if (filterParam === 'expiring') {
+      setFilter('expiryStatus', 'expiring')
+      setShowFilters(true)
+    } else if (filterParam === 'hazardous') {
+      setShowFilters(true)
+    } else if (filterParam === 'used') {
+      setShowFilters(true)
+    }
+  }, [filterParam])
 
   useEffect(() => {
     if (error) {
       toast.error(`Fetch Error: ${error}`)
     }
   }, [error])
+
+  let displayedChemicals = filteredChemicals || []
+  if (filterParam === 'used' && usedIdsStr) {
+    const ids = usedIdsStr.split(',')
+    displayedChemicals = displayedChemicals.filter(c => ids.includes(c.id))
+  } else if (filterParam === 'hazardous') {
+    displayedChemicals = displayedChemicals.filter(c => c.hazard_level === 'critical' || c.hazard_level === 'high')
+  }
 
   const filterOptions = [
     { key: 'hazardLevel', label: lang === 'ar' ? 'مستوى الخطورة' : 'Hazard Level', options: ['all', 'low', 'medium', 'high', 'critical'] },
@@ -181,8 +208,8 @@ export default function ChemicalsPage() {
         <h1 className="font-heading font-bold text-2xl text-left" style={{ color: '#2C3E50' }}>{t('inventory_title')}</h1>
         <p className="text-sm mt-1 text-left" style={{ color: '#64748B' }}>
           {lang === 'ar' 
-            ? `تم العثور على ${(filteredChemicals || []).length} مادة كيميائية` 
-            : `${(filteredChemicals || []).length} chemical${(filteredChemicals || []).length !== 1 ? 's' : ''} found`
+            ? `تم العثور على ${(displayedChemicals || []).length} مادة كيميائية` 
+            : `${(displayedChemicals || []).length} chemical${(displayedChemicals || []).length !== 1 ? 's' : ''} found`
           }
         </p>
       </motion.div>
@@ -285,23 +312,32 @@ export default function ChemicalsPage() {
       {/* Chemicals Grid */}
       {!loading && (
         <AnimatePresence>
-          {(!filteredChemicals || filteredChemicals.length === 0) ? (
+          {(!displayedChemicals || displayedChemicals.length === 0) ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-center py-20"
             >
               <FlaskConical size={48} style={{ color: '#CBD5E1', margin: '0 auto 1rem' }} />
-              <h3 className="font-heading font-semibold text-lg" style={{ color: '#64748B' }}>No chemicals found</h3>
-              <p className="text-sm mt-1" style={{ color: '#94A3B8' }}>Try adjusting your search or filters</p>
-              <button onClick={() => { setSearch(''); setFilter('hazardLevel', 'all'); setFilter('location', 'all'); setFilter('expiryStatus', 'all') }} className="btn-secondary mt-4">Clear filters</button>
+              <h3 className="font-heading font-semibold text-lg" style={{ color: '#64748B' }}>
+                {lang === 'ar' ? 'لم يتم العثور على أي مواد كيميائية' : 'No chemicals found'}
+              </h3>
+              <p className="text-sm mt-1" style={{ color: '#94A3B8' }}>
+                {lang === 'ar' ? 'جرب تغيير شروط البحث أو الفلاتر النشطة' : 'Try adjusting your search or filters'}
+              </p>
+              <button 
+                onClick={() => { setSearch(''); setFilter('hazardLevel', 'all'); setFilter('location', 'all'); setFilter('expiryStatus', 'all') }} 
+                className="btn-secondary mt-4"
+              >
+                {lang === 'ar' ? 'إعادة ضبط الفلاتر' : 'Clear filters'}
+              </button>
             </motion.div>
           ) : (
             <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
               layout
             >
-              {(filteredChemicals || []).map((chemical, i) => (
+              {(displayedChemicals || []).map((chemical, i) => (
                 <ChemicalCard key={chemical.id} chemical={chemical} index={i} />
               ))}
             </motion.div>
