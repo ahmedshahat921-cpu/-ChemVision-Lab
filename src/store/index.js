@@ -198,14 +198,26 @@ export const useChemicalStore = create((set, get) => ({
   },
 
   reportUsage: async (chemicalId, amount, unit, purpose, userId) => {
+    // First check current quantity from DB to avoid stale data
+    const { data: freshChemical, error: fetchError } = await supabase
+      .from('chemicals').select('quantity').eq('id', chemicalId).single()
+    
+    if (fetchError) return { success: false, error: fetchError.message }
+    
+    const currentQty = freshChemical.quantity
+    if (amount > currentQty) {
+      return { success: false, error: `Insufficient stock. Available: ${currentQty} ${unit}` }
+    }
+
     const { error: logError } = await supabase.from('usage_logs').insert({
       chemical_id: chemicalId, user_id: userId, amount_used: amount, unit, purpose
     })
     if (logError) return { success: false, error: logError.message }
-    const chemical = get().chemicals.find(c => c.id === chemicalId)
-    if (chemical) {
-      await get().updateChemical(chemicalId, { quantity: Math.max(0, chemical.quantity - amount) })
-    }
-    return { success: true }
+
+    const newQty = Math.max(0, currentQty - amount)
+    const updateResult = await get().updateChemical(chemicalId, { quantity: newQty })
+    if (!updateResult.success) return { success: false, error: updateResult.error }
+
+    return { success: true, newQuantity: newQty }
   },
 }))

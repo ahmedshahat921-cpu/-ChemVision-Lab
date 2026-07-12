@@ -353,15 +353,71 @@ function ReportUsageModal({ chemical, onClose, onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!amount || parseFloat(amount) <= 0) {
+    const parsedAmount = parseFloat(amount)
+
+    // Validate empty or zero
+    if (!amount || parsedAmount <= 0) {
       toast.error(lang === 'ar' ? 'الرجاء إدخال كمية صالحة للاستهلاك' : 'Enter a valid amount')
       return
     }
+
+    // Validate exceeds available quantity
+    if (parsedAmount > chemical.quantity) {
+      toast.error(
+        lang === 'ar'
+          ? `الكمية المطلوبة (${parsedAmount} ${chemical.quantity_unit}) تتجاوز المتاح (${chemical.quantity} ${chemical.quantity_unit}). الرجاء إدخال كمية أقل.`
+          : `Requested amount (${parsedAmount} ${chemical.quantity_unit}) exceeds available stock (${chemical.quantity} ${chemical.quantity_unit}). Please enter a smaller amount.`
+      )
+      return
+    }
+
+    // Validate chemical is already depleted
+    if (chemical.quantity <= 0) {
+      toast.error(
+        lang === 'ar'
+          ? `المادة "${getTranslation(chemical, 'name', lang)}" نفدت بالكامل ولا يمكن سحب أي كمية منها.`
+          : `"${chemical.name}" is completely out of stock. No usage can be reported.`
+      )
+      return
+    }
+
     setLoading(true)
-    const result = await reportUsage(chemical.id, parseFloat(amount), chemical.quantity_unit, purpose, user.id)
+    const result = await reportUsage(chemical.id, parsedAmount, chemical.quantity_unit, purpose, user.id)
     setLoading(false)
+
     if (result.success) {
-      toast.success(lang === 'ar' ? 'تم تسجيل الاستهلاك بنجاح!' : 'Usage reported successfully!')
+      const remainingQty = Math.max(0, chemical.quantity - parsedAmount)
+
+      // Success toast
+      toast.success(
+        lang === 'ar'
+          ? `تم تسجيل استهلاك ${parsedAmount} ${chemical.quantity_unit} بنجاح!`
+          : `Successfully logged ${parsedAmount} ${chemical.quantity_unit} usage!`
+      )
+
+      // Out of stock alert
+      if (remainingQty === 0) {
+        setTimeout(() => {
+          toast(
+            lang === 'ar'
+              ? `تنبيه: المادة "${getTranslation(chemical, 'name', lang)}" نفدت بالكامل! يرجى إعادة الطلب.`
+              : `Alert: "${chemical.name}" is now completely out of stock! Please reorder.`,
+            { icon: '🚨', duration: 6000, style: { background: '#FEE2E2', color: '#991B1B', fontWeight: 600 } }
+          )
+        }, 800)
+      }
+      // Low stock warning (less than 10% of original or below a threshold)
+      else if (remainingQty > 0 && remainingQty <= chemical.quantity * 0.1) {
+        setTimeout(() => {
+          toast(
+            lang === 'ar'
+              ? `تحذير: الكمية المتبقية من "${getTranslation(chemical, 'name', lang)}" منخفضة جداً (${remainingQty} ${chemical.quantity_unit} فقط).`
+              : `Warning: "${chemical.name}" stock is critically low (${remainingQty} ${chemical.quantity_unit} remaining).`,
+            { icon: '⚠️', duration: 5000, style: { background: '#FEF3C7', color: '#92400E', fontWeight: 600 } }
+          )
+        }, 800)
+      }
+
       onSuccess()
       onClose()
     } else {
@@ -370,6 +426,7 @@ function ReportUsageModal({ chemical, onClose, onSuccess }) {
   }
 
   const chemName = getTranslation(chemical, 'name', lang)
+  const isOutOfStock = chemical.quantity <= 0
 
   return (
     <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
@@ -388,6 +445,12 @@ function ReportUsageModal({ chemical, onClose, onSuccess }) {
           {chemName} – {chemical.formula}
         </p>
 
+        {isOutOfStock && (
+          <div className="mb-4 p-3 rounded-xl text-sm font-semibold" style={{ background: '#FEE2E2', color: '#991B1B' }}>
+            {lang === 'ar' ? 'هذه المادة نفدت بالكامل. لا يمكن تسجيل استهلاك.' : 'This chemical is out of stock. Usage cannot be reported.'}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>
@@ -402,10 +465,19 @@ function ReportUsageModal({ chemical, onClose, onSuccess }) {
               min="0.001" 
               step="0.001" 
               max={chemical.quantity} 
+              disabled={isOutOfStock}
+              style={parseFloat(amount) > chemical.quantity ? { borderColor: '#E85D5D', boxShadow: '0 0 0 2px rgba(232,93,93,0.2)' } : {}}
             />
-            <p className="text-xs mt-1" style={{ color: '#94A3B8' }}>
-              {lang === 'ar' ? 'المتاح:' : 'Available:'} {chemical.quantity} {chemical.quantity_unit}
-            </p>
+            <div className="flex items-center justify-between mt-1">
+              <p className="text-xs" style={{ color: chemical.quantity <= 0 ? '#E85D5D' : '#94A3B8' }}>
+                {lang === 'ar' ? 'المتاح:' : 'Available:'} {chemical.quantity} {chemical.quantity_unit}
+              </p>
+              {parseFloat(amount) > chemical.quantity && (
+                <p className="text-xs font-semibold" style={{ color: '#E85D5D' }}>
+                  {lang === 'ar' ? 'الكمية تتجاوز المتاح!' : 'Exceeds available!'}
+                </p>
+              )}
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>
@@ -417,13 +489,20 @@ function ReportUsageModal({ chemical, onClose, onSuccess }) {
               onChange={(e) => setPurpose(e.target.value)} 
               placeholder={lang === 'ar' ? 'مثال: تجربة معايرة حمضية' : 'e.g. Titration experiment'} 
               className="input-field" 
+              disabled={isOutOfStock}
             />
           </div>
           <div className="flex gap-3">
             <button type="button" onClick={onClose} className="btn-secondary flex-1 justify-center">
               {lang === 'ar' ? 'إلغاء' : 'Cancel'}
             </button>
-            <motion.button type="submit" disabled={loading} className="btn-primary flex-1 justify-center ripple" whileTap={{ scale: 0.97 }}>
+            <motion.button 
+              type="submit" 
+              disabled={loading || isOutOfStock} 
+              className="btn-primary flex-1 justify-center ripple" 
+              whileTap={{ scale: 0.97 }}
+              style={isOutOfStock ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+            >
               {loading ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
               {loading 
                 ? (lang === 'ar' ? 'جاري التسجيل...' : 'Logging...') 
