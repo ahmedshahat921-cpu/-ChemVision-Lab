@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase'
 import { QRCodeCanvas as QRCode } from 'qrcode.react'
 import toast from 'react-hot-toast'
 import Confetti from 'react-confetti'
+import { useLanguage } from '../hooks/useLanguage'
 
 const hazardColors = {
   low: { bg: '#E8FBF6', color: '#2A7060', border: '#5DB9A0' },
@@ -15,21 +16,190 @@ const hazardColors = {
   critical: { bg: '#FDEAEA', color: '#A02A2A', border: '#E85D5D' },
 }
 
+const chemicalTranslations = {
+  'Acetone': {
+    name: 'أسيتون',
+    location: 'مختبر ج - الرف 1',
+    storage_conditions: 'يُحفظ في مكان بارد وجاف وجيد التهوية بعيداً عن مصادر الاشتعال والحرارة.',
+    first_aid: 'في حالة الملامسة بالعين: تُشطف بالماء لعدة دقائق. في حالة الاستنشاق: يُنقل الشخص للهواء الطلق.',
+    description: 'سائل عضوي شفاف، سريع التطاير والاشتعال، ويستخدم كمذيب كيميائي شائع في المختبرات.'
+  },
+  'Ammonia Solution': {
+    name: 'محلول الأمونيا',
+    location: 'مختبر ب - الرف 3',
+    storage_conditions: 'يُحفظ في وعاء محكم الإغلاق في مكان بارد وجاف مع تهوية مناسبة.',
+    first_aid: 'في حالة ملامسة الجلد: تُزال الملابس الملوثة ويُغسل الجلد بالماء فوراً. استنشاق الغاز يتطلب هواء نقي فوراً.',
+    description: 'محلول مائي من الأمونيا ذو رائحة نفاذة وقوية، وهو مادة قاعدية أكالة ومخرشة للجلد والأغشية المخاطية.'
+  },
+  'Benzene': {
+    name: 'بنزين',
+    location: 'مختبر ج - الرف 3',
+    storage_conditions: 'يُحفظ في خزانة المواد القابلة للاشتعال المعزولة والمقاومة للانفجار.',
+    first_aid: 'تجنب استنشاق أبخرته. في حالة الملامسة: يُغسل الجلد جيداً بالماء والصابون. اتصل بالطوارئ فوراً.',
+    description: 'مركب هيدروكربوني عطري سائل عديم اللون، شديد الاشتعال ومسرطن، ويستخدم بحذر شديد كمركب وسيط.'
+  },
+  'Calcium Carbonate': {
+    name: 'كربونات الكالسيوم',
+    location: 'مختبر د - الرف 3',
+    storage_conditions: 'يُحفظ في وعاء مغلق في درجة حرارة الغرفة بعيداً عن الأحماض القوية.',
+    first_aid: 'شطف العينين بالماء كإجراء وقائي. غسل اليدين بعد الاستخدام.',
+    description: 'مركب كيميائي صلب أبيض غير قابل للذوبان في الماء، ويوجد طبيعياً في الصخور والحجر الجيري.'
+  },
+  'Copper Sulfate': {
+    name: 'كبريتات النحاس',
+    location: 'مختبر ج - الرف 4',
+    storage_conditions: 'يُحفظ في عبوات مغلقة جيداً بعيداً عن الرطوبة والمواد القلوية.',
+    first_aid: 'في حالة الابتلاع: يُغسل الفم بالماء ويطلب العون الطبي فوراً. غسل الجلد المصاب بالماء.',
+    description: 'ملح بلوري أزرق زاهي (كبريتات النحاس الثنائي المائية)، سام للبيئة المائية ويستخدم في العديد من التفاعلات الكيميائية.'
+  },
+  'Ethanol': {
+    name: 'إيثانول',
+    location: 'مختبر ب - الرف 1',
+    storage_conditions: 'يُحفظ في حاويات مغلقة بإحكام بعيداً عن الحرارة والشرر والطلب المفتوح.',
+    first_aid: 'في حالة ملامسة العين: تُشطف بالماء الوفير. في حالة الدوار: يُنقل المصاب لمكان جيد التهوية.',
+    description: 'كحول إيثيلي سائل شفاف قابل للاشتعال، يستخدم كمذيب عضوي ومطهر فعال في المختبرات والتعقيم.'
+  },
+  'Glucose': {
+    name: 'جلوكوز',
+    location: 'مختبر د - الرف 2',
+    storage_conditions: 'يُحفظ في مكان جاف وبارد في عبوات مغلقة لمنع امتصاص الرطوبة.',
+    first_aid: 'غير خطير. اغسل بالماء إذا حدث تهيج بسيط.',
+    description: 'سكر أحادي بسيط صلب أبيض بلوري، يستخدم ككاشف ومصدر طاقة رئيسي في التجارب الحيوية والكيميائية.'
+  },
+  'Hydrochloric Acid': {
+    name: 'حمض الهيدروكلوريك',
+    location: 'مختبر أ - الرف 1',
+    storage_conditions: 'يُحفظ في خزانة الأحماض المخصصة والمقاومة للتآكل والصدأ.',
+    first_aid: 'في حالة الانسكاب على الجلد أو العينين: تُغسل المنطقة بالماء الوفير لمدة 15 دقيقة على الأقل واتصل بالطبيب فوراً.',
+    description: 'حمض معدني قوي أكال وشفاف، ذو رائحة خانقة، يتفاعل بشدة مع القواعد والمعادن ويصدر أبخرة مخرشة.'
+  },
+  'Sodium Hydroxide': {
+    name: 'هيدروكسيد الصوديوم',
+    location: 'مختبر أ - الرف 2',
+    storage_conditions: 'يُحفظ في عبوات بلاستيكية محكمة الإغلاق بعيداً عن الرطوبة والأحماض (مادة مستقطبة للرطوبة).',
+    first_aid: 'أكال جداً للجلد والعينين. يُغسل فوراً بماء وفير متدفق لمدة 20 دقيقة مع إزالة الملابس الملوثة.',
+    description: 'قاعدة قوية صلبة بيضاء (الصودا الكاوية)، تذوب في الماء بشدة مطلقة حرارة عالية، وتسبب حروقاً كيميائية شديدة.'
+  },
+  'Sulfuric Acid': {
+    name: 'حمض الكبريتيك',
+    location: 'مختبر أ - الرف 3',
+    storage_conditions: 'يُحفظ في مكان بارد وجاف في حاويات زجاجية مخصصة للأحماض القوية.',
+    first_aid: 'خطير وحارق للغاية. يُغسل الجسم بماء وفير مستمر وتجنب استخدام معادلات الأحماض مباشرة على الحروق.',
+    description: 'حمض معدني قوي جداً زيتي القوام، شره لامتصاص الماء، يتفاعل بعنف شديد مع الماء ومواد الخلط القلوية.'
+  },
+  'Water': {
+    name: 'ماء مقطر',
+    location: 'مختبر أ - الرف 4',
+    storage_conditions: 'يُحفظ في عبوات نظيفة مخصصة للمياه المقطرة.',
+    first_aid: 'آمن تماماً. لا توجد إجراءات إسعافات خاصة.',
+    description: 'مياه نقية منزوعة الأيونات تستخدم كمذيب أساسي في معظم التحاليل والتفاعلات المخبرية.'
+  },
+  'Nitric Acid': {
+    name: 'حمض النتريك',
+    location: 'مختبر أ - الرف 5',
+    storage_conditions: 'يُحفظ في خزانة أحماض مهواة معزولاً عن الأحماض العضوية والمركبات القابلة للاشتعال.',
+    first_aid: 'حارق وأكال للجلد والعينين ويتسبب بصبغ الجلد باللون الأصفر. اغسل بماء وفير فوراً واتصل بالطبيب.',
+    description: 'حمض معدني قوي ومؤكسد قوي جداً، يتفاعل بعنف مع المركبات العضوية ويطلق غازات ثاني أكسيد النيتروجين السامة ذات اللون البني.'
+  },
+  'Sodium Bicarbonate': {
+    name: 'بيكربونات الصوديوم',
+    location: 'مختبر د - الرف 4',
+    storage_conditions: 'يُحفظ في مكان بارد وجاف بعيداً عن المواد الحمضية.',
+    first_aid: 'شطف العين بالماء في حال حدوث تهيج خفيف.',
+    description: 'مسحوق بلوري أبيض ناعم قاعدي خفيف، يستخدم كعامل تفاعل مع الأحماض لإنتاج غاز ثاني أكسيد الكربون.'
+  },
+  'Acetic Acid': {
+    name: 'حمض الخليك',
+    location: 'مختبر ب - الرف 2',
+    storage_conditions: 'يُحفظ بعيداً عن المؤكسدات القوية والأحماض المعدنية في خزانة باردة ومهواة.',
+    first_aid: 'في حالة الاستنشاق: ينقل المصاب لهواء نقي. ملامسة الجلد: يغسل بالماء الوفير.',
+    description: 'حمض عضوي ضعيف ذو رائحة خل نفاذة وقوية، وفي حالته النقية يسمى حمض الخليك الثلجي.'
+  },
+  'Potassium Permanganate': {
+    name: 'برمنغنات البوتاسيوم',
+    location: 'مختبر ج - الرف 5',
+    storage_conditions: 'يُحفظ في عبوات مغلقة بإحكام بعيداً عن المواد العضوية والاختزالية لأنه عامل مؤكسد قوي جداً.',
+    first_aid: 'في حالة ملامسة العين أو الجلد: يشطف بماء وفير فوراً. الابتلاع يتطلب رعاية طبية طارئة وعاجلة.',
+    description: 'مركب صلب بلوري ذو لون بنفسجي داكن، عامل مؤكسد قوي، صبغته قوية وتترك آثاراً بنية على الجلد والأدوات.'
+  },
+  'Glycerol': {
+    name: 'جليسرول',
+    location: 'مختبر ب - الرف 4',
+    storage_conditions: 'يُحفظ في مكان بارد وجاف وعبوات محكمة لكونه يمتص رطوبة الهواء.',
+    first_aid: 'آمن بشكل عام. شطف خفيف بالماء في حالة حدوث تهيج بسيط للعين.',
+    description: 'سائل كحولي لزج عديم اللون والرائحة وحلو المذاق، يستخدم كمذيب ومرطب ووسيط تفاعل.'
+  }
+}
+
+const getTranslation = (chem, field, lang) => {
+  if (!chem) return ''
+  if (lang === 'ar') {
+    const matched = chemicalTranslations[chem.name]
+    if (matched && matched[field]) {
+      return matched[field]
+    }
+    // Fallbacks
+    if (field === 'storage_conditions') return chem.storage_conditions || 'يُحفظ في مكان بارد وجاف وجيد التهوية.'
+    if (field === 'first_aid') return chem.first_aid || 'اتصل بالطبيب أو الطوارئ فوراً.'
+    if (field === 'description') return chem.description || 'لا يوجد وصف متاح حالياً.'
+    if (field === 'location') return chem.location || 'غير محدد'
+    if (field === 'name') return chem.name_ar || chem.name
+  }
+  return chem[field]
+}
+
+const getHazardLabel = (level, lang) => {
+  const labels = {
+    low: { en: 'Low Hazard', ar: 'خطورة منخفضة' },
+    medium: { en: 'Medium Hazard', ar: 'خطورة متوسطة' },
+    high: { en: 'High Hazard', ar: 'خطورة عالية' },
+    critical: { en: 'Critical Hazard', ar: 'خطورة حرجة' },
+  }
+  return labels[level]?.[lang] || labels[level]?.en || level
+}
+
+const getGHSName = (code, lang) => {
+  const info = {
+    GHS01: 'Explosive',
+    GHS02: 'Flammable',
+    GHS03: 'Oxidizing',
+    GHS04: 'Compressed Gas',
+    GHS05: 'Corrosive',
+    GHS06: 'Toxic',
+    GHS07: 'Harmful',
+    GHS08: 'Health Hazard',
+    GHS09: 'Environmental',
+  }
+  const infoAr = {
+    GHS01: 'قابل للانفجار',
+    GHS02: 'قابل للاشتعال',
+    GHS03: 'مؤكسد',
+    GHS04: 'غاز مضغوط',
+    GHS05: 'أكّال / حارق',
+    GHS06: 'سام جداً',
+    GHS07: 'ضار / مخرش',
+    GHS08: 'مخاطر صحية',
+    GHS09: 'خطر بيئي',
+  }
+  return lang === 'ar' ? (infoAr[code] || code) : (info[code] || code)
+}
+
 const GHSInfo = {
-  GHS01: { icon: '💥', name: 'Explosive' },
-  GHS02: { icon: '🔥', name: 'Flammable' },
-  GHS03: { icon: '🔆', name: 'Oxidizing' },
-  GHS04: { icon: '💨', name: 'Compressed Gas' },
-  GHS05: { icon: '⚗️', name: 'Corrosive' },
-  GHS06: { icon: '☠️', name: 'Toxic' },
-  GHS07: { icon: '⚠️', name: 'Harmful' },
-  GHS08: { icon: '🫀', name: 'Health Hazard' },
-  GHS09: { icon: '🌿', name: 'Environmental' },
+  GHS01: { icon: '💥' },
+  GHS02: { icon: '🔥' },
+  GHS03: { icon: '🔆' },
+  GHS04: { icon: '💨' },
+  GHS05: { icon: '⚗️' },
+  GHS06: { icon: '☠️' },
+  GHS07: { icon: '⚠️' },
+  GHS08: { icon: '🫀' },
+  GHS09: { icon: '🌿' },
 }
 
 // CSS 3D Molecule Viewer inside a beautiful Glass Conical Flask
 function MoleculeViewer({ formula, name, hazardLevel }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const { lang } = useLanguage()
 
   const handleMouseMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -154,7 +324,9 @@ function MoleculeViewer({ formula, name, hazardLevel }) {
 
       {/* Interactive Title details */}
       <div className="absolute bottom-3 left-0 right-0 text-center flex flex-col items-center">
-        <span className="text-xs font-heading font-semibold text-neutral-400">Chemical Compound Model</span>
+        <span className="text-xs font-heading font-semibold text-neutral-400">
+          {lang === 'ar' ? 'نموذج ثلاثي الأبعاد للمركب' : 'Chemical Compound Model'}
+        </span>
         <span className="text-sm font-mono font-bold mt-0.5" style={{ color: colorSet.secondary }}>
           {formula}
         </span>
@@ -164,7 +336,7 @@ function MoleculeViewer({ formula, name, hazardLevel }) {
         className="absolute top-3 right-3 text-[10px] px-2.5 py-1 rounded-full font-medium transition-opacity opacity-70 group-hover:opacity-100 flex items-center gap-1" 
         style={{ background: 'rgba(74,144,226,0.1)', color: '#4A90E2' }}
       >
-        <span>🕹️ drag / hover to inspect</span>
+        <span>{lang === 'ar' ? 'اسحب / مرر الفأرة للمعاينة' : 'drag / hover to inspect'}</span>
       </div>
     </div>
   )
@@ -177,15 +349,19 @@ function ReportUsageModal({ chemical, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false)
   const { reportUsage } = useChemicalStore()
   const { user } = useAuthStore()
+  const { lang } = useLanguage()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!amount || parseFloat(amount) <= 0) { toast.error('Enter a valid amount'); return }
+    if (!amount || parseFloat(amount) <= 0) {
+      toast.error(lang === 'ar' ? 'الرجاء إدخال كمية صالحة للاستهلاك' : 'Enter a valid amount')
+      return
+    }
     setLoading(true)
     const result = await reportUsage(chemical.id, parseFloat(amount), chemical.quantity_unit, purpose, user.id)
     setLoading(false)
     if (result.success) {
-      toast.success('Usage reported successfully!')
+      toast.success(lang === 'ar' ? 'تم تسجيل الاستهلاك بنجاح!' : 'Usage reported successfully!')
       onSuccess()
       onClose()
     } else {
@@ -193,34 +369,66 @@ function ReportUsageModal({ chemical, onClose, onSuccess }) {
     }
   }
 
+  const chemName = getTranslation(chemical, 'name', lang)
+
   return (
     <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.div
         className="modal-content p-6 w-full"
-        style={{ maxWidth: '420px' }}
+        style={{ maxWidth: '420px', direction: lang === 'ar' ? 'rtl' : 'ltr', textAlign: lang === 'ar' ? 'right' : 'left' }}
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="font-heading font-bold text-xl mb-1" style={{ color: '#2C3E50' }}>Report Usage</h3>
-        <p className="text-sm mb-5" style={{ color: '#64748B' }}>{chemical.name} – {chemical.formula}</p>
+        <h3 className="font-heading font-bold text-xl mb-1" style={{ color: '#2C3E50' }}>
+          {lang === 'ar' ? 'تسجيل استهلاك مادة' : 'Report Usage'}
+        </h3>
+        <p className="text-sm mb-5 font-semibold" style={{ color: '#64748B' }}>
+          {chemName} – {chemical.formula}
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Amount used ({chemical.quantity_unit})</label>
-            <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="e.g. 50" className="input-field" min="0.001" step="0.001" max={chemical.quantity} />
-            <p className="text-xs mt-1" style={{ color: '#94A3B8' }}>Available: {chemical.quantity} {chemical.quantity_unit}</p>
+            <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>
+              {lang === 'ar' ? 'الكمية المستهلكة' : 'Amount used'} ({chemical.quantity_unit})
+            </label>
+            <input 
+              type="number" 
+              value={amount} 
+              onChange={(e) => setAmount(e.target.value)} 
+              placeholder={lang === 'ar' ? 'مثال: 50' : 'e.g. 50'} 
+              className="input-field" 
+              min="0.001" 
+              step="0.001" 
+              max={chemical.quantity} 
+            />
+            <p className="text-xs mt-1" style={{ color: '#94A3B8' }}>
+              {lang === 'ar' ? 'المتاح:' : 'Available:'} {chemical.quantity} {chemical.quantity_unit}
+            </p>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Purpose (optional)</label>
-            <input type="text" value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="e.g. Titration experiment" className="input-field" />
+            <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>
+              {lang === 'ar' ? 'الغرض من الاستخدام (اختياري)' : 'Purpose (optional)'}
+            </label>
+            <input 
+              type="text" 
+              value={purpose} 
+              onChange={(e) => setPurpose(e.target.value)} 
+              placeholder={lang === 'ar' ? 'مثال: تجربة معايرة حمضية' : 'e.g. Titration experiment'} 
+              className="input-field" 
+            />
           </div>
           <div className="flex gap-3">
-            <button type="button" onClick={onClose} className="btn-secondary flex-1 justify-center">Cancel</button>
+            <button type="button" onClick={onClose} className="btn-secondary flex-1 justify-center">
+              {lang === 'ar' ? 'إلغاء' : 'Cancel'}
+            </button>
             <motion.button type="submit" disabled={loading} className="btn-primary flex-1 justify-center ripple" whileTap={{ scale: 0.97 }}>
               {loading ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
-              {loading ? 'Logging...' : 'Submit'}
+              {loading 
+                ? (lang === 'ar' ? 'جاري التسجيل...' : 'Logging...') 
+                : (lang === 'ar' ? 'تأكيد' : 'Submit')
+              }
             </motion.button>
           </div>
         </form>
@@ -240,6 +448,7 @@ export default function ChemicalDetailPage() {
   const [showConfetti, setShowConfetti] = useState(false)
   const [pubchemData, setPubchemData] = useState(null)
   const [openAccordion, setOpenAccordion] = useState(null)
+  const { lang } = useLanguage()
 
   useEffect(() => {
     const fetchChemical = async () => {
@@ -269,19 +478,26 @@ export default function ChemicalDetailPage() {
   )
 
   if (!chemical) return (
-    <div className="p-6 text-center"><p style={{ color: '#94A3B8' }}>Chemical not found</p></div>
+    <div className="p-6 text-center">
+      <p style={{ color: '#94A3B8' }}>
+        {lang === 'ar' ? 'المادة الكيميائية غير موجودة' : 'Chemical not found'}
+      </p>
+    </div>
   )
 
   const h = hazardColors[chemical.hazard_level] || hazardColors.low
   const qrUrl = `${window.location.origin}/chemicals/${chemical.id}`
   const accordionItems = [
-    { key: 'storage', title: '🏷️ Storage Conditions', content: chemical.storage_conditions || 'Store in cool, dry, well-ventilated area.' },
-    { key: 'firstaid', title: '🩺 First Aid Measures', content: chemical.first_aid || 'Contact medical professional immediately.' },
-    { key: 'description', title: '📋 Description', content: chemical.description || 'No description available.' },
+    { key: 'storage', title: lang === 'ar' ? 'شروط التخزين ورعاية السلامة' : 'Storage Conditions', content: getTranslation(chemical, 'storage_conditions', lang) },
+    { key: 'firstaid', title: lang === 'ar' ? 'إجراءات الإسعافات الأولية الطارئة' : 'First Aid Measures', content: getTranslation(chemical, 'first_aid', lang) },
+    { key: 'description', title: lang === 'ar' ? 'الوصف الكيميائي والخصائص العامة' : 'Description', content: getTranslation(chemical, 'description', lang) },
   ]
 
+  const translatedName = getTranslation(chemical, 'name', lang)
+  const translatedLocation = getTranslation(chemical, 'location', lang)
+
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto">
+    <div className={`p-4 lg:p-6 max-w-5xl mx-auto ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
       {showConfetti && <Confetti recycle={false} numberOfPieces={200} onConfettiComplete={() => setShowConfetti(false)} />}
 
       {/* Back */}
@@ -289,10 +505,10 @@ export default function ChemicalDetailPage() {
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 mb-6 text-sm font-medium group"
         style={{ color: '#64748B' }}
-        whileHover={{ x: -3 }}
+        whileHover={lang === 'ar' ? { x: 3 } : { x: -3 }}
       >
-        <ArrowLeft size={16} className="group-hover:text-blue-500 transition-colors" />
-        Back to chemicals
+        <ArrowLeft size={16} className="group-hover:text-blue-500 transition-colors" style={lang === 'ar' ? { transform: 'rotate(180deg)' } : {}} />
+        {lang === 'ar' ? 'العودة إلى المواد الكيميائية' : 'Back to chemicals'}
       </motion.button>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -305,14 +521,16 @@ export default function ChemicalDetailPage() {
           {/* QR Code Section */}
           <motion.div className="card p-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-sm" style={{ color: '#2C3E50' }}>QR Code</h3>
+              <h3 className="font-semibold text-sm" style={{ color: '#2C3E50' }}>
+                {lang === 'ar' ? 'رمز الاستجابة السريعة (QR)' : 'QR Code'}
+              </h3>
               <motion.button
                 onClick={() => setShowQR(!showQR)}
-                className="text-xs px-2 py-1 rounded-lg"
+                className="text-xs px-2 py-1 rounded-lg font-semibold"
                 style={{ background: '#EDE9FE', color: '#7C3AED' }}
                 whileHover={{ scale: 1.05 }}
               >
-                {showQR ? 'Hide' : 'Show QR'}
+                {showQR ? (lang === 'ar' ? 'إخفاء' : 'Hide') : (lang === 'ar' ? 'عرض الرمز' : 'Show QR')}
               </motion.button>
             </div>
             <AnimatePresence>
@@ -327,7 +545,9 @@ export default function ChemicalDetailPage() {
                   <div className="p-3 rounded-xl" style={{ background: 'white', border: '2px solid #EDE9FE' }}>
                     <QRCode value={qrUrl} size={140} fgColor="#0F2D52" bgColor="#FFFFFF" level="H" />
                   </div>
-                  <p className="text-xs text-center" style={{ color: '#94A3B8' }}>Scan to view details</p>
+                  <p className="text-xs text-center font-medium" style={{ color: '#94A3B8' }}>
+                    {lang === 'ar' ? 'افحص لعرض تفاصيل المادة' : 'Scan to view details'}
+                  </p>
                   <button
                     className="btn-secondary w-full justify-center py-2 text-xs"
                     onClick={() => {
@@ -340,13 +560,18 @@ export default function ChemicalDetailPage() {
                       }
                     }}
                   >
-                    <Download size={13} /> Download QR
+                    <Download size={13} /> {lang === 'ar' ? 'تحميل رمز QR' : 'Download QR'}
                   </button>
                 </motion.div>
               )}
             </AnimatePresence>
             {!showQR && (
-              <p className="text-xs" style={{ color: '#94A3B8' }}>Click "Show QR" to generate the QR code for this chemical.</p>
+              <p className="text-xs" style={{ color: '#94A3B8' }}>
+                {lang === 'ar' 
+                  ? 'اضغط على "عرض الرمز" لتوليد رمز الاستجابة السريعة (QR) الخاص بهذه المادة الكيميائية.' 
+                  : 'Click "Show QR" to generate the QR code for this chemical.'
+                }
+              </p>
             )}
           </motion.div>
         </div>
@@ -357,19 +582,21 @@ export default function ChemicalDetailPage() {
           <motion.div className="card p-5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="flex items-start justify-between gap-4 mb-4">
               <div>
-                <h1 className="font-heading font-bold text-2xl" style={{ color: '#2C3E50' }}>{chemical.name}</h1>
+                <h1 className="font-heading font-bold text-2xl" style={{ color: '#2C3E50' }}>{translatedName}</h1>
                 <p className="text-lg font-mono mt-1" style={{ color: '#4A90E2' }}>{chemical.formula}</p>
                 {chemical.cas_number && <p className="text-xs mt-1" style={{ color: '#94A3B8' }}>CAS: {chemical.cas_number}</p>}
               </div>
               <span className="badge text-sm flex-shrink-0" style={{ background: h.bg, color: h.color, padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>
-                ⚠️ {chemical.hazard_level.charAt(0).toUpperCase() + chemical.hazard_level.slice(1)}
+                ⚠️ {getHazardLabel(chemical.hazard_level, lang)}
               </span>
             </div>
 
             {/* GHS icons */}
             {chemical.ghs_codes?.length > 0 && (
               <div className="mb-4">
-                <p className="text-xs font-medium mb-2" style={{ color: '#64748B' }}>GHS Hazard Pictograms</p>
+                <p className="text-xs font-medium mb-2" style={{ color: '#64748B' }}>
+                  {lang === 'ar' ? 'رموز ووسوم خطورة GHS الكيميائية' : 'GHS Hazard Pictograms'}
+                </p>
                 <div className="flex gap-3 flex-wrap">
                   {chemical.ghs_codes.map((code, i) => (
                     <motion.div
@@ -381,7 +608,9 @@ export default function ChemicalDetailPage() {
                       style={{ background: h.bg, minWidth: '56px' }}
                     >
                       <span className="text-2xl">{GHSInfo[code]?.icon || '⚗️'}</span>
-                      <span className="text-xs text-center" style={{ color: h.color, fontSize: '0.65rem' }}>{GHSInfo[code]?.name || code}</span>
+                      <span className="text-[10px] text-center font-bold" style={{ color: h.color, fontSize: '0.65rem' }}>
+                        {getGHSName(code, lang)}
+                      </span>
                     </motion.div>
                   ))}
                 </div>
@@ -391,16 +620,32 @@ export default function ChemicalDetailPage() {
             {/* Properties grid */}
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: 'Molecular Weight', value: chemical.molecular_weight ? `${chemical.molecular_weight} g/mol` : 'N/A', icon: FlaskConical },
-                { label: 'Quantity', value: `${chemical.quantity} ${chemical.quantity_unit}`, icon: Package },
-                { label: 'Location', value: chemical.location, icon: MapPin },
-                { label: 'Expiry Date', value: chemical.expiry_date ? new Date(chemical.expiry_date).toLocaleDateString() : 'N/A', icon: Calendar },
+                { 
+                  label: lang === 'ar' ? 'الوزن الجزيئي' : 'Molecular Weight', 
+                  value: chemical.molecular_weight ? `${chemical.molecular_weight} g/mol` : (lang === 'ar' ? 'غير متوفر' : 'N/A'), 
+                  icon: FlaskConical 
+                },
+                { 
+                  label: lang === 'ar' ? 'الكمية المتوفرة' : 'Quantity', 
+                  value: `${chemical.quantity} ${chemical.quantity_unit}`, 
+                  icon: Package 
+                },
+                { 
+                  label: lang === 'ar' ? 'موقع التخزين' : 'Location', 
+                  value: translatedLocation, 
+                  icon: MapPin 
+                },
+                { 
+                  label: lang === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date', 
+                  value: chemical.expiry_date ? new Date(chemical.expiry_date).toLocaleDateString() : (lang === 'ar' ? 'غير محدد' : 'N/A'), 
+                  icon: Calendar 
+                },
               ].map(({ label, value, icon: Icon }) => (
-                <div key={label} className="flex items-start gap-2 p-3 rounded-xl" style={{ background: '#F8F9FA' }}>
+                <div key={label} className="flex items-start gap-2 p-3 rounded-xl text-left" style={{ background: '#F8F9FA' }}>
                   <Icon size={15} style={{ color: '#4A90E2', marginTop: '2px', flexShrink: 0 }} />
-                  <div>
-                    <p className="text-xs" style={{ color: '#94A3B8' }}>{label}</p>
-                    <p className="text-sm font-medium mt-0.5" style={{ color: '#2C3E50' }}>{value}</p>
+                  <div className="min-w-0">
+                    <p className="text-xs truncate" style={{ color: '#94A3B8' }}>{label}</p>
+                    <p className="text-sm font-semibold mt-0.5 truncate" style={{ color: '#2C3E50' }}>{value}</p>
                   </div>
                 </div>
               ))}
@@ -412,11 +657,11 @@ export default function ChemicalDetailPage() {
             {accordionItems.map(({ key, title, content }, i) => (
               <div key={key} style={{ borderBottom: i < accordionItems.length - 1 ? '1px solid #F0F2F5' : 'none' }}>
                 <motion.button
-                  className="w-full flex items-center justify-between p-4 text-left"
+                  className="w-full flex items-center justify-between p-4 text-left font-semibold text-sm"
                   onClick={() => setOpenAccordion(openAccordion === key ? null : key)}
                   whileHover={{ background: '#F8F9FA' }}
                 >
-                  <span className="font-medium text-sm" style={{ color: '#2C3E50' }}>{title}</span>
+                  <span style={{ color: '#2C3E50' }}>{title}</span>
                   <motion.span animate={{ rotate: openAccordion === key ? 180 : 0 }} style={{ color: '#94A3B8' }}>▼</motion.span>
                 </motion.button>
                 <AnimatePresence>
@@ -428,7 +673,7 @@ export default function ChemicalDetailPage() {
                       transition={{ duration: 0.3 }}
                       className="overflow-hidden"
                     >
-                      <p className="px-4 pb-4 text-sm leading-relaxed" style={{ color: '#64748B' }}>{content}</p>
+                      <p className="px-4 pb-4 text-sm leading-relaxed text-left" style={{ color: '#64748B' }}>{content}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -445,7 +690,7 @@ export default function ChemicalDetailPage() {
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
             >
-              <Package size={18} /> Report Usage
+              <Package size={18} /> {lang === 'ar' ? 'تسجيل استهلاك المادة' : 'Report Usage'}
             </motion.button>
           </motion.div>
         </div>
