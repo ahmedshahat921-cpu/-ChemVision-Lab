@@ -137,7 +137,11 @@ export const useChemicalStore = create((set, get) => ({
           }
         } else if (eventType === 'UPDATE') {
           const { chemicals } = get()
-          set({ chemicals: chemicals.map(c => c.id === newRecord.id ? newRecord : c) })
+          if (newRecord.is_active === false) {
+            set({ chemicals: chemicals.filter(c => c.id !== newRecord.id) })
+          } else {
+            set({ chemicals: chemicals.map(c => c.id === newRecord.id ? newRecord : c) })
+          }
           get().applyFilters(get().searchQuery, get().filters)
         } else if (eventType === 'DELETE') {
           const { chemicals } = get()
@@ -239,6 +243,15 @@ export const useChemicalStore = create((set, get) => ({
     set({ chemicals: chemicals.map(c => c.id === id ? data : c) })
     get().applyFilters(get().searchQuery, get().filters)
     return { success: true, data }
+  },
+
+  deleteChemical: async (id) => {
+    const { error } = await supabase.from('chemicals').update({ is_active: false }).eq('id', id)
+    if (error) return { success: false, error: error.message }
+    const { chemicals } = get()
+    set({ chemicals: chemicals.filter(c => c.id !== id) })
+    get().applyFilters(get().searchQuery, get().filters)
+    return { success: true }
   },
 
   reportUsage: async (chemicalId, amount, unit, purpose, userId) => {

@@ -18,6 +18,7 @@ const emptyForm = {
 function ChemicalForm({ initial, onSave, onClose, loading }) {
   const [form, setForm] = useState(initial || emptyForm)
   const [fetching, setFetching] = useState(false)
+  const [aiLoading, setAiLoading] = useState(false)
 
   const autoFill = async () => {
     if (!form.name) { toast.error('Enter a chemical name first'); return }
@@ -42,6 +43,68 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
     setFetching(false)
   }
 
+  const handleAiFill = async () => {
+    if (!form.name) { toast.error('Enter a chemical name first'); return }
+    setAiLoading(true)
+    try {
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY
+      if (!apiKey) {
+        throw new Error("Gemini API key is not configured in .env file.")
+      }
+
+      const prompt = `You are an expert chemical data auto-fill assistant.
+Given the chemical name: "${form.name}", return a valid JSON object with the following fields filled with standard safety and physical data:
+{
+  "formula": "Chemical formula (e.g. H2SO4)",
+  "molecular_weight": number (molecular weight in g/mol, e.g. 98.08),
+  "cas_number": "CAS registry number (e.g. 7664-93-9)",
+  "hazard_level": "low" | "medium" | "high" | "critical" (evaluate chemical danger),
+  "ghs_codes": array of strings (e.g. ["GHS02", "GHS05"] from: GHS01, GHS02, GHS03, GHS04, GHS05, GHS06, GHS07, GHS08, GHS09),
+  "description": "Short, clear description of the chemical in English",
+  "storage_conditions": "Storage advice in English (e.g. Keep container tightly closed in a dry and well-ventilated place)",
+  "first_aid": "First aid instructions in English (e.g. In case of contact, immediately flush eyes or skin with plenty of water)"
+}
+Do not return any markdown code block wrappers (like \`\`\`json). Return ONLY the raw JSON string.`
+
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
+      const response = await fetch(geminiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Gemini API error: ${await response.text()}`)
+      }
+
+      const data = await response.json()
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text
+      if (!rawText) throw new Error("Empty response from Gemini API")
+
+      const parsed = JSON.parse(rawText.trim())
+      setForm(f => ({
+        ...f,
+        formula: parsed.formula || f.formula,
+        molecular_weight: parsed.molecular_weight || f.molecular_weight,
+        cas_number: parsed.cas_number || f.cas_number,
+        hazard_level: parsed.hazard_level || f.hazard_level,
+        ghs_codes: parsed.ghs_codes || f.ghs_codes,
+        description: parsed.description || f.description,
+        storage_conditions: parsed.storage_conditions || f.storage_conditions,
+        first_aid: parsed.first_aid || f.first_aid,
+      }))
+      toast.success('AI completed all chemical details!')
+    } catch (err) {
+      console.error(err)
+      toast.error('AI autocomplete failed: ' + err.message)
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
   const toggleGHS = (code) => {
     setForm(f => ({ ...f, ghs_codes: f.ghs_codes.includes(code) ? f.ghs_codes.filter(c => c !== code) : [...f.ghs_codes, code] }))
   }
@@ -49,7 +112,21 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!form.name || !form.formula || !form.location || !form.quantity) { toast.error('Fill required fields'); return }
-    onSave({ ...form, molecular_weight: form.molecular_weight ? parseFloat(form.molecular_weight) : null, quantity: parseFloat(form.quantity) })
+    
+    // Clean up empty string fields to null for Postgres column compatibility
+    const cleanedData = { ...form }
+    Object.keys(cleanedData).forEach(key => {
+      if (cleanedData[key] === '') {
+        cleanedData[key] = null
+      }
+    })
+
+    // Parse values
+    cleanedData.molecular_weight = form.molecular_weight ? parseFloat(form.molecular_weight) : null
+    cleanedData.quantity = parseFloat(form.quantity)
+    cleanedData.pubchem_cid = form.pubchem_cid ? parseInt(form.pubchem_cid, 10) : null
+
+    onSave(cleanedData)
   }
 
   const ghsCodes = ['GHS01', 'GHS02', 'GHS03', 'GHS04', 'GHS05', 'GHS06', 'GHS07', 'GHS08', 'GHS09']
@@ -64,15 +141,18 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
-          {/* Auto-fill */}
-          <div className="flex gap-3">
+          {/* Auto-fill & AI Autocomplete */}
+          <div className="flex gap-2 items-end">
             <div className="flex-1">
               <label className="block text-xs font-medium mb-1" style={{ color: '#64748B' }}>Chemical Name *</label>
               <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Sulfuric Acid" className="input-field" required />
             </div>
-            <div className="self-end">
-              <button type="button" onClick={autoFill} disabled={fetching} className="btn-secondary py-2.5 px-3 text-xs whitespace-nowrap">
-                {fetching ? <Loader2 size={14} className="animate-spin" /> : '🔍'} PubChem
+            <div className="flex gap-2">
+              <button type="button" onClick={autoFill} disabled={fetching} className="btn-secondary py-2.5 px-3 text-xs whitespace-nowrap flex items-center gap-1 shadow-sm">
+                {fetching ? <Loader2 size={12} className="animate-spin" /> : '🔍'} PubChem
+              </button>
+              <button type="button" onClick={handleAiFill} disabled={aiLoading} className="btn-primary py-2.5 px-3 text-xs whitespace-nowrap bg-gradient-to-r from-violet-600 to-indigo-600 border-0 flex items-center gap-1 shadow-sm">
+                {aiLoading ? <Loader2 size={12} className="animate-spin" /> : '🧠'} AI Autocomplete
               </button>
             </div>
           </div>
@@ -83,14 +163,49 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
               { label: 'MW (g/mol)', key: 'molecular_weight', placeholder: '98.079', type: 'number' },
               { label: 'Quantity *', key: 'quantity', placeholder: '500', type: 'number' },
               { label: 'Unit', key: 'quantity_unit', placeholder: 'g' },
-              { label: 'Location *', key: 'location', placeholder: 'Lab A - Shelf 1' },
-              { label: 'Cabinet', key: 'cabinet', placeholder: 'C1' },
+              { label: 'Location *', key: 'location', type: 'select', options: [
+                { value: '', label: 'Select Location' },
+                { value: 'Lab A - Shelf 1', label: 'Lab A - Shelf 1' },
+                { value: 'Lab A - Shelf 2', label: 'Lab A - Shelf 2' },
+                { value: 'Lab A - Shelf 3', label: 'Lab A - Shelf 3' },
+                { value: 'Lab B - Shelf 1', label: 'Lab B - Shelf 1' },
+                { value: 'Lab B - Shelf 2', label: 'Lab B - Shelf 2' },
+                { value: 'Lab B - Shelf 3', label: 'Lab B - Shelf 3' },
+                { value: 'Lab C - Shelf 1', label: 'Lab C - Shelf 1' },
+                { value: 'Lab C - Shelf 2', label: 'Lab C - Shelf 2' },
+                { value: 'Lab C - Shelf 3', label: 'Lab C - Shelf 3' },
+                { value: 'Lab D - Shelf 1', label: 'Lab D - Shelf 1' },
+                { value: 'Lab D - Shelf 2', label: 'Lab D - Shelf 2' },
+                { value: 'Lab D - Shelf 3', label: 'Lab D - Shelf 3' },
+                { value: 'Storage - Shelf 1', label: 'Storage - Shelf 1' },
+                { value: 'Storage - Shelf 2', label: 'Storage - Shelf 2' },
+              ]},
+              { label: 'Cabinet', key: 'cabinet', type: 'select', options: [
+                { value: '', label: 'Select Cabinet' },
+                { value: 'C1', label: 'Cabinet C1' },
+                { value: 'C2', label: 'Cabinet C2' },
+                { value: 'C3', label: 'Cabinet C3' },
+                { value: 'C4', label: 'Cabinet C4' },
+                { value: 'C5', label: 'Cabinet C5' },
+              ]},
               { label: 'CAS Number', key: 'cas_number', placeholder: '7664-93-9' },
               { label: 'Expiry Date', key: 'expiry_date', type: 'date' },
-            ].map(({ label, key, placeholder, type = 'text' }) => (
+            ].map(({ label, key, placeholder, type = 'text', options }) => (
               <div key={key}>
                 <label className="block text-xs font-medium mb-1" style={{ color: '#64748B' }}>{label}</label>
-                <input type={type} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} placeholder={placeholder} className="input-field py-2 text-sm" />
+                {type === 'select' ? (
+                  <select 
+                    value={form[key] || ''} 
+                    onChange={(e) => setForm({ ...form, [key]: e.target.value })} 
+                    className="input-field py-2 text-sm bg-white"
+                  >
+                    {options.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input type={type} value={form[key] || ''} onChange={(e) => setForm({ ...form, [key]: e.target.value })} placeholder={placeholder} className="input-field py-2 text-sm" />
+                )}
               </div>
             ))}
           </div>
@@ -126,7 +241,7 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
           {/* Description */}
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: '#64748B' }}>Description</label>
-            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Chemical description..." className="input-field text-sm" rows={2} style={{ resize: 'vertical' }} />
+            <textarea value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Chemical description..." className="input-field text-sm" rows={2} style={{ resize: 'vertical' }} />
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -143,7 +258,7 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
 }
 
 export default function AdminPage() {
-  const { chemicals, fetchChemicals, addChemical, updateChemical } = useChemicalStore()
+  const { chemicals, fetchChemicals, addChemical, updateChemical, deleteChemical } = useChemicalStore()
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [editingChemical, setEditingChemical] = useState(null)
@@ -170,9 +285,9 @@ export default function AdminPage() {
 
   const handleDelete = async (id, name) => {
     if (!confirm(`Delete ${name}? This cannot be undone.`)) return
-    const { error } = await supabase.from('chemicals').update({ is_active: false }).eq('id', id)
-    if (!error) { toast.success('Chemical deleted'); fetchChemicals() }
-    else toast.error('Failed to delete')
+    const res = await deleteChemical(id)
+    if (res.success) { toast.success('Chemical deleted') }
+    else toast.error('Failed to delete: ' + res.error)
   }
 
   return (
