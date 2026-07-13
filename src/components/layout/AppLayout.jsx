@@ -3,13 +3,14 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, FlaskConical, Beaker, QrCode, Map,
-  Settings, LogOut, Bell, Search, ChevronLeft, ChevronRight,
+  Settings, LogOut, Search, ChevronLeft, ChevronRight,
   User, Shield, Menu, X, Atom
 } from 'lucide-react'
 import { useAuthStore } from '../../store'
 import toast from 'react-hot-toast'
 
 import { useLanguage } from '../../hooks/useLanguage'
+import NotificationsPanel from './NotificationsPanel'
 
 const navItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'dashboard' },
@@ -184,11 +185,8 @@ export default function AppLayout() {
               {lang === 'ar' ? 'EN' : 'العربية'}
             </motion.button>
 
-            {/* Notification bell */}
-            <motion.button whileHover={{ scale: 1.05 }} className="relative p-2 rounded-lg" style={{ background: '#F0F2F5' }}>
-              <Bell size={18} style={{ color: '#64748B' }} />
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: '#E85D5D' }} />
-            </motion.button>
+            {/* Notification bell - live */}
+            <NotificationsPanel />
 
             {/* Avatar */}
             <motion.div

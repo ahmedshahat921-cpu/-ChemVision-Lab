@@ -189,6 +189,11 @@ export const useChemicalStore = create((set, get) => ({
     if (error) { set({ error: error.message, loading: false }); return }
     set({ chemicals: data || [], filteredChemicals: data || [], loading: false })
 
+    // Trigger background expiry notifications check
+    supabase.rpc('notify_expiry_check').then(({ error }) => {
+      if (error) console.error('Failed to trigger notify_expiry_check:', error)
+    })
+
     // Start realtime after initial fetch
     get().subscribeRealtime()
   },
