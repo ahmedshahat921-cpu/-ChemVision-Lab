@@ -277,6 +277,94 @@ function MoleculeViewer({ formula, name, hazardLevel }) {
   }
   const colorSet = liquidColors[hazardLevel] || liquidColors.low
 
+  // Dynamic chemical formula parser
+  const getMoleculeData = (rawFormula) => {
+    if (!rawFormula) return { center: { label: 'C', fill: '#1B3A6B' }, outer: [] }
+    
+    // Normalize formula string (e.g. C2H5OH -> group components)
+    const regex = /([A-Z][a-z]?)([0-9]*)/g
+    const elements = {}
+    let match
+    while ((match = regex.exec(rawFormula)) !== null) {
+      const el = match[1]
+      const count = parseInt(match[2] || '1', 10)
+      elements[el] = (elements[el] || 0) + count
+    }
+
+    // Determine the most central/heavy atom
+    let centerLabel = 'C'
+    if (elements['C'] && elements['C'] > 0) {
+      centerLabel = 'C'
+      elements['C']--
+    } else if (elements['S'] && elements['S'] > 0) {
+      centerLabel = 'S'
+      elements['S']--
+    } else if (elements['N'] && elements['N'] > 0) {
+      centerLabel = 'N'
+      elements['N']--
+    } else if (elements['P'] && elements['P'] > 0) {
+      centerLabel = 'P'
+      elements['P']--
+    } else if (elements['Cu'] && elements['Cu'] > 0) {
+      centerLabel = 'Cu'
+      elements['Cu']--
+    } else {
+      const nonH = Object.keys(elements).find(el => el !== 'H')
+      if (nonH) {
+        centerLabel = nonH
+        elements[nonH]--
+      } else if (elements['H'] && elements['H'] > 0) {
+        centerLabel = 'H'
+        elements['H']--
+      }
+    }
+
+    // Standard CPK colors for chemistry representation
+    const atomColors = {
+      'H': '#5DB9A0',     // Light Green/Teal representation
+      'C': '#1F2937',     // Dark slate grey (Carbon)
+      'O': '#F5A623',     // Orange/Red-orange (Oxygen)
+      'N': '#E85D5D',     // Red (Nitrogen)
+      'Cl': '#A3E635',    // Bright lime green (Chlorine)
+      'S': '#FBBF24',     // Yellow (Sulfur)
+      'P': '#C084FC',     // Light purple (Phosphorus)
+      'Cu': '#3B82F6',    // Copper blue
+      'Na': '#8B5CF6',    // Violet (Sodium)
+      'K': '#EC4899',     // Pink (Potassium)
+      'Ca': '#64748B',    // Slate grey (Calcium)
+    }
+
+    const centerColor = atomColors[centerLabel] || '#4A90E2'
+
+    // Compile remaining outer atoms
+    const outerList = []
+    Object.entries(elements).forEach(([el, count]) => {
+      for (let i = 0; i < count; i++) {
+        outerList.push(el)
+      }
+    })
+
+    // Slice to maximum of 6 elements to fit cleanly on screen
+    const trimmedOuter = outerList.slice(0, 6)
+
+    // Calculate circular coordinates dynamically
+    const R = 42
+    const outerAtoms = trimmedOuter.map((label, i) => {
+      const angle = (i * 2 * Math.PI) / trimmedOuter.length - Math.PI / 2
+      const cx = Math.round(R * Math.cos(angle))
+      const cy = Math.round(R * Math.sin(angle))
+      const fill = atomColors[label] || '#94A3B8'
+      return { cx, cy, fill, label }
+    })
+
+    return {
+      center: { label: centerLabel, fill: centerColor },
+      outer: outerAtoms
+    }
+  }
+
+  const { center, outer } = getMoleculeData(formula)
+
   return (
     <div
       className="relative flex items-center justify-center rounded-2xl overflow-hidden shadow-inner group"
@@ -344,13 +432,10 @@ function MoleculeViewer({ formula, name, hazardLevel }) {
               style={{ transformStyle: 'preserve-3d' }}
             >
               {/* Bonds (Molecule grid) */}
-              {[
-                [0, 0, 0, -42], [0, 0, 42, -18], [0, 0, 42, 28],
-                [0, 0, 0, 45], [0, 0, -42, 28], [0, 0, -42, -18]
-              ].map(([x1, y1, x2, y2], i) => (
+              {outer.map((atom, i) => (
                 <line 
                   key={i} 
-                  x1={x1} y1={y1} x2={x2} y2={y2} 
+                  x1="0" y1="0" x2={atom.cx} y2={atom.cy} 
                   stroke="#4A90E2" 
                   strokeWidth="2.5" 
                   opacity="0.7" 
@@ -358,18 +443,14 @@ function MoleculeViewer({ formula, name, hazardLevel }) {
               ))}
 
               {/* Center Carbon atom */}
-              <circle cx="0" cy="0" r="13" fill="#1B3A6B" filter="drop-shadow(0px 3px 6px rgba(0,0,0,0.18))" />
-              <text x="0" y="4" textAnchor="middle" fill="white" fontSize="9" fontWeight="900" fontFamily="monospace">C</text>
+              <circle cx="0" cy="0" r="13" fill={center.fill} filter="drop-shadow(0px 3px 6px rgba(0,0,0,0.18))" />
+              <text x="0" y="3.5" textAnchor="middle" fill="white" fontSize="9" fontWeight="900" fontFamily="monospace">{center.label}</text>
 
-              {/* Outer atoms (H, O, N) */}
-              {[
-                [0, -42, '#5DB9A0', 'H'], [42, -18, '#F5A623', 'O'],
-                [42, 28, '#E85D5D', 'N'], [0, 45, '#5DB9A0', 'H'],
-                [-42, 28, '#7C3AED', 'Cl'], [-42, -18, '#F5A623', 'O']
-              ].map(([cx, cy, fill, label], i) => (
-                <g key={i} transform={`translate(${cx}, ${cy})`}>
-                  <circle cx="0" cy="0" r="10" fill={fill} filter="drop-shadow(0px 3px 6px rgba(0,0,0,0.18))" />
-                  <text x="0" y="3" textAnchor="middle" fill="white" fontSize="8" fontWeight="800" fontFamily="sans-serif">{label}</text>
+              {/* Outer atoms */}
+              {outer.map((atom, i) => (
+                <g key={i} transform={`translate(${atom.cx}, ${atom.cy})`}>
+                  <circle cx="0" cy="0" r="10" fill={atom.fill} filter="drop-shadow(0px 3px 6px rgba(0,0,0,0.18))" />
+                  <text x="0" y="3" textAnchor="middle" fill="white" fontSize="8" fontWeight="800" fontFamily="sans-serif">{atom.label}</text>
                 </g>
               ))}
             </motion.g>
