@@ -21,6 +21,103 @@ serve(async (req) => {
     const body = await req.json()
     const { action, chemA, chemB, chemicalName } = body
 
+    // Helper function to call Gemini API
+    async function callGemini(prompt: string, apiKey: string) {
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`
+      const response = await fetch(geminiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        })
+      })
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Gemini API returned error code ${response.status}: ${errorText}`)
+      }
+      const data = await response.json()
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text
+      if (!rawText) throw new Error("Empty response received from Gemini API.")
+      return JSON.parse(rawText.trim())
+    }
+
+    // ═══════════════════════════════════════════════
+    // ACTION: generate-details
+    // Generates full Physical, Chemical, Safety, Uses, and NFPA data
+    // ═══════════════════════════════════════════════
+    if (action === 'generate-details') {
+      if (!chemicalName) {
+        return new Response(
+          JSON.stringify({ error: "Missing chemicalName parameter." }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      const detailsPrompt = `You are an expert chemical safety and data specialist.
+Given the chemical name: "${chemicalName}", generate comprehensive detailed data.
+Return a valid JSON object with this EXACT structure:
+{
+  "physical": {
+    "boilingPoint": { "en": "value with unit", "ar": "Arabic translation" },
+    "meltingPoint": { "en": "value with unit", "ar": "Arabic translation" },
+    "density": { "en": "value with unit", "ar": "Arabic translation" },
+    "solubility": { "en": "solubility description", "ar": "Arabic translation" },
+    "appearance": { "en": "appearance description", "ar": "Arabic translation" },
+    "odor": { "en": "odor description", "ar": "Arabic translation" },
+    "flashPoint": { "en": "flash point or Non-flammable", "ar": "Arabic translation" },
+    "vaporPressure": { "en": "vapor pressure value", "ar": "Arabic translation" },
+    "ph": { "en": "pH value and description", "ar": "Arabic translation" }
+  },
+  "chemical": {
+    "class": { "en": "Chemical class (e.g. Organic Solvent, Inorganic Acid)", "ar": "Arabic translation" },
+    "molecularStructure": { "en": "Molecular structure description", "ar": "Arabic translation" },
+    "reactivity": { "en": "Reactivity description", "ar": "Arabic translation" },
+    "incompatible": { "en": "Incompatible materials list", "ar": "Arabic translation" },
+    "stability": { "en": "Stability information", "ar": "Arabic translation" },
+    "decomposition": { "en": "Decomposition products", "ar": "Arabic translation" }
+  },
+  "safety": {
+    "ppe": {
+      "en": ["PPE item 1", "PPE item 2", "PPE item 3", "PPE item 4"],
+      "ar": ["Arabic PPE 1", "Arabic PPE 2", "Arabic PPE 3", "Arabic PPE 4"]
+    },
+    "exposureLimits": { "en": "TWA and STEL values", "ar": "Arabic translation" },
+    "fireExtinguishing": { "en": "Fire extinguishing methods", "ar": "Arabic translation" },
+    "ldValue": { "en": "LD50 value (oral, rat)", "ar": "Arabic translation" }
+  },
+  "uses": {
+    "en": ["Use 1", "Use 2", "Use 3", "Use 4", "Use 5", "Use 6"],
+    "ar": ["Arabic use 1", "Arabic use 2", "Arabic use 3", "Arabic use 4", "Arabic use 5", "Arabic use 6"]
+  },
+  "nfpa": {
+    "health": 0,
+    "flammability": 0,
+    "reactivity": 0,
+    "special": ""
+  }
+}
+
+IMPORTANT RULES:
+- All values must be scientifically accurate based on established chemical data.
+- NFPA values are integers: health (0-4), flammability (0-4), reactivity (0-4), special is a string ("" or "OX" or "W" etc).
+- PPE arrays should have 3-5 items each.
+- Uses arrays should have 4-6 items each.
+- Arabic translations must be accurate and professional.
+- Return ONLY the raw JSON, no markdown wrappers.`
+
+      const parsedResult = await callGemini(detailsPrompt, GEMINI_API_KEY)
+
+      return new Response(
+        JSON.stringify(parsedResult),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // ═══════════════════════════════════════════════
+    // ACTION: autocomplete
+    // Basic chemical data auto-fill
+    // ═══════════════════════════════════════════════
     if (action === 'autocomplete') {
       if (!chemicalName) {
         return new Response(
@@ -43,28 +140,7 @@ Given the chemical name: "${chemicalName}", return a valid JSON object with the 
 }
 Do not return any markdown code block wrappers (like \`\`\`json). Return ONLY the raw JSON string.`
 
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GEMINI_API_KEY}`
-      const response = await fetch(geminiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json" }
-        })
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Gemini API returned error code ${response.status}: ${errorText}`)
-      }
-
-      const data = await response.json()
-      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text
-      if (!rawText) {
-        throw new Error("Empty response received from Gemini API.")
-      }
-
-      const parsedResult = JSON.parse(rawText.trim())
+      const parsedResult = await callGemini(prompt, GEMINI_API_KEY)
 
       return new Response(
         JSON.stringify(parsedResult),
@@ -105,39 +181,7 @@ You MUST respond with a valid JSON object matching this schema:
 
 Do not include any markdown styling or extra text. Return ONLY the raw JSON string.`
 
-    // Request to Gemini API
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GEMINI_API_KEY}`
-    const response = await fetch(geminiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt }
-            ]
-          }
-        ],
-        generationConfig: {
-          responseMimeType: "application/json"
-        }
-      })
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`Gemini API returned error code ${response.status}: ${errorText}`)
-    }
-
-    const data = await response.json()
-    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text
-    if (!rawText) {
-      throw new Error("Empty response received from Gemini API.")
-    }
-
-    const parsedResult = JSON.parse(rawText.trim())
+    const parsedResult = await callGemini(prompt, GEMINI_API_KEY)
 
     return new Response(
       JSON.stringify(parsedResult),

@@ -156,7 +156,7 @@ export default function LabMapPage() {
   const zones = Object.values(initialZones)
   const filteredChemicals = mappedChemicals.filter(c => filterHazard === 'all' ? true : c.hazard_level === filterHazard)
   const selectedChem = mappedChemicals.find(c => c.id === selectedChemId)
-  const chemDetails = selectedChem ? getChemicalData(selectedChem.name) : null
+  const chemDetails = selectedChem ? (getChemicalData(selectedChem.name) || selectedChem.detailed_data || null) : null
   const roomChems = selectedRoom ? mappedChemicals.filter(c => c.room === selectedRoom) : []
   const roomInfo = selectedRoom ? labLayout.find(l => l.id === selectedRoom) : null
 

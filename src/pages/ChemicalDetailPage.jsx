@@ -726,7 +726,7 @@ export default function ChemicalDetailPage() {
 
   const translatedName = getTranslation(chemical, 'name', lang)
   const translatedLocation = getTranslation(chemical, 'location', lang)
-  const detailedData = getChemicalData(chemical.name)
+  const detailedData = getChemicalData(chemical.name) || chemical.detailed_data || null
 
   return (
     <div className={`p-4 lg:p-6 max-w-7xl mx-auto ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
