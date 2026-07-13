@@ -136,7 +136,8 @@ Given the chemical name: "${chemicalName}", return a valid JSON object with the 
   "ghs_codes": array of strings (e.g. ["GHS02", "GHS05"] from: GHS01, GHS02, GHS03, GHS04, GHS05, GHS06, GHS07, GHS08, GHS09),
   "description": "Short, clear description of the chemical in English",
   "storage_conditions": "Storage advice in English (e.g. Keep container tightly closed in a dry and well-ventilated place)",
-  "first_aid": "First aid instructions in English (e.g. In case of contact, immediately flush eyes or skin with plenty of water)"
+  "first_aid": "First aid instructions in English (e.g. In case of contact, immediately flush eyes or skin with plenty of water)",
+  "recommended_shelf_life_months": number (typical safe shelf life in months under recommended storage conditions, e.g. 24 or 36 or 60)
 }
 Do not return any markdown code block wrappers (like \`\`\`json). Return ONLY the raw JSON string.`
 

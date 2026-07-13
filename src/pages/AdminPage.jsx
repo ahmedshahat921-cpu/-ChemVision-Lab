@@ -25,6 +25,8 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
   const [aiName, setAiName] = useState('')
   const [aiLocation, setAiLocation] = useState('')
   const [aiCabinet, setAiCabinet] = useState('')
+  const [aiQuantity, setAiQuantity] = useState('')
+  const [aiQuantityUnit, setAiQuantityUnit] = useState('g')
 
   const autoFill = async () => {
     if (!form.name) { toast.error('Enter a chemical name first'); return }
@@ -52,6 +54,7 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
   const handleAiFill = async () => {
     if (!aiName) { toast.error('Enter a chemical name first'); return }
     if (!aiLocation) { toast.error('Select a location first'); return }
+    if (!aiQuantity) { toast.error('Enter quantity first'); return }
     setAiLoading(true)
     try {
       // Invoke the secure Supabase Edge Function with action 'autocomplete'
@@ -62,11 +65,23 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
       if (error) throw new Error(error.message || 'Server error calling AI edge function')
       if (!data) throw new Error('AI returned an empty response')
 
+      // Calculate Expiry Date based on recommended_shelf_life_months
+      let calculatedExpiry = ''
+      const shelfLifeMonths = data.recommended_shelf_life_months || 24 // default to 2 years if not provided
+      if (shelfLifeMonths) {
+        const d = new Date()
+        d.setMonth(d.getMonth() + shelfLifeMonths)
+        calculatedExpiry = d.toISOString().split('T')[0]
+      }
+
       setForm(f => ({
         ...f,
         name: aiName,
         location: aiLocation,
         cabinet: aiCabinet || null,
+        quantity: aiQuantity,
+        quantity_unit: aiQuantityUnit,
+        expiry_date: calculatedExpiry,
         formula: data.formula || f.formula,
         molecular_weight: data.molecular_weight || f.molecular_weight,
         cas_number: data.cas_number || f.cas_number,
@@ -77,7 +92,7 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
         first_aid: data.first_aid || f.first_aid,
       }))
       
-      toast.success('AI completed all chemical details!')
+      toast.success('AI completed all chemical details, including Expiry Date!')
       setAiPromptOpen(false)
     } catch (err) {
       console.error(err)
@@ -186,6 +201,32 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                     <option value="C5">Cabinet C5</option>
                   </select>
                 </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Quantity *</label>
+                    <input 
+                      type="number" 
+                      value={aiQuantity} 
+                      onChange={(e) => setAiQuantity(e.target.value)} 
+                      placeholder="e.g. 500" 
+                      className="input-field py-2 text-sm w-full" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Unit *</label>
+                    <select 
+                      value={aiQuantityUnit} 
+                      onChange={(e) => setAiQuantityUnit(e.target.value)} 
+                      className="input-field py-2.5 text-sm bg-white w-full border border-gray-300 rounded-lg"
+                    >
+                      <option value="g">Grams (g)</option>
+                      <option value="kg">Kilograms (kg)</option>
+                      <option value="mL">Milliliters (mL)</option>
+                      <option value="L">Liters (L)</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -232,6 +273,8 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                   setAiName(form.name)
                   setAiLocation(form.location)
                   setAiCabinet(form.cabinet)
+                  setAiQuantity(form.quantity || '')
+                  setAiQuantityUnit(form.quantity_unit || 'g')
                   setAiPromptOpen(true)
                 }} 
                 className="btn-primary py-2.5 px-3 text-xs whitespace-nowrap bg-gradient-to-r from-violet-600 to-indigo-600 border-0 flex items-center gap-1 shadow-sm"
