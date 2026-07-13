@@ -43,7 +43,7 @@ Given the chemical name: "${chemicalName}", return a valid JSON object with the 
 }
 Do not return any markdown code block wrappers (like \`\`\`json). Return ONLY the raw JSON string.`
 
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GEMINI_API_KEY}`
       const response = await fetch(geminiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,7 +106,7 @@ You MUST respond with a valid JSON object matching this schema:
 Do not include any markdown styling or extra text. Return ONLY the raw JSON string.`
 
     // Request to Gemini API
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GEMINI_API_KEY}`
     const response = await fetch(geminiUrl, {
       method: "POST",
       headers: {
