@@ -30,16 +30,16 @@ const GHSIcons = {
 
 // Helper to assign chemical to room coordinates deterministically
 function getChemicalCoords(chemical, index) {
-  const loc = (chemical.location || '').toLowerCase()
+  const loc = (chemical.location || '').toLowerCase().trim()
   let room = 'storage' // default
   
-  if (loc.includes('lab a') || loc.includes('أ') || loc.includes('a')) {
+  if (loc.includes('lab a') || loc.includes('مختبر أ') || loc.includes('مختبر ا') || /\b(a)\b/i.test(loc)) {
     room = 'lab-a'
-  } else if (loc.includes('lab b') || loc.includes('ب') || loc.includes('b')) {
+  } else if (loc.includes('lab b') || loc.includes('مختبر ب') || /\b(b)\b/i.test(loc)) {
     room = 'lab-b'
-  } else if (loc.includes('lab c') || loc.includes('ج') || loc.includes('c')) {
+  } else if (loc.includes('lab c') || loc.includes('مختبر ج') || /\b(c)\b/i.test(loc)) {
     room = 'lab-c'
-  } else if (loc.includes('lab d') || loc.includes('د') || loc.includes('d')) {
+  } else if (loc.includes('lab d') || loc.includes('مختبر د') || /\b(d)\b/i.test(loc)) {
     room = 'lab-d'
   }
 
@@ -86,24 +86,12 @@ function MiniNfpa({ ratings }) {
   if (!ratings) return null
   const { health = 0, flammability = 0, reactivity = 0, special = '' } = ratings
   return (
-    <div className="relative w-12 h-12 flex-shrink-0 overflow-hidden rounded border border-slate-200" style={{ transform: 'rotate(45deg)' }}>
+    <div className="relative w-10 h-10 flex-shrink-0 overflow-hidden rounded border border-slate-200" style={{ transform: 'rotate(45deg)' }}>
       <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
-        {/* Top-Left -> Left (Blue / Health) */}
-        <div className="bg-blue-500 flex items-center justify-center text-[10px] font-bold text-white" style={{ transform: 'rotate(-45deg)' }}>
-          {health}
-        </div>
-        {/* Top-Right -> Top (Red / Flammability) */}
-        <div className="bg-red-500 flex items-center justify-center text-[10px] font-bold text-white" style={{ transform: 'rotate(-45deg)' }}>
-          {flammability}
-        </div>
-        {/* Bottom-Left -> Bottom (White / Special) */}
-        <div className="bg-white flex items-center justify-center text-[8px] font-bold text-slate-800" style={{ transform: 'rotate(-45deg)' }}>
-          {special || 'W'}
-        </div>
-        {/* Bottom-Right -> Right (Yellow / Reactivity) */}
-        <div className="bg-yellow-400 flex items-center justify-center text-[10px] font-bold text-slate-800" style={{ transform: 'rotate(-45deg)' }}>
-          {reactivity}
-        </div>
+        <div className="bg-blue-500 flex items-center justify-center text-[8px] font-bold text-white" style={{ transform: 'rotate(-45deg)' }}>{health}</div>
+        <div className="bg-red-500 flex items-center justify-center text-[8px] font-bold text-white" style={{ transform: 'rotate(-45deg)' }}>{flammability}</div>
+        <div className="bg-white flex items-center justify-center text-[6px] font-bold text-slate-800" style={{ transform: 'rotate(-45deg)' }}>{special || 'W'}</div>
+        <div className="bg-yellow-400 flex items-center justify-center text-[8px] font-bold text-slate-800" style={{ transform: 'rotate(-45deg)' }}>{reactivity}</div>
       </div>
     </div>
   )
@@ -117,6 +105,8 @@ export default function LabMapPage() {
   const [selectedRoom, setSelectedRoom] = useState(null)
   const [selectedChemId, setSelectedChemId] = useState(null)
   const [filterHazard, setFilterHazard] = useState('all')
+  const [hoveredRoomId, setHoveredRoomId] = useState(null)
+  const [showExits, setShowExits] = useState(false)
 
   useEffect(() => {
     fetchChemicals()
@@ -140,13 +130,11 @@ export default function LabMapPage() {
     return name
   }
 
-  // 1. Map all chemicals in store to their SVG room coordinates
   const mappedChemicals = chemicals.map((c, idx) => {
     const coords = getChemicalCoords(c, idx)
     return { ...c, ...coords }
   })
 
-  // 2. Calculate dynamic room summaries based on actual chemicals list
   const initialZones = {
     'lab-a': { id: 'lab-a', name: 'Laboratory A', chemicals: 0, maxHazard: 'low', icon: '🔬', color: '#EBF4FF', border: '#4A90E2' },
     'lab-b': { id: 'lab-b', name: 'Laboratory B', chemicals: 0, maxHazard: 'low', icon: '🔬', color: '#E8FBF6', border: '#5DB9A0' },
@@ -166,13 +154,7 @@ export default function LabMapPage() {
   })
 
   const zones = Object.values(initialZones)
-
-  // 3. Filter dots shown on the SVG floor plan
-  const filteredChemicals = mappedChemicals.filter(c => {
-    if (filterHazard === 'all') return true
-    return c.hazard_level === filterHazard
-  })
-
+  const filteredChemicals = mappedChemicals.filter(c => filterHazard === 'all' ? true : c.hazard_level === filterHazard)
   const selectedChem = mappedChemicals.find(c => c.id === selectedChemId)
   const chemDetails = selectedChem ? getChemicalData(selectedChem.name) : null
   const roomChems = selectedRoom ? mappedChemicals.filter(c => c.room === selectedRoom) : []
@@ -181,23 +163,35 @@ export default function LabMapPage() {
   return (
     <div className={`p-4 lg:p-6 ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
-        <h1 className="font-heading font-bold text-2xl text-left" style={{ color: '#2C3E50' }}>{t('map_title')}</h1>
+        <h1 className="font-heading font-bold text-2xl text-left animate-fade-in" style={{ color: '#2C3E50' }}>{t('map_title')}</h1>
         <p className="text-sm mt-1 text-left" style={{ color: '#64748B' }}>{t('map_sub')}</p>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* MAP COLUMN */}
-        <motion.div className="card p-5 lg:col-span-2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+        <motion.div className="card p-5 lg:col-span-2 relative" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
           
-          {/* Controls / Filter Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>
               {lang === 'ar' ? 'مخطط طابق المختبر التفاعلي' : 'Interactive Lab Floor Plan'}
             </h3>
             
-            {/* Hazard Level Selector */}
             <div className="flex items-center gap-1.5 flex-wrap">
+              <button 
+                onClick={() => setShowExits(!showExits)}
+                className="text-xs px-2.5 py-1 rounded-lg font-bold border transition-all flex items-center gap-1 shadow-sm mr-2"
+                style={{
+                  background: showExits ? '#10B981' : 'white',
+                  color: showExits ? 'white' : '#10B981',
+                  borderColor: '#10B981'
+                }}
+              >
+                <Shield size={12} />
+                <span>{lang === 'ar' ? 'مخارج الطوارئ' : 'Emergency Exits'}</span>
+              </button>
+
+              <div className="h-5 w-[1px] bg-slate-200" />
+
               <button 
                 onClick={() => setFilterHazard('all')}
                 className="text-xs px-2.5 py-1 rounded-lg font-bold border transition-all"
@@ -227,7 +221,6 @@ export default function LabMapPage() {
             </div>
           </div>
 
-          {/* SVG Map Layout Container */}
           <div className="relative w-full rounded-xl overflow-hidden border border-slate-200" style={{ background: '#FAFBFD', paddingBottom: '60%' }}>
             
             {loading ? (
@@ -241,7 +234,11 @@ export default function LabMapPage() {
               viewBox="0 0 100 100"
               preserveAspectRatio="xMidYMid meet"
             >
-              {/* Lab Rooms */}
+              <style>{`
+                @keyframes dash { to { stroke-dashoffset: -12; } }
+                .evacuation-path { animation: dash 1.2s linear infinite; }
+              `}</style>
+              
               {labLayout.map((lab, i) => {
                 const isSelected = selectedRoom === lab.id
                 return (
@@ -252,8 +249,9 @@ export default function LabMapPage() {
                       setSelectedRoom(isSelected ? null : lab.id)
                       setSelectedChemId(null)
                     }}
+                    onMouseEnter={() => setHoveredRoomId(lab.id)}
+                    onMouseLeave={() => setHoveredRoomId(null)}
                   >
-                    {/* Background Room Rect */}
                     <rect 
                       x={lab.x} y={lab.y} width={lab.w} height={lab.h} rx="2" 
                       fill={lab.color} 
@@ -262,8 +260,6 @@ export default function LabMapPage() {
                       opacity={isSelected ? 0.95 : 0.8}
                       className="transition-all duration-300"
                     />
-                    
-                    {/* Room Name Label */}
                     <text x={lab.x + lab.w / 2} y={lab.y + 6} textAnchor="middle" fill="#334155" fontSize="2.4" fontWeight="700">
                       {translateLabName(lab.name)}
                     </text>
@@ -271,51 +267,59 @@ export default function LabMapPage() {
                 )
               })}
 
-              {/* Dynamic Chemical Dots */}
+              {showExits && (
+                <g opacity="0.9">
+                  {["M 24 26 L 24 49 L 3.5 49", "M 64 26 L 64 49 L 44 49 L 44 94", "M 24 73 L 24 49 L 3.5 49", "M 64 73 L 64 49 L 44 49 L 44 94", "M 92 49 L 85 49 L 44 49 L 44 94"].map((d, index) => (
+                    <path key={index} d={d} fill="none" stroke="#10B981" strokeWidth="0.8" strokeDasharray="3,3" strokeLinecap="round" className="evacuation-path" />
+                  ))}
+                  <g transform="translate(0, 45)">
+                    <rect x="0" y="0" width="3.5" height="8" rx="0.5" fill="#10B981" />
+                    <text x="1.75" y="4.5" textAnchor="middle" fill="white" fontSize="3" fontWeight="bold">🚪</text>
+                    <text x="1.75" y="7.5" textAnchor="middle" fill="white" fontSize="1.2" fontWeight="900">EXIT</text>
+                  </g>
+                  <g transform="translate(40.5, 96.5)">
+                    <rect x="0" y="0" width="8" height="3.5" rx="0.5" fill="#10B981" />
+                    <text x="4" y="2.2" textAnchor="middle" fill="white" fontSize="2.8" fontWeight="bold">🚪</text>
+                    <text x="4" y="3.1" textAnchor="middle" fill="white" fontSize="0.9" fontWeight="900">EXIT</text>
+                  </g>
+                </g>
+              )}
+
               {filteredChemicals.map((chem, i) => {
                 const isSelected = selectedChemId === chem.id
                 return (
-                  <g
-                    key={chem.id}
-                    style={{ cursor: 'pointer' }}
-                    onClick={(e) => {
-                      e.stopPropagation() // prevent room click trigger
-                      setSelectedChemId(chem.id)
-                      setSelectedRoom(null)
-                    }}
-                  >
-                    {/* Pulse outer ring */}
-                    <motion.circle
-                      cx={chem.x} cy={chem.y} r={isSelected ? "3.5" : "2.2"}
-                      fill="none" stroke={levelColors[chem.hazard_level]} strokeWidth="0.5"
-                      animate={{ r: isSelected ? [3.5, 5, 3.5] : [2.2, 3.5, 2.2], opacity: [0.7, 0, 0.7] }}
-                      transition={{ duration: 2.2, repeat: Infinity, delay: i * 0.15 }}
-                    />
-                    
-                    {/* Solid center dot */}
-                    <circle 
-                      cx={chem.x} cy={chem.y} 
-                      r={isSelected ? "2" : "1.2"} 
-                      fill={levelColors[chem.hazard_level]} 
-                      stroke={isSelected ? '#FFFFFF' : 'none'}
-                      strokeWidth="0.3"
-                    />
-                    
-                    {/* Hover tooltip label */}
-                    <text 
-                      x={chem.x} y={chem.y - 3} 
-                      textAnchor="middle"
-                      fontSize="1.8" 
-                      fill="#0F172A" 
-                      fontWeight="bold"
-                      className="pointer-events-none select-none"
-                    >
-                      {chem.name}
-                    </text>
+                  <g key={chem.id} style={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); setSelectedChemId(chem.id); setSelectedRoom(null); }}>
+                    <motion.circle cx={chem.x} cy={chem.y} r={isSelected ? "3.5" : "2.2"} fill="none" stroke={levelColors[chem.hazard_level]} strokeWidth="0.5" animate={{ r: isSelected ? [3.5, 5, 3.5] : [2.2, 3.5, 2.2], opacity: [0.7, 0, 0.7] }} transition={{ duration: 2.2, repeat: Infinity, delay: i * 0.15 }} />
+                    <circle cx={chem.x} cy={chem.y} r={isSelected ? "2" : "1.2"} fill={levelColors[chem.hazard_level]} stroke={isSelected ? '#FFFFFF' : 'none'} strokeWidth="0.3" />
                   </g>
                 )
               })}
             </svg>
+
+            <AnimatePresence>
+              {hoveredRoomId && (() => {
+                const roomObj = zones.find(z => z.id === hoveredRoomId)
+                const layoutObj = labLayout.find(l => l.id === hoveredRoomId)
+                const chemicalsInRoom = mappedChemicals.filter(c => c.room === hoveredRoomId)
+                if (!roomObj || !layoutObj) return null
+                return (
+                  <motion.div className="absolute z-20 pointer-events-none p-3 rounded-xl border border-slate-100 shadow-xl w-56 bg-white animate-fade-in" style={{ left: `${layoutObj.x + layoutObj.w / 2}%`, top: `${layoutObj.y + layoutObj.h / 2}%`, transform: 'translate(-50%, -50%)', borderLeft: `4px solid ${levelColors[roomObj.maxHazard]}` }} initial={{ opacity: 0, scale: 0.9, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 10 }}>
+                    <div className="flex items-center gap-1.5 border-b pb-1.5 mb-1.5">
+                      <span className="text-sm">{roomObj.icon}</span>
+                      <h4 className="font-bold text-xs text-slate-800">{translateLabName(roomObj.name)}</h4>
+                      <span className="badge text-[8px] font-bold ml-auto" style={{ background: levelColors[roomObj.maxHazard] + '15', color: levelColors[roomObj.maxHazard] }}>{translateLevel(roomObj.maxHazard)}</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-bold mb-1">{lang === 'ar' ? 'المواد المخزنة:' : 'Chemicals stored:'} <strong className="text-slate-700">{roomObj.chemicals}</strong></p>
+                    {chemicalsInRoom.length > 0 ? (
+                      <div className="space-y-1 mt-1 max-h-[85px] overflow-hidden">
+                        {chemicalsInRoom.slice(0, 3).map(c => <div key={c.id} className="flex justify-between items-center text-[9px] text-slate-600 font-semibold"><span className="truncate max-w-[120px]">{c.name}</span><span className="font-mono text-slate-400">({c.formula})</span></div>)}
+                        {chemicalsInRoom.length > 3 && <p className="text-[8px] text-slate-400 text-center font-bold mt-0.5">{lang === 'ar' ? `+${chemicalsInRoom.length - 3} مواد أخرى` : `+${chemicalsInRoom.length - 3} more chemicals`}</p>}
+                      </div>
+                    ) : <p className="text-[9px] text-slate-400 font-semibold italic mt-1">{lang === 'ar' ? 'القسم فارغ حالياً' : 'Area is empty'}</p>}
+                  </motion.div>
+                )
+              })()}
+            </AnimatePresence>
           </div>
 
           <div className="flex justify-between items-center mt-3 text-xs text-neutral-400">
@@ -324,190 +328,72 @@ export default function LabMapPage() {
           </div>
         </motion.div>
 
-        {/* SIDEBAR COLUMN */}
         <div className="space-y-4">
-          
-          {/* Drill-down Interactive panel */}
           <AnimatePresence mode="wait">
-            
-            {/* Case 1: Chemical Selected */}
             {selectedChem ? (
-              <motion.div 
-                key="chem-details"
-                className="card p-5 border border-slate-100"
-                initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
-              >
+              <motion.div key="chem-details" className="card p-5 border border-slate-100" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}>
                 <div className="flex items-center justify-between border-b pb-2 mb-3">
-                  <h3 className="font-bold text-xs flex items-center gap-1.5" style={{ color: '#64748B' }}>
-                    <MapPin size={14} style={{ color: '#3B82F6' }} /> {lang === 'ar' ? 'المادة الكيميائية المحددة' : 'Selected Chemical'}
-                  </h3>
-                  <button 
-                    onClick={() => setSelectedChemId(null)}
-                    className="p-1 rounded-lg hover:bg-slate-100 text-slate-400"
-                  >
-                    <X size={14} />
-                  </button>
+                  <h3 className="font-bold text-xs flex items-center gap-1.5" style={{ color: '#64748B' }}><MapPin size={14} style={{ color: '#3B82F6' }} /> {lang === 'ar' ? 'المادة الكيميائية المحددة' : 'Selected Chemical'}</h3>
+                  <button onClick={() => setSelectedChemId(null)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400"><X size={14} /></button>
                 </div>
-
-                <div className="flex items-start gap-3 text-left mb-4">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0" style={{ background: levelColors[selectedChem.hazard_level] + '18', color: levelColors[selectedChem.hazard_level] }}>
-                    {selectedChem.formula ? selectedChem.formula.slice(0, 3) : '⚗️'}
-                  </div>
-                  <div className="min-w-0 text-left">
-                    <p className="font-bold text-sm truncate" style={{ color: '#2C3E50' }}>{selectedChem.name}</p>
-                    <p className="font-mono text-xs font-semibold text-blue-500 mt-0.5">{selectedChem.formula}</p>
+                <div className="flex items-start gap-3 mb-4">
+                  <MiniNfpa ratings={chemDetails?.nfpa} />
+                  <div className="min-w-0">
+                    <h2 className="font-heading font-bold text-sm text-slate-800 truncate">{selectedChem.name}</h2>
+                    <p className="text-xs font-mono text-slate-400 font-bold mt-0.5">{selectedChem.formula}</p>
+                    <span className="badge text-[10px] mt-1" style={{ background: levelColors[selectedChem.hazard_level] + '15', color: levelColors[selectedChem.hazard_level] }}>{translateLevel(selectedChem.hazard_level)}</span>
                   </div>
                 </div>
-
-                <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
-                  <div className="p-2.5 rounded-xl bg-slate-50">
-                    <span className="text-[10px] text-neutral-400 font-semibold">{lang === 'ar' ? 'الكمية المتوفرة' : 'Available Stock'}</span>
-                    <p className="font-bold text-slate-800 mt-0.5">{selectedChem.quantity} {selectedChem.quantity_unit}</p>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-50">
-                    <span className="text-[10px] text-neutral-400 font-semibold">{lang === 'ar' ? 'مستوى الخطورة' : 'Hazard Rating'}</span>
-                    <p className="font-bold mt-0.5 flex items-center gap-1" style={{ color: levelColors[selectedChem.hazard_level] }}>
-                      <span className="w-2 h-2 rounded-full" style={{ background: levelColors[selectedChem.hazard_level] }} />
-                      {translateLevel(selectedChem.hazard_level)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* NFPA & GHS indicators */}
-                <div className="flex items-center justify-between p-3 bg-[#F8FAFC] rounded-xl border border-slate-100 mb-4 gap-3">
-                  <div className="min-w-0 text-left">
-                    <span className="text-[10px] text-neutral-400 font-semibold">{lang === 'ar' ? 'موقع التخزين الدقيق' : 'Precise Location'}</span>
+                <div className="space-y-2 border-t pt-3 mb-4">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-400 font-semibold">{lang === 'ar' ? 'الموقع الفعلي' : 'Location'}</span>
                     <p className="font-bold text-xs truncate mt-0.5 text-slate-700">{selectedChem.location}</p>
                   </div>
-                  {chemDetails?.nfpa && <MiniNfpa ratings={chemDetails.nfpa} />}
-                </div>
-
-                {selectedChem.ghs_codes?.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-[10px] text-neutral-400 font-semibold mb-1.5">{lang === 'ar' ? 'رموز وقاية GHS' : 'GHS Pictograms'}</p>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {selectedChem.ghs_codes.map(c => (
-                        <span key={c} className="text-xs bg-slate-100 px-2 py-0.5 rounded-lg font-bold" title={c}>
-                          {GHSIcons[c] || '⚠️'} {c}
-                        </span>
-                      ))}
-                    </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-400 font-semibold">{lang === 'ar' ? 'الكمية المتوفرة' : 'Stock Amount'}</span>
+                    <span className="font-bold text-slate-700">{selectedChem.quantity} {selectedChem.quantity_unit}</span>
                   </div>
-                )}
-
-                <button 
-                  onClick={() => navigate(`/chemicals/${selectedChem.id}`)}
-                  className="btn-primary w-full justify-center py-2.5 text-xs font-bold ripple shadow-sm flex items-center gap-1.5"
-                >
-                  <Eye size={14} /> {lang === 'ar' ? 'فتح صفحة التفاصيل الكاملة' : 'Open Full Details'}
-                </button>
+                  {selectedChem.expiry_date && (
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-slate-400 font-semibold">{lang === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date'}</span>
+                      <span className="font-bold text-slate-700">{new Date(selectedChem.expiry_date).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                </div>
+                <button onClick={() => navigate(`/chemicals/${selectedChem.id}`)} className="btn-primary w-full justify-center py-2.5 text-xs font-bold ripple shadow-sm flex items-center gap-1.5"><Eye size={14} /> {lang === 'ar' ? 'فتح صفحة التفاصيل الكاملة' : 'Open Full Details'}</button>
               </motion.div>
             ) : selectedRoom ? (
-              
-              /* Case 2: Room Selected */
-              <motion.div 
-                key="room-details"
-                className="card p-5 border border-slate-100"
-                initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
-              >
+              <motion.div key="room-details" className="card p-5 border border-slate-100" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}>
                 <div className="flex items-center justify-between border-b pb-2 mb-3">
-                  <h3 className="font-bold text-xs flex items-center gap-1.5" style={{ color: '#64748B' }}>
-                    <Layers size={14} style={{ color: '#10B981' }} /> {translateLabName(roomInfo?.name || '')}
-                  </h3>
-                  <button 
-                    onClick={() => setSelectedRoom(null)}
-                    className="p-1 rounded-lg hover:bg-slate-100 text-slate-400"
-                  >
-                    <X size={14} />
-                  </button>
+                  <h3 className="font-bold text-xs flex items-center gap-1.5" style={{ color: '#64748B' }}><Layers size={14} style={{ color: '#10B981' }} /> {translateLabName(roomInfo?.name || '')}</h3>
+                  <button onClick={() => setSelectedRoom(null)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400"><X size={14} /></button>
                 </div>
-
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-neutral-50">
-                    <span className="font-semibold text-neutral-500">{lang === 'ar' ? 'إجمالي المواد المخزنة' : 'Total chemicals stored'}</span>
-                    <span className="font-bold text-neutral-800">{roomChems.length}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-neutral-50">
-                    <span className="font-semibold text-neutral-500">{lang === 'ar' ? 'أعلى مستوى خطورة' : 'Max hazard rating'}</span>
-                    <span className="badge text-[10px]" style={{
-                      background: levelColors[zones.find(z => z.id === selectedRoom)?.maxHazard || 'low'] + '15',
-                      color: levelColors[zones.find(z => z.id === selectedRoom)?.maxHazard || 'low']
-                    }}>
-                      {translateLevel(zones.find(z => z.id === selectedRoom)?.maxHazard || 'low')}
-                    </span>
-                  </div>
-
+                  <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-neutral-50"><span className="font-semibold text-neutral-500">{lang === 'ar' ? 'إجمالي المواد المخزنة' : 'Total chemicals stored'}</span><span className="font-bold text-neutral-800">{roomChems.length}</span></div>
+                  <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-neutral-50"><span className="font-semibold text-neutral-500">{lang === 'ar' ? 'أعلى مستوى خطورة' : 'Max hazard rating'}</span><span className="badge text-[10px]" style={{ background: levelColors[zones.find(z => z.id === selectedRoom)?.maxHazard || 'low'] + '15', color: levelColors[zones.find(z => z.id === selectedRoom)?.maxHazard || 'low'] }}>{translateLevel(zones.find(z => z.id === selectedRoom)?.maxHazard || 'low')}</span></div>
                   <div className="mt-3">
-                    <p className="text-[10px] text-neutral-400 font-bold mb-2 uppercase tracking-wide">
-                      {lang === 'ar' ? 'قائمة المواد داخل هذا القسم:' : 'Chemicals in this section:'}
-                    </p>
-                    {roomChems.length === 0 ? (
-                      <p className="text-xs text-center py-6 text-neutral-400 font-semibold bg-neutral-50 rounded-xl">
-                        {lang === 'ar' ? 'لا توجد مواد كيميائية مخزنة هنا حالياً.' : 'No chemicals stored in this area.'}
-                      </p>
-                    ) : (
-                      <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
-                        {roomChems.map(chem => (
-                          <div 
-                            key={chem.id}
-                            onClick={() => setSelectedChemId(chem.id)}
-                            className="flex items-center justify-between p-2 rounded-xl border border-slate-100 bg-[#FAFBFD] hover:bg-slate-50 hover:border-slate-300 cursor-pointer transition-all text-xs"
-                          >
-                            <div className="min-w-0 text-left">
-                              <span className="font-bold text-slate-800 truncate block">{chem.name}</span>
-                              <span className="text-[10px] font-mono text-slate-400">{chem.formula}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5 flex-shrink-0">
-                              <span className="text-[10px] font-bold text-slate-500">{chem.quantity} {chem.quantity_unit}</span>
-                              <div className="w-2.5 h-2.5 rounded-full" style={{ background: levelColors[chem.hazard_level] }} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <p className="text-[10px] text-neutral-400 font-bold mb-2 uppercase tracking-wide">{lang === 'ar' ? 'قائمة المواد داخل هذا القسم:' : 'Chemicals in this section:'}</p>
+                    <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
+                      {roomChems.map(chem => (
+                        <div key={chem.id} onClick={() => setSelectedChemId(chem.id)} className="flex items-center justify-between p-2 rounded-xl border border-slate-100 bg-[#FAFBFD] hover:bg-slate-50 hover:border-slate-300 cursor-pointer transition-all text-xs">
+                          <div className="min-w-0 text-left"><span className="font-bold text-slate-800 truncate block">{chem.name}</span><span className="text-[10px] font-mono text-slate-400">{chem.formula}</span></div>
+                          <div className="flex items-center gap-1.5 flex-shrink-0"><span className="text-[10px] font-bold text-slate-500">{chem.quantity} {chem.quantity_unit}</span><div className="w-2.5 h-2.5 rounded-full" style={{ background: levelColors[chem.hazard_level] }} /></div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </motion.div>
             ) : (
-              
-              /* Case 3: Zone Overview (Default) */
-              <motion.div 
-                key="zone-overview"
-                className="card p-5"
-                initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}
-              >
-                <h3 className="font-semibold text-sm mb-3 text-left" style={{ color: '#2C3E50' }}>
-                  {lang === 'ar' ? 'مراقبة خطورة المناطق' : 'Zone Summary'}
-                </h3>
-                
+              <motion.div key="zone-overview" className="card p-5" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}>
+                <h3 className="font-semibold text-sm mb-3 text-left" style={{ color: '#2C3E50' }}>{lang === 'ar' ? 'مراقبة خطورة المناطق' : 'Zone Summary'}</h3>
                 <div className="space-y-2">
                   {zones.map((zone, i) => {
                     const roomColor = levelColors[zone.maxHazard]
                     return (
-                      <motion.div
-                        key={zone.id}
-                        onClick={() => setSelectedRoom(zone.id)}
-                        className="flex items-center justify-between p-2.5 rounded-xl cursor-pointer border border-neutral-100 hover:border-neutral-300 bg-[#F8F9FA] hover:bg-slate-50 transition-all text-left"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                      >
-                        <div className="flex items-center gap-2.5 text-left">
-                          <span className="text-lg">{zone.icon}</span>
-                          <div className="text-left">
-                            <p className="text-xs font-bold text-slate-700">
-                              {translateLabName(zone.name)}
-                            </p>
-                            <p className="text-[10px] text-neutral-400 font-semibold">
-                              {lang === 'ar' ? `${zone.chemicals} مواد مخزنة` : `${zone.chemicals} chemicals`}
-                            </p>
-                          </div>
-                        </div>
-                        <span className="badge text-[10px] font-bold flex items-center gap-1" style={{ background: roomColor + '15', color: roomColor }}>
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ background: roomColor }} />
-                          {translateLevel(zone.maxHazard)}
-                        </span>
+                      <motion.div key={zone.id} onClick={() => setSelectedRoom(zone.id)} className="flex items-center justify-between p-2.5 rounded-xl cursor-pointer border border-neutral-100 hover:border-neutral-300 bg-[#F8F9FA] hover:bg-slate-50 transition-all text-left" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
+                        <div className="flex items-center gap-2.5 text-left"><span className="text-lg">{zone.icon}</span><div className="text-left"><p className="text-xs font-bold text-slate-700">{translateLabName(zone.name)}</p><p className="text-[10px] text-neutral-400 font-semibold">{lang === 'ar' ? `${zone.chemicals} مواد مخزنة` : `${zone.chemicals} chemicals`}</p></div></div>
+                        <span className="badge text-[10px] font-bold flex items-center gap-1" style={{ background: roomColor + '15', color: roomColor }}><span className="w-1.5 h-1.5 rounded-full" style={{ background: roomColor }} />{translateLevel(zone.maxHazard)}</span>
                       </motion.div>
                     )
                   })}
@@ -516,23 +402,13 @@ export default function LabMapPage() {
             )}
           </AnimatePresence>
 
-          {/* Quick Stats Summary Card */}
-          <div className="card p-4 bg-gradient-to-br from-slate-800 to-slate-900 text-white border-0 shadow-md">
-            <h4 className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">
-              {lang === 'ar' ? 'إجمالي حالة المخزون' : 'Overall Inventory Status'}
-            </h4>
+          <div className="card p-4 text-white shadow-md" style={{ background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', border: 'none' }}>
+            <h4 className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">{lang === 'ar' ? 'إجمالي حالة المخزون' : 'Overall Inventory Status'}</h4>
             <div className="grid grid-cols-2 gap-2 text-center">
-              <div className="p-2 rounded-lg bg-white bg-opacity-10">
-                <span className="text-[10px] text-slate-400 block">{lang === 'ar' ? 'المواد الكلية' : 'Total Materials'}</span>
-                <span className="text-lg font-bold">{chemicals.length}</span>
-              </div>
-              <div className="p-2 rounded-lg bg-white bg-opacity-10">
-                <span className="text-[10px] text-slate-400 block">{lang === 'ar' ? 'أقسام المختبر' : 'Lab Rooms'}</span>
-                <span className="text-lg font-bold">{labLayout.length}</span>
-              </div>
+              <div className="p-2 rounded-lg bg-white bg-opacity-10"><span className="text-[10px] text-slate-400 block">{lang === 'ar' ? 'المواد الكلية' : 'Total Materials'}</span><span className="text-lg font-bold">{chemicals.length}</span></div>
+              <div className="p-2 rounded-lg bg-white bg-opacity-10"><span className="text-[10px] text-slate-400 block">{lang === 'ar' ? 'أقسام المختبر' : 'Lab Rooms'}</span><span className="text-lg font-bold">{labLayout.length}</span></div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
