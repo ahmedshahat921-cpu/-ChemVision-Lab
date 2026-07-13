@@ -939,89 +939,99 @@ export default function ChemicalDetailPage() {
       </div>
 
       {/* ══════════════════════════════════════════════
-          ZONE 3: Bottom Full-width Area (Accordions + History Log)
+          ZONE 3: Bottom Grid Area — Accordions LEFT (col-span-6) + History & Report RIGHT (col-span-6)
          ══════════════════════════════════════════════ */}
-      
-      {/* Accordions Card (Full-width) */}
-      <motion.div className="card overflow-hidden mb-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.42 }}>
-        {accordionItems.map(({ key, title, content }, i) => (
-          <div key={key} style={{ borderBottom: i < accordionItems.length - 1 ? '1px solid #F0F2F5' : 'none' }}>
-            <motion.button
-              className="w-full flex items-center justify-between p-4 font-semibold text-sm"
-              style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}
-              onClick={() => setOpenAccordion(openAccordion === key ? null : key)}
-              whileHover={{ background: '#F8F9FA' }}
-            >
-              <span style={{ color: '#2C3E50' }}>{title}</span>
-              <motion.span animate={{ rotate: openAccordion === key ? 180 : 0 }} style={{ color: '#94A3B8' }}>▼</motion.span>
-            </motion.button>
-            <AnimatePresence>
-              {openAccordion === key && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}
-                  className="overflow-hidden"
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-5 items-start">
+        
+        {/* LEFT column (col-span-6) — Accordions */}
+        <div className="lg:col-span-6">
+          <motion.div className="card overflow-hidden" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+            {accordionItems.map(({ key, title, content }, i) => (
+              <div key={key} style={{ borderBottom: i < accordionItems.length - 1 ? '1px solid #F0F2F5' : 'none' }}>
+                <motion.button
+                  className="w-full flex items-center justify-between p-4 font-semibold text-sm transition-all"
+                  style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}
+                  onClick={() => setOpenAccordion(openAccordion === key ? null : key)}
+                  whileHover={{ background: '#F8FAFC' }}
                 >
-                  <p className="px-4 pb-4 text-sm leading-relaxed" style={{ color: '#64748B', textAlign: lang === 'ar' ? 'right' : 'left' }}>{content}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        ))}
-      </motion.div>
-
-      {/* Usage & History Log Card (Full-width) */}
-      <motion.div className="card p-5 mb-5" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
-        <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: '#F0F2F5' }}>
-          <FileText size={16} style={{ color: '#7C3AED' }} />
-          <h3 className="font-bold text-sm" style={{ color: '#2C3E50' }}>
-            {lang === 'ar' ? 'سجل الاستهلاك والعمليات الأخيرة' : 'Usage & History Log'}
-          </h3>
-          {usageHistory.length > 0 && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: '#EDE9FE', color: '#7C3AED', marginInlineStart: 'auto' }}>
-              {usageHistory.length}
-            </span>
-          )}
-        </div>
-
-        {usageHistory.length === 0 ? (
-          <p className="text-xs text-center py-6 font-semibold" style={{ color: '#94A3B8' }}>
-            {lang === 'ar' ? 'لا توجد أي عمليات استهلاك مسجلة لهذه المادة.' : 'No logged usage records for this chemical.'}
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {usageHistory.map((log) => (
-              <div key={log.id} className="p-3 rounded-xl border" style={{ background: '#FAFBFD', borderColor: '#F0F2F5' }}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-bold text-xs" style={{ color: '#374151' }}>
-                    {log.profiles?.name || (lang === 'ar' ? 'مستخدم' : 'User')}
-                  </span>
-                  <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg text-xs">
-                    -{log.amount_used} {log.unit}
-                  </span>
-                </div>
-                <p className="text-xs font-medium mb-1" style={{ color: '#64748B' }}>
-                  {log.purpose || (lang === 'ar' ? 'غير محدد' : 'Not specified')}
-                </p>
-                <p className="font-semibold" style={{ color: '#94A3B8', fontSize: '0.65rem' }}>
-                  {new Date(log.timestamp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
-                </p>
+                  <span style={{ color: '#2C3E50' }}>{title}</span>
+                  <motion.span animate={{ rotate: openAccordion === key ? 180 : 0 }} style={{ color: '#94A3B8' }}>▼</motion.span>
+                </motion.button>
+                <AnimatePresence>
+                  {openAccordion === key && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }} 
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }} 
+                      transition={{ duration: 0.22 }}
+                      className="overflow-hidden"
+                    >
+                      <p className="px-5 pb-4 text-xs leading-relaxed font-semibold" style={{ color: '#64748B', textAlign: lang === 'ar' ? 'right' : 'left' }}>{content}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ))}
-          </div>
-        )}
-      </motion.div>
+          </motion.div>
+        </div>
 
-      <motion.button
-        className="btn-primary w-full justify-center py-3.5 ripple shadow-md mb-2"
-        style={{ fontSize: '1rem' }}
-        onClick={() => setShowReportModal(true)}
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.98 }}
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-      >
-        <Package size={18} /> {lang === 'ar' ? 'تسجيل استهلاك المادة' : 'Report Usage'}
-      </motion.button>
+        {/* RIGHT column (col-span-6) — History Log & Action Button */}
+        <div className="lg:col-span-6 space-y-4">
+          <motion.div className="card p-5 animate-fade-in" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }}>
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: '#F0F2F5' }}>
+              <FileText size={16} style={{ color: '#7C3AED' }} />
+              <h3 className="font-bold text-sm" style={{ color: '#2C3E50' }}>
+                {lang === 'ar' ? 'سجل الاستهلاك والعمليات الأخيرة' : 'Usage & History Log'}
+              </h3>
+              {usageHistory.length > 0 && (
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full" style={{ background: '#EDE9FE', color: '#7C3AED', marginInlineStart: 'auto' }}>
+                  {usageHistory.length}
+                </span>
+              )}
+            </div>
+
+            {usageHistory.length === 0 ? (
+              <p className="text-xs text-center py-6 font-semibold" style={{ color: '#94A3B8' }}>
+                {lang === 'ar' ? 'لا توجد أي عمليات استهلاك مسجلة لهذه المادة.' : 'No logged usage records for this chemical.'}
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[220px] overflow-y-auto pr-1">
+                {usageHistory.map((log) => (
+                  <div key={log.id} className="p-3 rounded-xl border" style={{ background: '#FAFBFD', borderColor: '#F0F2F5' }}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-bold text-xs" style={{ color: '#374151' }}>
+                        {log.profiles?.name || (lang === 'ar' ? 'مستخدم' : 'User')}
+                      </span>
+                      <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg text-xs">
+                        -{log.amount_used} {log.unit}
+                      </span>
+                    </div>
+                    <p className="text-xs font-medium mb-1" style={{ color: '#64748B' }}>
+                      {log.purpose || (lang === 'ar' ? 'غير محدد' : 'Not specified')}
+                    </p>
+                    <p className="font-semibold" style={{ color: '#94A3B8', fontSize: '0.65rem' }}>
+                      {new Date(log.timestamp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+
+          {/* Action button (Report Usage) - aligned properly, not full width */}
+          <div className={`flex ${lang === 'ar' ? 'justify-start' : 'justify-end'}`}>
+            <motion.button
+              className="btn-primary px-6 py-2.5 ripple shadow-md text-xs font-bold"
+              onClick={() => setShowReportModal(true)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+            >
+              <Package size={14} /> {lang === 'ar' ? 'تسجيل استهلاك المادة' : 'Report Usage'}
+            </motion.button>
+          </div>
+        </div>
+      </div>
 
       <AnimatePresence>
         {showReportModal && (
