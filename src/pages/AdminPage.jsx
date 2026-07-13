@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Edit, Trash2, Search, Download, X, Loader2, QrCode, FlaskConical } from 'lucide-react'
+import { Plus, Edit, Trash2, Search, Download, X, Loader2, QrCode, FlaskConical, Sparkles } from 'lucide-react'
 import { useChemicalStore } from '../store'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
@@ -19,6 +19,12 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
   const [form, setForm] = useState(initial || emptyForm)
   const [fetching, setFetching] = useState(false)
   const [aiLoading, setAiLoading] = useState(false)
+  
+  // AI Wizard sub-modal states
+  const [aiPromptOpen, setAiPromptOpen] = useState(false)
+  const [aiName, setAiName] = useState('')
+  const [aiLocation, setAiLocation] = useState('')
+  const [aiCabinet, setAiCabinet] = useState('')
 
   const autoFill = async () => {
     if (!form.name) { toast.error('Enter a chemical name first'); return }
@@ -44,59 +50,35 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
   }
 
   const handleAiFill = async () => {
-    if (!form.name) { toast.error('Enter a chemical name first'); return }
+    if (!aiName) { toast.error('Enter a chemical name first'); return }
+    if (!aiLocation) { toast.error('Select a location first'); return }
     setAiLoading(true)
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY
-      if (!apiKey) {
-        throw new Error("Gemini API key is not configured in .env file.")
-      }
-
-      const prompt = `You are an expert chemical data auto-fill assistant.
-Given the chemical name: "${form.name}", return a valid JSON object with the following fields filled with standard safety and physical data:
-{
-  "formula": "Chemical formula (e.g. H2SO4)",
-  "molecular_weight": number (molecular weight in g/mol, e.g. 98.08),
-  "cas_number": "CAS registry number (e.g. 7664-93-9)",
-  "hazard_level": "low" | "medium" | "high" | "critical" (evaluate chemical danger),
-  "ghs_codes": array of strings (e.g. ["GHS02", "GHS05"] from: GHS01, GHS02, GHS03, GHS04, GHS05, GHS06, GHS07, GHS08, GHS09),
-  "description": "Short, clear description of the chemical in English",
-  "storage_conditions": "Storage advice in English (e.g. Keep container tightly closed in a dry and well-ventilated place)",
-  "first_aid": "First aid instructions in English (e.g. In case of contact, immediately flush eyes or skin with plenty of water)"
-}
-Do not return any markdown code block wrappers (like \`\`\`json). Return ONLY the raw JSON string.`
-
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
-      const response = await fetch(geminiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json" }
-        })
+      // Invoke the secure Supabase Edge Function with action 'autocomplete'
+      const { data, error } = await supabase.functions.invoke('simulate-mixing', {
+        body: { action: 'autocomplete', chemicalName: aiName }
       })
 
-      if (!response.ok) {
-        throw new Error(`Gemini API error: ${await response.text()}`)
-      }
+      if (error) throw new Error(error.message || 'Server error calling AI edge function')
+      if (!data) throw new Error('AI returned an empty response')
 
-      const data = await response.json()
-      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text
-      if (!rawText) throw new Error("Empty response from Gemini API")
-
-      const parsed = JSON.parse(rawText.trim())
       setForm(f => ({
         ...f,
-        formula: parsed.formula || f.formula,
-        molecular_weight: parsed.molecular_weight || f.molecular_weight,
-        cas_number: parsed.cas_number || f.cas_number,
-        hazard_level: parsed.hazard_level || f.hazard_level,
-        ghs_codes: parsed.ghs_codes || f.ghs_codes,
-        description: parsed.description || f.description,
-        storage_conditions: parsed.storage_conditions || f.storage_conditions,
-        first_aid: parsed.first_aid || f.first_aid,
+        name: aiName,
+        location: aiLocation,
+        cabinet: aiCabinet || null,
+        formula: data.formula || f.formula,
+        molecular_weight: data.molecular_weight || f.molecular_weight,
+        cas_number: data.cas_number || f.cas_number,
+        hazard_level: data.hazard_level || f.hazard_level,
+        ghs_codes: data.ghs_codes || f.ghs_codes,
+        description: data.description || f.description,
+        storage_conditions: data.storage_conditions || f.storage_conditions,
+        first_aid: data.first_aid || f.first_aid,
       }))
+      
       toast.success('AI completed all chemical details!')
+      setAiPromptOpen(false)
     } catch (err) {
       console.error(err)
       toast.error('AI autocomplete failed: ' + err.message)
@@ -134,7 +116,100 @@ Do not return any markdown code block wrappers (like \`\`\`json). Return ONLY th
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <motion.div className="modal-content p-6 w-full" style={{ maxWidth: '600px' }} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} onClick={(e) => e.stopPropagation()}>
+      <motion.div className="modal-content p-6 w-full relative" style={{ maxWidth: '600px', position: 'relative', overflow: 'hidden' }} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} onClick={(e) => e.stopPropagation()}>
+        
+        {/* AI Wizard Overlay */}
+        {aiPromptOpen && (
+          <div className="absolute inset-0 bg-white z-50 p-6 rounded-2xl flex flex-col justify-between" style={{ minHeight: '400px' }}>
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-heading font-bold text-lg text-violet-700 flex items-center gap-2">
+                  <Sparkles className="text-violet-500 animate-pulse" size={18} /> AI Chemical Autocomplete Wizard
+                </h3>
+                <button type="button" onClick={() => setAiPromptOpen(false)} className="text-gray-400 hover:text-gray-600">
+                  <X size={18} />
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mb-4">
+                Enter the name, location, and cabinet. Our AI engine will automatically research and fill formulas, safety codes, descriptions, and storage conditions.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Chemical Name *</label>
+                  <input 
+                    type="text" 
+                    value={aiName} 
+                    onChange={(e) => setAiName(e.target.value)} 
+                    placeholder="e.g. Nitrobenzene" 
+                    className="input-field py-2 text-sm w-full" 
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Location *</label>
+                  <select 
+                    value={aiLocation} 
+                    onChange={(e) => setAiLocation(e.target.value)} 
+                    className="input-field py-2.5 text-sm bg-white w-full border border-gray-300 rounded-lg"
+                  >
+                    <option value="">Select Location</option>
+                    <option value="Lab A - Shelf 1">Lab A - Shelf 1</option>
+                    <option value="Lab A - Shelf 2">Lab A - Shelf 2</option>
+                    <option value="Lab A - Shelf 3">Lab A - Shelf 3</option>
+                    <option value="Lab B - Shelf 1">Lab B - Shelf 1</option>
+                    <option value="Lab B - Shelf 2">Lab B - Shelf 2</option>
+                    <option value="Lab B - Shelf 3">Lab B - Shelf 3</option>
+                    <option value="Lab C - Shelf 1">Lab C - Shelf 1</option>
+                    <option value="Lab C - Shelf 2">Lab C - Shelf 2</option>
+                    <option value="Lab C - Shelf 3">Lab C - Shelf 3</option>
+                    <option value="Lab D - Shelf 1">Lab D - Shelf 1</option>
+                    <option value="Lab D - Shelf 2">Lab D - Shelf 2</option>
+                    <option value="Lab D - Shelf 3">Lab D - Shelf 3</option>
+                    <option value="Storage - Shelf 1">Storage - Shelf 1</option>
+                    <option value="Storage - Shelf 2">Storage - Shelf 2</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Cabinet</label>
+                  <select 
+                    value={aiCabinet} 
+                    onChange={(e) => setAiCabinet(e.target.value)} 
+                    className="input-field py-2.5 text-sm bg-white w-full border border-gray-300 rounded-lg"
+                  >
+                    <option value="">Select Cabinet</option>
+                    <option value="C1">Cabinet C1</option>
+                    <option value="C2">Cabinet C2</option>
+                    <option value="C3">Cabinet C3</option>
+                    <option value="C4">Cabinet C4</option>
+                    <option value="C5">Cabinet C5</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t border-gray-100">
+              <button 
+                type="button" 
+                onClick={() => setAiPromptOpen(false)} 
+                className="btn-secondary flex-1 justify-center py-2.5 text-xs font-medium"
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                disabled={aiLoading} 
+                onClick={handleAiFill} 
+                className="btn-primary flex-1 justify-center py-2.5 text-xs bg-gradient-to-r from-violet-600 to-indigo-600 border-0 flex items-center gap-1 shadow-md text-white font-medium hover:from-violet-700 hover:to-indigo-700 transition-all"
+              >
+                {aiLoading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                Generate with AI
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="flex justify-between items-center mb-5">
           <h2 className="font-heading font-bold text-xl" style={{ color: '#2C3E50' }}>{initial ? 'Edit Chemical' : 'Add Chemical'}</h2>
           <button onClick={onClose}><X size={20} style={{ color: '#94A3B8' }} /></button>
@@ -151,8 +226,17 @@ Do not return any markdown code block wrappers (like \`\`\`json). Return ONLY th
               <button type="button" onClick={autoFill} disabled={fetching} className="btn-secondary py-2.5 px-3 text-xs whitespace-nowrap flex items-center gap-1 shadow-sm">
                 {fetching ? <Loader2 size={12} className="animate-spin" /> : '🔍'} PubChem
               </button>
-              <button type="button" onClick={handleAiFill} disabled={aiLoading} className="btn-primary py-2.5 px-3 text-xs whitespace-nowrap bg-gradient-to-r from-violet-600 to-indigo-600 border-0 flex items-center gap-1 shadow-sm">
-                {aiLoading ? <Loader2 size={12} className="animate-spin" /> : '🧠'} AI Autocomplete
+              <button 
+                type="button" 
+                onClick={() => {
+                  setAiName(form.name)
+                  setAiLocation(form.location)
+                  setAiCabinet(form.cabinet)
+                  setAiPromptOpen(true)
+                }} 
+                className="btn-primary py-2.5 px-3 text-xs whitespace-nowrap bg-gradient-to-r from-violet-600 to-indigo-600 border-0 flex items-center gap-1 shadow-sm"
+              >
+                <Sparkles size={12} /> AI Autocomplete
               </button>
             </div>
           </div>
