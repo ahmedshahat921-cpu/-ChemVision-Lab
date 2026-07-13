@@ -92,16 +92,47 @@ function Molecule3D() {
 }
 
 // Lab Heatmap
-const labZones = [
-  { id: 1, label: 'Lab A', x: 15, y: 20, level: 'high', chemicals: 4 },
-  { id: 2, label: 'Lab B', x: 45, y: 20, level: 'medium', chemicals: 3 },
-  { id: 3, label: 'Lab C', x: 65, y: 50, level: 'high', chemicals: 4 },
-  { id: 4, label: 'Lab D', x: 20, y: 60, level: 'low', chemicals: 3 },
-  { id: 5, label: 'Storage', x: 75, y: 80, level: 'medium', chemicals: 2 },
-]
-
-function LabHeatmap() {
+function LabHeatmap({ chemicals, lang }) {
   const levelColors = { low: '#5DB9A0', medium: '#F5A623', high: '#E85D5D' }
+  const levelLabels = {
+    low: { en: 'Low Hazard', ar: 'خطورة منخفضة' },
+    medium: { en: 'Medium Hazard', ar: 'خطورة متوسطة' },
+    high: { en: 'High Hazard', ar: 'خطورة عالية' },
+  }
+
+  // Calculate dynamic occupancy and levels
+  const zones = [
+    { id: 1, label: lang === 'ar' ? 'مختبر أ' : 'Lab A', prefix: 'Lab A', x: 15, y: 20, level: 'low', chemicals: 0 },
+    { id: 2, label: lang === 'ar' ? 'مختبر ب' : 'Lab B', prefix: 'Lab B', x: 45, y: 20, level: 'low', chemicals: 0 },
+    { id: 3, label: lang === 'ar' ? 'مختبر ج' : 'Lab C', prefix: 'Lab C', x: 65, y: 50, level: 'low', chemicals: 0 },
+    { id: 4, label: lang === 'ar' ? 'مختبر د' : 'Lab D', prefix: 'Lab D', x: 20, y: 60, level: 'low', chemicals: 0 },
+    { id: 5, label: lang === 'ar' ? 'المخزن' : 'Storage', prefix: 'Storage', x: 75, y: 80, level: 'low', chemicals: 0 },
+  ]
+
+  if (chemicals && chemicals.length > 0) {
+    chemicals.forEach(c => {
+      const loc = (c.location || '').toUpperCase()
+      let matchedZone = zones.find(z => loc.startsWith(z.prefix.toUpperCase()))
+      
+      // Fallback matching
+      if (!matchedZone) {
+        matchedZone = zones.find(z => loc.includes(z.prefix.toUpperCase()))
+      }
+      if (!matchedZone) {
+        matchedZone = zones[4] // Storage
+      }
+
+      matchedZone.chemicals++
+
+      // Determine hazard color
+      if (c.hazard_level === 'critical' || c.hazard_level === 'high') {
+        matchedZone.level = 'high'
+      } else if (c.hazard_level === 'medium' && matchedZone.level !== 'high') {
+        matchedZone.level = 'medium'
+      }
+    })
+  }
+
   return (
     <div className="relative w-full h-52 rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #EBF4FF 0%, #F0F2F5 100%)', border: '1px solid #E2E8F0' }}>
       {/* Grid lines */}
@@ -110,7 +141,7 @@ function LabHeatmap() {
         {[25, 50, 75].map(y => <line key={y} x1="0" y1={`${y}%`} x2="100%" y2={`${y}%`} stroke="#4A90E2" strokeWidth="0.5" />)}
       </svg>
       {/* Zones */}
-      {labZones.map((zone, i) => (
+      {zones.map((zone, i) => (
         <motion.div
           key={zone.id}
           className="absolute"
@@ -119,7 +150,7 @@ function LabHeatmap() {
           animate={{ scale: 1 }}
           transition={{ delay: i * 0.15, type: 'spring' }}
         >
-          <div className="relative flex items-center justify-center">
+          <div className="relative flex items-center justify-center cursor-help group/zone">
             <motion.div
               className="absolute w-8 h-8 rounded-full opacity-30"
               style={{ background: levelColors[zone.level] }}
@@ -127,21 +158,37 @@ function LabHeatmap() {
               transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.4 }}
             />
             <div className="relative w-4 h-4 rounded-full z-10" style={{ background: levelColors[zone.level] }} />
+            
+            {/* Tooltip on hover */}
+            <div className="absolute bottom-6 hidden group-hover/zone:flex flex-col items-center z-30">
+              <div className="bg-slate-900 text-white text-[10px] rounded-lg p-2 shadow-lg min-w-[120px] text-center whitespace-nowrap">
+                <p className="font-bold">{zone.label}</p>
+                <p className="text-slate-300 mt-0.5">{lang === 'ar' ? 'المواد الكيميائية:' : 'Chemicals:'} {zone.chemicals}</p>
+                <p className="font-bold mt-0.5" style={{ color: levelColors[zone.level] }}>
+                  {levelLabels[zone.level]?.[lang] || zone.level}
+                </p>
+              </div>
+              <div className="w-2.5 h-2.5 bg-slate-900 rotate-45 -mt-1.5" />
+            </div>
           </div>
-          <p className="text-xs text-center mt-1 font-medium" style={{ color: '#2C3E50', fontSize: '0.65rem' }}>{zone.label}</p>
+          <p className="text-xs text-center mt-1 font-bold" style={{ color: '#2C3E50', fontSize: '0.65rem' }}>
+            {zone.label} ({zone.chemicals})
+          </p>
         </motion.div>
       ))}
-      <p className="absolute bottom-2 right-3 text-xs" style={{ color: '#94A3B8' }}>Lab Heatmap</p>
+      <p className="absolute bottom-2 right-3 text-xs font-bold text-slate-400" style={{ right: lang === 'ar' ? 'auto' : '12px', left: lang === 'ar' ? '12px' : 'auto' }}>
+        {lang === 'ar' ? 'خريطة انتشار الملوثات' : 'Lab Concentration Heatmap'}
+      </p>
     </div>
   )
 }
 
-// Mock usage data for chart
-const usageData = [
-  { day: 'Mon', usage: 12 }, { day: 'Tue', usage: 19 },
-  { day: 'Wed', usage: 8 }, { day: 'Thu', usage: 24 },
-  { day: 'Fri', usage: 16 }, { day: 'Sat', usage: 5 },
-  { day: 'Sun', usage: 3 },
+// Fallback mock usage data if chart data fetch fails
+const fallbackUsageData = [
+  { dayIndex: 1, usage: 12 }, { dayIndex: 2, usage: 19 },
+  { dayIndex: 3, usage: 8 }, { dayIndex: 4, usage: 24 },
+  { dayIndex: 5, usage: 16 }, { dayIndex: 6, usage: 5 },
+  { dayIndex: 0, usage: 3 },
 ]
 
 export default function DashboardPage() {
@@ -150,10 +197,65 @@ export default function DashboardPage() {
   const { lang, t } = useLanguage()
   const navigate = useNavigate()
   const [recentLogs, setRecentLogs] = useState([])
+  const [chartData, setChartData] = useState([])
+  const [chartLoading, setChartLoading] = useState(true)
+
+  const fetchChartData = async () => {
+    try {
+      setChartLoading(true)
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      
+      // Fetch the logs from the database
+      const { data: logs, error } = await supabase
+        .from('usage_logs')
+        .select('timestamp, amount_used')
+        .gte('timestamp', sevenDaysAgo.toISOString())
+
+      if (error) throw error
+
+      // Symmetrically map the calendar days ending in today
+      const last7Days = []
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date()
+        d.setDate(d.getDate() - i)
+        const dayIndex = d.getDay()
+        const dateString = d.toISOString().split('T')[0]
+        
+        last7Days.push({
+          dateString,
+          dayIndex,
+          usage: 0
+        })
+      }
+
+      if (logs) {
+        logs.forEach(log => {
+          const logDate = log.timestamp.split('T')[0]
+          const matchDay = last7Days.find(d => d.dateString === logDate)
+          if (matchDay) {
+            matchDay.usage += parseFloat(log.amount_used || 0)
+          }
+        })
+      }
+
+      setChartData(last7Days)
+    } catch (err) {
+      console.warn('Failed to load usage chart data, using fallback:', err)
+      setChartData(fallbackUsageData)
+    } finally {
+      setChartLoading(false)
+    }
+  }
 
   useEffect(() => {
     fetchChemicals()
-    supabase.from('usage_logs').select('*, chemicals(name, formula), profiles(name)').order('timestamp', { ascending: false }).limit(5).then(({ data }) => setRecentLogs(data || []))
+    fetchChartData()
+    supabase.from('usage_logs')
+      .select('*, chemicals(name, formula), profiles(name)')
+      .order('timestamp', { ascending: false })
+      .limit(5)
+      .then(({ data }) => setRecentLogs(data || []))
   }, [])
 
   const expiringCount = (chemicals || []).filter(c => {
@@ -180,6 +282,15 @@ export default function DashboardPage() {
     }
     return hours < 12 ? 'Good morning,' : hours < 18 ? 'Good afternoon,' : 'Good evening,'
   }
+
+  // Days list translation
+  const daysOfWeekEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const daysOfWeekAr = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
+
+  const processedChartData = chartData.map(item => ({
+    ...item,
+    day: lang === 'ar' ? daysOfWeekAr[item.dayIndex] : daysOfWeekEn[item.dayIndex]
+  }))
 
   return (
     <div className={`p-4 lg:p-6 space-y-6 ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
@@ -269,7 +380,7 @@ export default function DashboardPage() {
             <TrendingUp size={18} style={{ color: '#4A90E2' }} />
           </div>
           <ResponsiveContainer width="100%" height={160}>
-            <AreaChart data={usageData}>
+            <AreaChart data={processedChartData}>
               <defs>
                 <linearGradient id="usageGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#4A90E2" stopOpacity={0.2} />
@@ -323,7 +434,7 @@ export default function DashboardPage() {
             </div>
             <MapPin size={18} style={{ color: '#4A90E2' }} />
           </div>
-          <LabHeatmap />
+          <LabHeatmap chemicals={chemicals} lang={lang} />
           <div className="flex gap-4 mt-3">
             {[{ color: '#5DB9A0', label: lang === 'ar' ? 'منخفض' : 'Low' }, { color: '#F5A623', label: lang === 'ar' ? 'متوسط' : 'Medium' }, { color: '#E85D5D', label: lang === 'ar' ? 'مرتفع' : 'High' }].map(l => (
               <div key={l.label} className="flex items-center gap-1.5">
@@ -364,6 +475,54 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         </motion.div>
       </div>
+
+      {/* Recent Activity Log Row (PROPOSAL 1) */}
+      <motion.div 
+        className="card p-5"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+      >
+        <div className="flex items-center gap-2 mb-4 pb-2 border-b" style={{ borderColor: '#F0F2F5' }}>
+          <Clock size={18} style={{ color: '#7C3AED' }} />
+          <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>
+            {lang === 'ar' ? 'سجل العمليات والنشاطات الأخيرة في المختبر' : 'Recent Lab Activity & Logs'}
+          </h3>
+        </div>
+
+        {recentLogs.length === 0 ? (
+          <p className="text-xs text-center py-6 text-slate-400 font-semibold">
+            {lang === 'ar' ? 'لا توجد عمليات استهلاك مسجلة مؤخراً.' : 'No recent chemical usage logged.'}
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr className="border-b text-slate-400" style={{ borderColor: '#F0F2F5' }}>
+                  <th className="py-2.5 font-bold uppercase tracking-wider text-start">{lang === 'ar' ? 'المستخدم' : 'User'}</th>
+                  <th className="py-2.5 font-bold uppercase tracking-wider text-start">{lang === 'ar' ? 'المادة الكيميائية' : 'Chemical'}</th>
+                  <th className="py-2.5 font-bold uppercase tracking-wider text-start">{lang === 'ar' ? 'الكمية المستهلكة' : 'Amount'}</th>
+                  <th className="py-2.5 font-bold uppercase tracking-wider text-start">{lang === 'ar' ? 'الغرض' : 'Purpose'}</th>
+                  <th className="py-2.5 font-bold uppercase tracking-wider text-start">{lang === 'ar' ? 'الوقت والتاريخ' : 'Date & Time'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentLogs.map((log) => (
+                  <tr key={log.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors" style={{ borderColor: '#F8F9FA' }}>
+                    <td className="py-3 font-semibold text-slate-700 text-start">{log.profiles?.name || (lang === 'ar' ? 'مستخدم' : 'User')}</td>
+                    <td className="py-3 font-semibold text-blue-600 cursor-pointer text-start" onClick={() => navigate(`/chemicals/${log.chemical_id}`)}>
+                      {log.chemicals?.name} <span className="text-[10px] font-mono text-slate-400 font-bold">({log.chemicals?.formula})</span>
+                    </td>
+                    <td className="py-3 font-bold text-rose-600 text-start">-{log.amount_used} {log.unit}</td>
+                    <td className="py-3 text-slate-500 font-medium text-start">{log.purpose || (lang === 'ar' ? 'غير محدد' : 'Not specified')}</td>
+                    <td className="py-3 text-slate-400 font-semibold text-start">{new Date(log.timestamp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </motion.div>
     </div>
   )
 }
