@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Edit, Trash2, Search, Download, X, Loader2, QrCode, FlaskConical, Sparkles, AlertTriangle } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
+import { useLanguage } from '../hooks/useLanguage'
 import { useChemicalStore } from '../store'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
@@ -436,6 +437,7 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
 }
 
 export default function AdminPage() {
+  const { lang, t } = useLanguage()
   const { chemicals, fetchChemicals, addChemical, updateChemical, deleteChemical } = useChemicalStore()
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
@@ -463,6 +465,24 @@ export default function AdminPage() {
   const filtered = chemicals.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.formula.toLowerCase().includes(search.toLowerCase()))
 
   const handleSave = async (data) => {
+    // 0. Check if the location and cabinet is occupied by another active chemical
+    if (data.location && data.cabinet) {
+      const occupiedChem = (chemicals || []).find(c => 
+        c.is_active &&
+        c.id !== (editingChemical?.id || null) &&
+        (c.location || '').toLowerCase() === data.location.toLowerCase() &&
+        (c.cabinet || '').toLowerCase() === data.cabinet.toLowerCase()
+      )
+      
+      if (occupiedChem) {
+        toast.error(lang === 'ar' 
+          ? `⚠️ هذا الموقع (${data.location} - ${data.cabinet}) مشغول حالياً بواسطة "${occupiedChem.name}".` 
+          : `⚠️ This spot (${data.location} - ${data.cabinet}) is occupied by "${occupiedChem.name}".`
+        )
+        return
+      }
+    }
+
     setSaving(true)
     if (editingChemical) {
       const res = await updateChemical(editingChemical.id, data)
@@ -581,6 +601,24 @@ export default function AdminPage() {
   const handleRestoreInactive = async () => {
     if (!duplicateCheck) return
     const { match, pendingData } = duplicateCheck
+    
+    // Check if the target spot is occupied by another active chemical
+    if (pendingData.location && pendingData.cabinet) {
+      const occupiedChem = (chemicals || []).find(c => 
+        c.is_active &&
+        c.id !== match.id &&
+        (c.location || '').toLowerCase() === pendingData.location.toLowerCase() &&
+        (c.cabinet || '').toLowerCase() === pendingData.cabinet.toLowerCase()
+      )
+      
+      if (occupiedChem) {
+        toast.error(lang === 'ar' 
+          ? `⚠️ هذا الموقع (${pendingData.location} - ${pendingData.cabinet}) مشغول حالياً بواسطة "${occupiedChem.name}".` 
+          : `⚠️ This spot (${pendingData.location} - ${pendingData.cabinet}) is occupied by "${occupiedChem.name}".`
+        )
+        return
+      }
+    }
     
     setSaving(true)
     const res = await updateChemical(match.id, {
