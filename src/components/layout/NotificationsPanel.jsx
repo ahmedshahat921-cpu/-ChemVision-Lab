@@ -157,7 +157,7 @@ export default function NotificationsPanel() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setOpen(!open)}
-        className="relative p-2 rounded-lg transition-colors"
+        className="relative p-2 rounded-lg transition-colors cursor-pointer"
         style={{ background: open ? '#EBF4FF' : '#F0F2F5' }}
         id="notifications-bell"
       >
