@@ -96,7 +96,7 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
 
       setForm(f => ({
         ...f,
-        name: aiName.trim(),
+        name: data.corrected_name || aiName.trim(),
         location: aiLocation,
         cabinet: aiCabinet || null,
         quantity: aiQuantity,
@@ -461,7 +461,33 @@ export default function AdminPage() {
       }
       else toast.error(res.error)
     } else {
-      // Case-insensitive duplicate check directly in Supabase
+      // 1. Verify chemical name is valid via AI to block gibberish (e.g. asd)
+      toast.loading('🧠 Verifying chemical name...', { id: 'validate-chem' })
+      try {
+        const { data: aiVal, error: aiErr } = await supabase.functions.invoke('simulate-mixing', {
+          body: { action: 'autocomplete', chemicalName: data.name }
+        })
+
+        if (aiErr || !aiVal) throw new Error(aiErr?.message || 'Verification service offline')
+
+        if (aiVal.is_valid === false) {
+          toast.error(aiVal.error_message || 'Invalid or unrecognized chemical name.', { id: 'validate-chem' })
+          setSaving(false)
+          return
+        }
+
+        // Apply spelling correction if available (e.g., corrected 'etanol' to 'Ethanol')
+        if (aiVal.corrected_name) {
+          data.name = aiVal.corrected_name
+        }
+        
+        toast.success('Chemical verified!', { id: 'validate-chem' })
+      } catch (err) {
+        console.error('Failed to validate chemical name:', err)
+        toast.error('Could not verify name with AI, proceeding anyway...', { id: 'validate-chem' })
+      }
+
+      // 2. Case-insensitive duplicate check directly in Supabase using the (possibly corrected) name
       const { data: existing, error } = await supabase
         .from('chemicals')
         .select('*')

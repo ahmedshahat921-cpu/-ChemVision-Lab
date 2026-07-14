@@ -136,6 +136,7 @@ Return a valid JSON object with the following fields:
   "suggestions": ["string" (array of 1-3 closest correct chemical names if the input is a typo, e.g., ["Ethanol"] for "ethnol". Leave empty array if no close matches exist)],
   
   // The following fields are ONLY required if is_valid is true:
+  "corrected_name": "Standard/proper spelling of the chemical name in Title Case (e.g., 'Ethanol' instead of 'etanol', 'Sulfuric Acid' instead of 'sulfr')",
   "formula": "Chemical formula (e.g. H2SO4)",
   "molecular_weight": number (molecular weight in g/mol, e.g. 98.08),
   "cas_number": "CAS registry number (e.g. 7664-93-9)",
