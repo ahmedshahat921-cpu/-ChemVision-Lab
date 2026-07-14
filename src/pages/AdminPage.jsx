@@ -392,6 +392,7 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false)
   const [showQRBatch, setShowQRBatch] = useState(false)
   const [duplicateCheck, setDuplicateCheck] = useState(null) // null or { match, pendingData }
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null) // null or { id, name }
 
   useEffect(() => { fetchChemicals() }, [])
 
@@ -516,11 +517,22 @@ export default function AdminPage() {
     setDuplicateCheck(null)
   }
 
-  const handleDelete = async (id, name) => {
-    if (!confirm(`Delete ${name}? This cannot be undone.`)) return
+  const handleDeleteClick = (id, name) => {
+    setDeleteConfirmation({ id, name })
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmation) return
+    const { id } = deleteConfirmation
+    setSaving(true)
     const res = await deleteChemical(id)
-    if (res.success) { toast.success('Chemical deleted') }
-    else toast.error('Failed to delete: ' + res.error)
+    setSaving(false)
+    setDeleteConfirmation(null)
+    if (res.success) {
+      toast.success('Chemical deleted successfully!')
+    } else {
+      toast.error('Failed to delete: ' + res.error)
+    }
   }
 
   return (
@@ -594,7 +606,7 @@ export default function AdminPage() {
                       <button onClick={() => { setEditingChemical(c); setShowForm(true) }} className="p-1.5 rounded-lg" style={{ background: '#EBF4FF' }}>
                         <Edit size={13} style={{ color: '#4A90E2' }} />
                       </button>
-                      <button onClick={() => handleDelete(c.id, c.name)} className="p-1.5 rounded-lg" style={{ background: '#FDEAEA' }}>
+                      <button onClick={() => handleDeleteClick(c.id, c.name)} className="p-1.5 rounded-lg" style={{ background: '#FDEAEA' }}>
                         <Trash2 size={13} style={{ color: '#E85D5D' }} />
                       </button>
                     </div>
@@ -693,6 +705,53 @@ export default function AdminPage() {
                 <button 
                   onClick={() => setDuplicateCheck(null)}
                   className="btn-secondary justify-center py-2.5 border-0 hover:bg-slate-100 text-slate-500 flex items-center gap-1"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirmation && (
+          <div className="modal-overlay" onClick={() => setDeleteConfirmation(null)}>
+            <motion.div 
+              className="modal-content p-6 w-full max-w-sm relative"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-4 text-rose-500">
+                <Trash2 size={32} />
+                <h3 className="font-heading font-bold text-lg text-slate-800">
+                  Delete Chemical?
+                </h3>
+              </div>
+
+              <div className="space-y-2 text-sm text-slate-600 mb-6 leading-relaxed">
+                <p>
+                  Are you sure you want to delete <strong>"{deleteConfirmation.name}"</strong>? 
+                  This will temporarily deactivate it from the active inventory.
+                </p>
+                <p className="text-xs text-slate-400 border-t pt-2">
+                  هل أنت متأكد من رغبتك في حذف المادة "{deleteConfirmation.name}"؟ سيتم إلغاء تنشيطها من المخزون.
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <button 
+                  onClick={handleConfirmDelete}
+                  className="btn-primary flex-1 justify-center py-2 bg-rose-600 hover:bg-rose-700 border-0 flex items-center gap-1 text-white font-medium"
+                >
+                  Delete
+                </button>
+                <button 
+                  onClick={() => setDeleteConfirmation(null)}
+                  className="btn-secondary flex-1 justify-center py-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-medium"
                 >
                   Cancel
                 </button>
