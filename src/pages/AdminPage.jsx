@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Edit, Trash2, Search, Download, X, Loader2, QrCode, FlaskConical, Sparkles } from 'lucide-react'
+import { Plus, Edit, Trash2, Search, Download, X, Loader2, QrCode, FlaskConical, Sparkles, AlertTriangle } from 'lucide-react'
 import { useChemicalStore } from '../store'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
@@ -391,6 +391,7 @@ export default function AdminPage() {
   const [editingChemical, setEditingChemical] = useState(null)
   const [saving, setSaving] = useState(false)
   const [showQRBatch, setShowQRBatch] = useState(false)
+  const [duplicateCheck, setDuplicateCheck] = useState(null) // null or { match, pendingData }
 
   useEffect(() => { fetchChemicals() }, [])
 
@@ -409,6 +410,19 @@ export default function AdminPage() {
       }
       else toast.error(res.error)
     } else {
+      // Case-insensitive duplicate check directly in Supabase
+      const { data: existing, error } = await supabase
+        .from('chemicals')
+        .select('*')
+        .ilike('name', data.name)
+        .limit(1)
+
+      if (existing && existing.length > 0) {
+        setDuplicateCheck({ match: existing[0], pendingData: data })
+        setSaving(false)
+        return
+      }
+
       const res = await addChemical(data)
       if (res.success) { 
         toast.success('Chemical added!')
@@ -450,6 +464,56 @@ export default function AdminPage() {
       console.error('Failed to generate detailed data:', err)
       toast.error('AI details generation failed (chemical still saved)', { id: 'ai-details' })
     }
+  }
+
+  const handleAddToStock = async () => {
+    if (!duplicateCheck) return
+    const { match, pendingData } = duplicateCheck
+    const updatedQty = Number(match.quantity || 0) + Number(pendingData.quantity || 0)
+    
+    setSaving(true)
+    const res = await updateChemical(match.id, {
+      quantity: updatedQty,
+      is_active: true
+    })
+    setSaving(false)
+    
+    if (res.success) {
+      toast.success(`Successfully added ${pendingData.quantity} ${pendingData.quantity_unit} to "${match.name}" stock!`)
+      setDuplicateCheck(null)
+      setShowForm(false)
+    } else {
+      toast.error('Failed to update stock: ' + res.error)
+    }
+  }
+
+  const handleRestoreInactive = async () => {
+    if (!duplicateCheck) return
+    const { match, pendingData } = duplicateCheck
+    
+    setSaving(true)
+    const res = await updateChemical(match.id, {
+      ...pendingData,
+      is_active: true
+    })
+    setSaving(false)
+    
+    if (res.success) {
+      toast.success(`"${match.name}" has been restored and updated successfully!`)
+      // Refresh detailed data
+      generateDetailedData(match.id, pendingData.name)
+      setDuplicateCheck(null)
+      setShowForm(false)
+    } else {
+      toast.error('Failed to restore: ' + res.error)
+    }
+  }
+
+  const handleEditExisting = () => {
+    if (!duplicateCheck) return
+    const { match } = duplicateCheck
+    setEditingChemical(match)
+    setDuplicateCheck(null)
   }
 
   const handleDelete = async (id, name) => {
@@ -554,6 +618,87 @@ export default function AdminPage() {
             onClose={() => { setShowForm(false); setEditingChemical(null) }}
             loading={saving}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Duplicate Chemical Alert Modal */}
+      <AnimatePresence>
+        {duplicateCheck && (
+          <div className="modal-overlay" onClick={() => setDuplicateCheck(null)}>
+            <motion.div 
+              className="modal-content p-6 w-full max-w-md relative"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-4 text-amber-500">
+                <AlertTriangle size={32} />
+                <h3 className="font-heading font-bold text-lg text-slate-800">
+                  {duplicateCheck.match.is_active 
+                    ? 'Chemical Already Exists' 
+                    : 'Chemical Previously Deleted'}
+                </h3>
+              </div>
+
+              <div className="space-y-3 text-sm text-slate-600 mb-6 leading-relaxed">
+                {duplicateCheck.match.is_active ? (
+                  <>
+                    <p>
+                      <strong>"{duplicateCheck.match.name}"</strong> already exists in inventory at 
+                      <strong> {duplicateCheck.match.location}</strong> (Cabinet: {duplicateCheck.match.cabinet || 'None'}) 
+                      with quantity <strong>{duplicateCheck.match.quantity} {duplicateCheck.match.quantity_unit}</strong>.
+                    </p>
+                    <p className="text-xs text-slate-400 border-t pt-2">
+                      هذا المركب موجود بالفعل في المخزون بالموقع المحدد وبكمية {duplicateCheck.match.quantity} {duplicateCheck.match.quantity_unit}.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p>
+                      <strong>"{duplicateCheck.match.name}"</strong> exists but is deactivated (archived/deleted). 
+                      Would you like to restore and update it?
+                    </p>
+                    <p className="text-xs text-slate-400 border-t pt-2">
+                      هذا المركب موجود مسبقاً ولكنه غير نشط (محذوف). هل ترغب في استعادته وتحديث بياناته؟
+                    </p>
+                  </>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                {duplicateCheck.match.is_active ? (
+                  <>
+                    <button 
+                      onClick={handleAddToStock}
+                      className="btn-primary justify-center py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 border-0 flex items-center gap-1"
+                    >
+                      ➕ Add to Existing Stock (+{duplicateCheck.pendingData.quantity} {duplicateCheck.pendingData.quantity_unit})
+                    </button>
+                    <button 
+                      onClick={handleEditExisting}
+                      className="btn-secondary justify-center py-2.5 border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center gap-1"
+                    >
+                      ✏️ Edit Existing Chemical Details
+                    </button>
+                  </>
+                ) : (
+                  <button 
+                    onClick={handleRestoreInactive}
+                    className="btn-primary justify-center py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-0 flex items-center gap-1"
+                  >
+                    🔄 Restore & Update Chemical
+                  </button>
+                )}
+                <button 
+                  onClick={() => setDuplicateCheck(null)}
+                  className="btn-secondary justify-center py-2.5 border-0 hover:bg-slate-100 text-slate-500 flex items-center gap-1"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
