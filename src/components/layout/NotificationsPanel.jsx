@@ -72,6 +72,7 @@ export default function NotificationsPanel() {
       setNotifications(data || [])
     } catch (err) {
       console.error('Failed to fetch notifications:', err)
+      toast.error('Notifications fetch failed: ' + err.message)
     } finally {
       setLoading(false)
     }
@@ -156,7 +157,12 @@ export default function NotificationsPanel() {
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          if (!open) {
+            fetchNotifications()
+          }
+          setOpen(!open)
+        }}
         className="relative p-2 rounded-lg transition-colors cursor-pointer"
         style={{ background: open ? '#EBF4FF' : '#F0F2F5' }}
         id="notifications-bell"
