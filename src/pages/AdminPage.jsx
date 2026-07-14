@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Edit, Trash2, Search, Download, X, Loader2, QrCode, FlaskConical, Sparkles, AlertTriangle } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
 import { useChemicalStore } from '../store'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
@@ -444,7 +445,20 @@ export default function AdminPage() {
   const [duplicateCheck, setDuplicateCheck] = useState(null) // null or { match, pendingData }
   const [deleteConfirmation, setDeleteConfirmation] = useState(null) // null or { id, name }
 
-  useEffect(() => { fetchChemicals() }, [])
+  const [searchParams] = useSearchParams()
+
+  useEffect(() => { 
+    fetchChemicals() 
+    const prefillLoc = searchParams.get('prefillLocation')
+    const prefillCab = searchParams.get('prefillCabinet')
+    if (prefillLoc) {
+      setEditingChemical(null)
+      setShowForm(true)
+      // Populate prefilled data into emptyForm structure
+      emptyForm.location = prefillLoc
+      emptyForm.cabinet = prefillCab || ''
+    }
+  }, [searchParams])
 
   const filtered = chemicals.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.formula.toLowerCase().includes(search.toLowerCase()))
 

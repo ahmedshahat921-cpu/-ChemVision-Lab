@@ -91,94 +91,272 @@ function Molecule3D() {
   )
 }
 
-// Lab Heatmap
-function LabHeatmap({ chemicals, lang }) {
-  const levelColors = { low: '#5DB9A0', medium: '#F5A623', high: '#E85D5D' }
-  const levelLabels = {
-    low: { en: 'Low Hazard', ar: 'خطورة منخفضة' },
-    medium: { en: 'Medium Hazard', ar: 'خطورة متوسطة' },
-    high: { en: 'High Hazard', ar: 'خطورة عالية' },
-  }
+// Lab Storage Seat Map (المقاعد التخزينية للمختبر)
+function LabStorageSeatMap({ chemicals, lang, navigate }) {
+  const [activeLab, setActiveLab] = useState('Lab A')
+  const [selectedSeat, setSelectedSeat] = useState(null) // { shelf, cabinet }
 
-  // Calculate dynamic occupancy and levels
-  const zones = [
-    { id: 1, label: lang === 'ar' ? 'مختبر أ' : 'Lab A', prefix: 'Lab A', x: 15, y: 20, level: 'low', chemicals: 0 },
-    { id: 2, label: lang === 'ar' ? 'مختبر ب' : 'Lab B', prefix: 'Lab B', x: 45, y: 20, level: 'low', chemicals: 0 },
-    { id: 3, label: lang === 'ar' ? 'مختبر ج' : 'Lab C', prefix: 'Lab C', x: 65, y: 50, level: 'low', chemicals: 0 },
-    { id: 4, label: lang === 'ar' ? 'مختبر د' : 'Lab D', prefix: 'Lab D', x: 20, y: 60, level: 'low', chemicals: 0 },
-    { id: 5, label: lang === 'ar' ? 'المخزن' : 'Storage', prefix: 'Storage', x: 75, y: 80, level: 'low', chemicals: 0 },
+  const labs = [
+    { id: 'Lab A', name: lang === 'ar' ? 'مختبر أ' : 'Lab A' },
+    { id: 'Lab B', name: lang === 'ar' ? 'مختبر ب' : 'Lab B' },
+    { id: 'Lab C', name: lang === 'ar' ? 'مختبر ج' : 'Lab C' },
+    { id: 'Lab D', name: lang === 'ar' ? 'مختبر د' : 'Lab D' },
+    { id: 'Storage', name: lang === 'ar' ? 'المستودع' : 'Storage' },
   ]
 
-  if (chemicals && chemicals.length > 0) {
-    chemicals.forEach(c => {
-      const loc = (c.location || '').toUpperCase()
-      let matchedZone = zones.find(z => loc.startsWith(z.prefix.toUpperCase()))
+  const shelves = [1, 2, 3]
+  const cabinets = ['C1', 'C2', 'C3', 'C4', 'C5']
+
+  const findChemicalAt = (shelf, cabinet) => {
+    return (chemicals || []).find(c => {
+      if (!c.is_active) return false
+      const loc = (c.location || '').toLowerCase()
+      const cab = (c.cabinet || '').toLowerCase()
       
-      // Fallback matching
-      if (!matchedZone) {
-        matchedZone = zones.find(z => loc.includes(z.prefix.toUpperCase()))
-      }
-      if (!matchedZone) {
-        matchedZone = zones[4] // Storage
-      }
-
-      matchedZone.chemicals++
-
-      // Determine hazard color
-      if (c.hazard_level === 'critical' || c.hazard_level === 'high') {
-        matchedZone.level = 'high'
-      } else if (c.hazard_level === 'medium' && matchedZone.level !== 'high') {
-        matchedZone.level = 'medium'
-      }
+      const matchesLab = loc.startsWith(activeLab.toLowerCase()) || loc.includes(activeLab.toLowerCase())
+      const matchesShelf = loc.includes(`shelf ${shelf}`)
+      const matchesCab = cab === cabinet.toLowerCase()
+      
+      return matchesLab && matchesShelf && matchesCab
     })
   }
 
+  // Count availability
+  let occupiedCount = 0
+  let availableCount = 0
+
+  shelves.forEach(shelf => {
+    cabinets.forEach(cab => {
+      if (findChemicalAt(shelf, cab)) {
+        occupiedCount++
+      } else {
+        availableCount++
+      }
+    })
+  })
+
+  const selectedChem = selectedSeat ? findChemicalAt(selectedSeat.shelf, selectedSeat.cabinet) : null
+
   return (
-    <div className="relative w-full h-52 rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #EBF4FF 0%, #F0F2F5 100%)', border: '1px solid #E2E8F0' }}>
-      {/* Grid lines */}
-      <svg className="absolute inset-0 w-full h-full" style={{ opacity: 0.3 }}>
-        {[20, 40, 60, 80].map(x => <line key={x} x1={`${x}%`} y1="0" x2={`${x}%`} y2="100%" stroke="#4A90E2" strokeWidth="0.5" />)}
-        {[25, 50, 75].map(y => <line key={y} x1="0" y1={`${y}%`} x2="100%" y2={`${y}%`} stroke="#4A90E2" strokeWidth="0.5" />)}
-      </svg>
-      {/* Zones */}
-      {zones.map((zone, i) => (
-        <motion.div
-          key={zone.id}
-          className="absolute"
-          style={{ left: `${zone.x}%`, top: `${zone.y}%`, transform: 'translate(-50%, -50%)' }}
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: i * 0.15, type: 'spring' }}
-        >
-          <div className="relative flex items-center justify-center cursor-help group/zone">
-            <motion.div
-              className="absolute w-8 h-8 rounded-full opacity-30"
-              style={{ background: levelColors[zone.level] }}
-              animate={{ scale: [1, 2, 1] }}
-              transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.4 }}
-            />
-            <div className="relative w-4 h-4 rounded-full z-10" style={{ background: levelColors[zone.level] }} />
-            
-            {/* Tooltip on hover */}
-            <div className="absolute bottom-6 hidden group-hover/zone:flex flex-col items-center z-30">
-              <div className="bg-slate-900 text-white text-[10px] rounded-lg p-2 shadow-lg min-w-[120px] text-center whitespace-nowrap">
-                <p className="font-bold">{zone.label}</p>
-                <p className="text-slate-300 mt-0.5">{lang === 'ar' ? 'المواد الكيميائية:' : 'Chemicals:'} {zone.chemicals}</p>
-                <p className="font-bold mt-0.5" style={{ color: levelColors[zone.level] }}>
-                  {levelLabels[zone.level]?.[lang] || zone.level}
-                </p>
-              </div>
-              <div className="w-2.5 h-2.5 bg-slate-900 rotate-45 -mt-1.5" />
+    <div className="space-y-4">
+      {/* Lab Tabs */}
+      <div className="flex gap-1 overflow-x-auto pb-1 border-b scrollbar-none" style={{ borderColor: '#F0F2F5' }}>
+        {labs.map(l => (
+          <button
+            key={l.id}
+            type="button"
+            onClick={() => {
+              setActiveLab(l.id)
+              setSelectedSeat(null)
+            }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap`}
+            style={{
+              background: activeLab === l.id ? '#4A90E2' : 'transparent',
+              color: activeLab === l.id ? 'white' : '#64748B',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            {l.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Bus Layout Simulator */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+        {/* The Bus Body */}
+        <div className="md:col-span-2 relative p-4 rounded-3xl border-4 border-slate-300 bg-white shadow-inner flex flex-col items-center">
+          
+          {/* Driver Seat & Windshield */}
+          <div className="w-full flex items-center justify-between border-b pb-3 mb-4 text-slate-400">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xl">🚪</span>
+              <span className="text-[10px] font-bold text-slate-400">ENTRANCE</span>
+            </div>
+            <div className="w-20 h-1 bg-slate-200 rounded" />
+            <div className="flex flex-col items-center">
+              <span className="text-xl">🖥️</span>
+              <span className="text-[8px] font-bold text-slate-400">{lang === 'ar' ? 'المشرف' : 'SUPERVISOR'}</span>
             </div>
           </div>
-          <p className="text-xs text-center mt-1 font-bold" style={{ color: '#2C3E50', fontSize: '0.65rem' }}>
-            {zone.label} ({zone.chemicals})
-          </p>
-        </motion.div>
-      ))}
-      <p className="absolute bottom-2 right-3 text-xs font-bold text-slate-400" style={{ right: lang === 'ar' ? 'auto' : '12px', left: lang === 'ar' ? '12px' : 'auto' }}>
-        {lang === 'ar' ? 'خريطة انتشار الملوثات' : 'Lab Concentration Heatmap'}
-      </p>
+
+          {/* Seat Grid Layout */}
+          <div className="flex flex-col gap-3.5 w-full">
+            {shelves.map((shelf) => (
+              <div key={shelf} className="flex items-center justify-between gap-1 w-full">
+                
+                {/* Left Side (C1, C2) */}
+                <div className="flex gap-2">
+                  {['C1', 'C2'].map(cab => {
+                    const chem = findChemicalAt(shelf, cab)
+                    const isSelected = selectedSeat?.shelf === shelf && selectedSeat?.cabinet === cab
+                    
+                    let bg = '#F0F2F5'
+                    let border = '1px solid #E2E8F0'
+                    let color = '#64748B'
+                    
+                    if (isSelected) {
+                      bg = '#10B981'
+                      border = '1px solid #059669'
+                      color = 'white'
+                    } else if (chem) {
+                      bg = '#E85D5D'
+                      border = '1px solid #C94A4A'
+                      color = 'white'
+                    } else {
+                      bg = '#FFF3E0'
+                      border = '1px solid #FFE0B2'
+                      color = '#EF6C00'
+                    }
+
+                    return (
+                      <motion.button
+                        key={cab}
+                        type="button"
+                        onClick={() => setSelectedSeat({ shelf, cabinet: cab })}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="w-10 h-10 rounded-lg flex flex-col items-center justify-center relative font-bold text-xs shadow-sm transition-colors cursor-pointer"
+                        style={{ background: bg, border: border, color: color }}
+                      >
+                        <span className="text-[8px] opacity-75">{lang === 'ar' ? 'رف' : 'S'}{shelf}</span>
+                        <span>{cab}</span>
+                        {chem && <span className="absolute -top-1 -right-1 text-[8px]">🧪</span>}
+                      </motion.button>
+                    )
+                  })}
+                </div>
+
+                {/* Aisle (الممر) */}
+                <div className="flex-1 flex items-center justify-center text-[9px] text-slate-300 font-bold border-dashed border-l border-r h-10 border-slate-200">
+                  {lang === 'ar' ? 'مـمـر' : 'AISLE'}
+                </div>
+
+                {/* Right Side (C3, C4, C5) */}
+                <div className="flex gap-2">
+                  {['C3', 'C4', 'C5'].map(cab => {
+                    const chem = findChemicalAt(shelf, cab)
+                    const isSelected = selectedSeat?.shelf === shelf && selectedSeat?.cabinet === cab
+                    
+                    let bg = '#F0F2F5'
+                    let border = '1px solid #E2E8F0'
+                    let color = '#64748B'
+                    
+                    if (isSelected) {
+                      bg = '#10B981'
+                      border = '1px solid #059669'
+                      color = 'white'
+                    } else if (chem) {
+                      bg = '#E85D5D'
+                      border = '1px solid #C94A4A'
+                      color = 'white'
+                    } else {
+                      bg = '#FFF3E0'
+                      border = '1px solid #FFE0B2'
+                      color = '#EF6C00'
+                    }
+
+                    return (
+                      <motion.button
+                        key={cab}
+                        type="button"
+                        onClick={() => setSelectedSeat({ shelf, cabinet: cab })}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="w-10 h-10 rounded-lg flex flex-col items-center justify-center relative font-bold text-xs shadow-sm transition-colors cursor-pointer"
+                        style={{ background: bg, border: border, color: color }}
+                      >
+                        <span className="text-[8px] opacity-75">{lang === 'ar' ? 'رف' : 'S'}{shelf}</span>
+                        <span>{cab}</span>
+                        {chem && <span className="absolute -top-1 -right-1 text-[8px]">🧪</span>}
+                      </motion.button>
+                    )
+                  })}
+                </div>
+
+              </div>
+            ))}
+          </div>
+
+          <div className="w-full h-1 bg-slate-200 rounded mt-4" />
+        </div>
+
+        {/* Right Side Info & Legend */}
+        <div className="card p-4 space-y-4 border border-slate-100 bg-[#FAFBFD]">
+          <h4 className="font-bold text-xs text-slate-500 uppercase tracking-wider text-left">
+            {lang === 'ar' ? 'حالة المقاعد التخزينية' : 'Seat Occupancy Legend'}
+          </h4>
+          
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs p-2 rounded bg-white shadow-sm border border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded bg-[#E85D5D] border border-[#C94A4A]" />
+                <span>{lang === 'ar' ? 'مقعد غير متوفر (منتج)' : 'Occupied Spot'}</span>
+              </div>
+              <span className="font-bold text-slate-700">{occupiedCount}</span>
+            </div>
+
+            <div className="flex items-center justify-between text-xs p-2 rounded bg-white shadow-sm border border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded bg-[#FFF3E0] border border-[#FFE0B2]" />
+                <span>{lang === 'ar' ? 'مقعد متوفر (فارغ)' : 'Available Spot'}</span>
+              </div>
+              <span className="font-bold text-slate-700">{availableCount}</span>
+            </div>
+
+            <div className="flex items-center justify-between text-xs p-2 rounded bg-white shadow-sm border border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded bg-[#10B981] border border-[#059669]" />
+                <span>{lang === 'ar' ? 'المقعد المحدد' : 'Selected Spot'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action details based on selected Seat */}
+          <div className="border-t pt-3 mt-1 text-left">
+            {selectedSeat ? (
+              <div className="space-y-2">
+                <p className="text-xs font-bold text-slate-700">
+                  📍 {lang === 'ar' ? 'الموقع المحدد:' : 'Selected Location:'} <span className="font-mono text-blue-600">{activeLab} - Shelf {selectedSeat.shelf} ({selectedSeat.cabinet})</span>
+                </p>
+                {selectedChem ? (
+                  <div className="p-2.5 rounded-lg bg-red-50 border border-red-100 space-y-1.5">
+                    <p className="text-xs font-bold text-red-800">{selectedChem.name}</p>
+                    <div className="flex justify-between text-[10px] text-slate-500 font-medium">
+                      <span>{lang === 'ar' ? 'الصيغة:' : 'Formula:'} {selectedChem.formula}</span>
+                      <span>{lang === 'ar' ? 'الكمية:' : 'Qty:'} {selectedChem.quantity} {selectedChem.quantity_unit}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/chemicals`)}
+                      className="w-full mt-2 py-1 text-[10px] font-bold text-white bg-red-600 hover:bg-red-700 rounded transition-colors text-center block cursor-pointer border-0"
+                    >
+                      {lang === 'ar' ? 'عرض تفاصيل المركب 🧪' : 'View Chemical Details'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-2.5 rounded-lg bg-green-50 border border-green-100 space-y-2 text-center">
+                    <p className="text-[10px] text-green-700 font-bold leading-normal">
+                      {lang === 'ar' ? 'هذا الموقع فارغ! يمكنك إضافة مركب جديد هنا مباشرة.' : 'This storage spot is empty! You can add a chemical here.'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/admin?prefillLocation=${encodeURIComponent(`${activeLab} - Shelf ${selectedSeat.shelf}`)}&prefillCabinet=${selectedSeat.cabinet}`)}
+                      className="w-full py-1.5 text-[10px] font-bold text-white bg-green-600 hover:bg-green-700 rounded transition-colors cursor-pointer border-0"
+                    >
+                      {lang === 'ar' ? '➕ إضافة مركب في هذا الموقع' : '➕ Add Chemical Here'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400 italic text-center py-4">
+                {lang === 'ar' ? 'انقر على أي مقعد تخزيني لعرض التفاصيل أو إضافة مركب' : 'Click any storage seat to view contents or add chemical'}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -423,26 +601,20 @@ export default function DashboardPage() {
 
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Lab Heatmap */}
+        {/* Lab Storage Seat Map */}
         <motion.div className="card p-5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <div className="flex items-center justify-between mb-4">
             <div className="text-left">
-              <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>{t('lab_occupancy')}</h3>
+              <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>
+                {lang === 'ar' ? 'مخطط المقاعد التخزينية للمختبرات 🗺️' : 'Lab Storage Seat Map 🗺️'}
+              </h3>
               <p className="text-xs" style={{ color: '#94A3B8' }}>
-                {lang === 'ar' ? 'مستويات تركيز المواد حسب مناطق المختبر' : 'Chemical concentration by zone'}
+                {lang === 'ar' ? 'حالة إشغال الرفوف والكبائن بأسلوب المقاعد تفاعلياً' : 'Interactive shelf and cabinet seat occupancy layout'}
               </p>
             </div>
             <MapPin size={18} style={{ color: '#4A90E2' }} />
           </div>
-          <LabHeatmap chemicals={chemicals} lang={lang} />
-          <div className="flex gap-4 mt-3">
-            {[{ color: '#5DB9A0', label: lang === 'ar' ? 'منخفض' : 'Low' }, { color: '#F5A623', label: lang === 'ar' ? 'متوسط' : 'Medium' }, { color: '#E85D5D', label: lang === 'ar' ? 'مرتفع' : 'High' }].map(l => (
-              <div key={l.label} className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ background: l.color }} />
-                <span className="text-xs" style={{ color: '#64748B' }}>{l.label}</span>
-              </div>
-            ))}
-          </div>
+          <LabStorageSeatMap chemicals={chemicals} lang={lang} navigate={navigate} />
         </motion.div>
 
         {/* Hazard Distribution */}
