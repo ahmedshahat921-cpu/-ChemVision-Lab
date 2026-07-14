@@ -127,8 +127,15 @@ IMPORTANT RULES:
       }
 
       const prompt = `You are an expert chemical data auto-fill assistant.
-Given the chemical name: "${chemicalName}", return a valid JSON object with the following fields filled with standard safety and physical data:
+Given the chemical name: "${chemicalName}", first evaluate if this is a real, valid chemical name, common chemical name, or chemical formula. If it is gibberish, random text (like "asd", "drt", etc.), or a general non-chemical name, flag it as invalid.
+
+Return a valid JSON object with the following fields:
 {
+  "is_valid": boolean (true if it is a real chemical name/formula, false otherwise),
+  "error_message": "string (only if is_valid is false, explaining why it's invalid in English, and advising the user)",
+  "suggestions": ["string" (array of 1-3 closest correct chemical names if the input is a typo, e.g., ["Ethanol"] for "ethnol". Leave empty array if no close matches exist)],
+  
+  // The following fields are ONLY required if is_valid is true:
   "formula": "Chemical formula (e.g. H2SO4)",
   "molecular_weight": number (molecular weight in g/mol, e.g. 98.08),
   "cas_number": "CAS registry number (e.g. 7664-93-9)",

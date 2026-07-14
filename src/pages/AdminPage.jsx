@@ -28,6 +28,10 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
   const [aiQuantity, setAiQuantity] = useState('')
   const [aiQuantityUnit, setAiQuantityUnit] = useState('g')
 
+  // Validation feedback states
+  const [aiError, setAiError] = useState('')
+  const [aiSuggestions, setAiSuggestions] = useState([])
+
   const autoFill = async () => {
     if (!form.name) { toast.error('Enter a chemical name first'); return }
     setFetching(true)
@@ -53,17 +57,33 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
 
   const handleAiFill = async () => {
     if (!aiName) { toast.error('Enter a chemical name first'); return }
+    if (aiName.trim().length < 3) { 
+      toast.error('Please enter a valid chemical name (minimum 3 characters)')
+      return 
+    }
     if (!aiLocation) { toast.error('Select a location first'); return }
     if (!aiQuantity) { toast.error('Enter quantity first'); return }
+    
     setAiLoading(true)
+    setAiError('')
+    setAiSuggestions([])
+
     try {
       // Invoke the secure Supabase Edge Function with action 'autocomplete'
       const { data, error } = await supabase.functions.invoke('simulate-mixing', {
-        body: { action: 'autocomplete', chemicalName: aiName }
+        body: { action: 'autocomplete', chemicalName: aiName.trim() }
       })
 
       if (error) throw new Error(error.message || 'Server error calling AI edge function')
       if (!data) throw new Error('AI returned an empty response')
+
+      // If AI detects this name is invalid (gibberish/non-chemical)
+      if (data.is_valid === false) {
+        setAiError(data.error_message || 'Invalid or unrecognized chemical name.')
+        setAiSuggestions(data.suggestions || [])
+        toast.error('Unrecognized chemical name!')
+        return
+      }
 
       // Calculate Expiry Date based on recommended_shelf_life_months
       let calculatedExpiry = ''
@@ -76,7 +96,7 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
 
       setForm(f => ({
         ...f,
-        name: aiName,
+        name: aiName.trim(),
         location: aiLocation,
         cabinet: aiCabinet || null,
         quantity: aiQuantity,
@@ -227,6 +247,34 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                     </select>
                   </div>
                 </div>
+                
+                {/* AI Validation Errors & Suggestions */}
+                {aiError && (
+                  <div className="p-3 rounded-lg bg-rose-50 border border-rose-100 text-rose-600 text-xs mt-2">
+                    <p className="font-semibold mb-1">⚠️ {aiError}</p>
+                    {aiSuggestions.length > 0 && (
+                      <div className="mt-2">
+                        <p className="text-slate-500 font-medium mb-1.5">Did you mean (هل تقصد):</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {aiSuggestions.map((sug) => (
+                            <button
+                              key={sug}
+                              type="button"
+                              onClick={() => {
+                                setAiName(sug)
+                                setAiError('')
+                                setAiSuggestions([])
+                              }}
+                              className="px-2 py-1 rounded bg-white hover:bg-violet-50 hover:text-violet-600 border border-slate-200 text-slate-700 font-mono transition-colors text-[10px]"
+                            >
+                              {sug}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -275,6 +323,8 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                   setAiCabinet(form.cabinet)
                   setAiQuantity(form.quantity || '')
                   setAiQuantityUnit(form.quantity_unit || 'g')
+                  setAiError('')
+                  setAiSuggestions([])
                   setAiPromptOpen(true)
                 }} 
                 className="btn-primary py-2.5 px-3 text-xs whitespace-nowrap bg-gradient-to-r from-violet-600 to-indigo-600 border-0 flex items-center gap-1 shadow-sm"
