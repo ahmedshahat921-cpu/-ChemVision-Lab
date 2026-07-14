@@ -245,7 +245,21 @@ export const useChemicalStore = create((set, get) => ({
     const { data, error } = await supabase.from('chemicals').update(updates).eq('id', id).select().single()
     if (error) return { success: false, error: error.message }
     const { chemicals } = get()
-    set({ chemicals: chemicals.map(c => c.id === id ? data : c) })
+    
+    const exists = chemicals.some(c => c.id === id)
+    let newChemicals
+    
+    if (data.is_active) {
+      if (exists) {
+        newChemicals = chemicals.map(c => c.id === id ? data : c)
+      } else {
+        newChemicals = [...chemicals, data].sort((a, b) => a.name.localeCompare(b.name))
+      }
+    } else {
+      newChemicals = chemicals.filter(c => c.id !== id)
+    }
+
+    set({ chemicals: newChemicals })
     get().applyFilters(get().searchQuery, get().filters)
     return { success: true, data }
   },
