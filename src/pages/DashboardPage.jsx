@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { FlaskConical, AlertTriangle, TrendingUp, Activity, ArrowUpRight, Clock, MapPin, Zap } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore, useChemicalStore } from '../store'
 import { supabase } from '../lib/supabase'
 import { useLanguage } from '../hooks/useLanguage'
@@ -95,6 +95,28 @@ function Molecule3D() {
 function LabStorageSeatMap({ chemicals, lang, navigate }) {
   const [activeLab, setActiveLab] = useState('Lab A')
   const [selectedSeat, setSelectedSeat] = useState(null) // { shelf, cabinet }
+  const [searchParams] = useSearchParams()
+
+  useEffect(() => {
+    const selectLoc = searchParams.get('selectLocation')
+    const selectCab = searchParams.get('selectCabinet')
+    if (selectLoc) {
+      const lowerLoc = selectLoc.toLowerCase()
+      let matchedLab = 'Lab A'
+      if (lowerLoc.includes('lab a') || lowerLoc.includes('مختبر أ')) matchedLab = 'Lab A'
+      else if (lowerLoc.includes('lab b') || lowerLoc.includes('مختبر ب')) matchedLab = 'Lab B'
+      else if (lowerLoc.includes('lab c') || lowerLoc.includes('مختبر ج')) matchedLab = 'Lab C'
+      else if (lowerLoc.includes('lab d') || lowerLoc.includes('مختبر د')) matchedLab = 'Lab D'
+      else if (lowerLoc.includes('storage') || lowerLoc.includes('المستودع') || lowerLoc.includes('المخزن')) matchedLab = 'Storage'
+      
+      setActiveLab(matchedLab)
+      
+      const shelfMatch = lowerLoc.match(/shelf\s*(\d+)/i) || lowerLoc.match(/الرف\s*(\d+)/) || lowerLoc.match(/shelf-(\d+)/) || lowerLoc.match(/(\d+)/)
+      const shelf = shelfMatch ? parseInt(shelfMatch[1], 10) : 1
+      
+      setSelectedSeat({ shelf, cabinet: selectCab || 'C1' })
+    }
+  }, [searchParams])
 
   const labs = [
     { id: 'Lab A', name: lang === 'ar' ? 'مختبر أ' : 'Lab A' },

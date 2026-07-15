@@ -800,20 +800,59 @@ export default function ChemicalDetailPage() {
 
             {/* Basic Info Horizontal Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-              {[
-                { label: lang === 'ar' ? 'الوزن الجزيئي' : 'Molecular Weight', value: chemical.molecular_weight ? `${chemical.molecular_weight} g/mol` : (lang === 'ar' ? 'غير متوفر' : 'N/A'), icon: FlaskConical },
-                { label: lang === 'ar' ? 'الكمية المتوفرة' : 'Quantity', value: `${chemical.quantity} ${chemical.quantity_unit}`, icon: Package },
-                { label: lang === 'ar' ? 'موقع التخزين' : 'Location', value: translatedLocation, icon: MapPin },
-                { label: lang === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date', value: chemical.expiry_date ? new Date(chemical.expiry_date).toLocaleDateString() : (lang === 'ar' ? 'غير محدد' : 'N/A'), icon: Calendar },
-              ].map(({ label, value, icon: Icon }) => (
-                <div key={label} className="flex items-start gap-2 p-2.5 rounded-xl border border-neutral-100" style={{ background: '#F8F9FA' }}>
-                  <Icon size={14} style={{ color: '#4A90E2', marginTop: '2px', flexShrink: 0 }} />
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider">{label}</p>
-                    <p className="text-xs font-bold mt-0.5 break-words" style={{ color: '#2C3E50' }}>{value}</p>
-                  </div>
+              <div className="flex items-start gap-2 p-2.5 rounded-xl border border-neutral-100" style={{ background: '#F8F9FA' }}>
+                <FlaskConical size={14} style={{ color: '#4A90E2', marginTop: '2px', flexShrink: 0 }} />
+                <div className="min-w-0">
+                  <p className="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider">
+                    {lang === 'ar' ? 'الوزن الجزيئي' : 'Molecular Weight'}
+                  </p>
+                  <p className="text-xs font-bold mt-0.5 break-words" style={{ color: '#2C3E50' }}>
+                    {chemical.molecular_weight ? `${chemical.molecular_weight} g/mol` : (lang === 'ar' ? 'غير متوفر' : 'N/A')}
+                  </p>
                 </div>
-              ))}
+              </div>
+
+              <div className="flex items-start gap-2 p-2.5 rounded-xl border border-neutral-100" style={{ background: '#F8F9FA' }}>
+                <Package size={14} style={{ color: '#4A90E2', marginTop: '2px', flexShrink: 0 }} />
+                <div className="min-w-0">
+                  <p className="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider">
+                    {lang === 'ar' ? 'الكمية المتوفرة' : 'Quantity'}
+                  </p>
+                  <p className="text-xs font-bold mt-0.5 break-words" style={{ color: '#2C3E50' }}>
+                    {chemical.quantity} {chemical.quantity_unit}
+                  </p>
+                </div>
+              </div>
+
+              {/* Clickable Location Card */}
+              <motion.div 
+                whileHover={{ scale: 1.03, backgroundColor: '#EBF4FF', borderColor: '#4A90E2' }}
+                onClick={() => navigate(`/?selectLocation=${encodeURIComponent(chemical.location || '')}&selectCabinet=${encodeURIComponent(chemical.cabinet || '')}`)}
+                className="flex items-start gap-2 p-2.5 rounded-xl border border-neutral-100 cursor-pointer transition-all duration-200" 
+                style={{ background: '#F8F9FA' }}
+              >
+                <MapPin size={14} style={{ color: '#4A90E2', marginTop: '2px', flexShrink: 0 }} />
+                <div className="min-w-0">
+                  <p className="text-[10px] text-blue-500 font-bold uppercase tracking-wider flex items-center gap-1">
+                    {lang === 'ar' ? 'موقع التخزين 🗺️' : 'Location 🗺️'}
+                  </p>
+                  <p className="text-xs font-bold mt-0.5 break-words text-blue-600 underline" style={{ textDecorationStyle: 'dashed' }}>
+                    {translatedLocation} {chemical.cabinet ? `(${chemical.cabinet})` : ''}
+                  </p>
+                </div>
+              </motion.div>
+
+              <div className="flex items-start gap-2 p-2.5 rounded-xl border border-neutral-100" style={{ background: '#F8F9FA' }}>
+                <Calendar size={14} style={{ color: '#4A90E2', marginTop: '2px', flexShrink: 0 }} />
+                <div className="min-w-0">
+                  <p className="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider">
+                    {lang === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date'}
+                  </p>
+                  <p className="text-xs font-bold mt-0.5 break-words" style={{ color: '#2C3E50' }}>
+                    {chemical.expiry_date ? new Date(chemical.expiry_date).toLocaleDateString() : (lang === 'ar' ? 'غير محدد' : 'N/A')}
+                  </p>
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>
