@@ -746,7 +746,7 @@ export default function AdminPage() {
                   <td className="px-4 py-3"><code className="text-xs px-2 py-0.5 rounded" style={{ background: '#EBF4FF', color: '#2D6A9F' }}>{c.formula}</code></td>
                   <td className="px-4 py-3"><span className={`badge badge-${c.hazard_level}`}>{c.hazard_level}</span></td>
                   <td className="px-4 py-3 text-sm" style={{ color: '#2C3E50' }}>{c.quantity} {c.quantity_unit}</td>
-                  <td className="px-4 py-3 text-sm" style={{ color: '#64748B' }}>{c.location}</td>
+                  <td className="px-4 py-3 text-sm" style={{ color: '#64748B' }}>{c.location}{c.cabinet ? ` (${c.cabinet})` : ''}</td>
                   <td className="px-4 py-3 text-xs" style={{ color: c.expiry_date && new Date(c.expiry_date) < new Date() ? '#E85D5D' : '#64748B' }}>
                     {c.expiry_date ? new Date(c.expiry_date).toLocaleDateString() : '—'}
                   </td>

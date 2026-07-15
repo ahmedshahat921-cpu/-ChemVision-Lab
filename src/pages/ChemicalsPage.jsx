@@ -114,7 +114,9 @@ function ChemicalCard({ chemical, index }) {
           </div>
           <div className="flex items-center justify-between text-xs">
             <span style={{ color: '#94A3B8' }}>{lang === 'ar' ? 'الموقع' : 'Location'}</span>
-            <span className="font-medium truncate ml-2" style={{ color: '#2C3E50', maxWidth: '120px' }}>{chemical.location}</span>
+            <span className="font-medium truncate ml-2" style={{ color: '#2C3E50', maxWidth: '160px' }} title={`${chemical.location}${chemical.cabinet ? ` (${chemical.cabinet})` : ''}`}>
+              {chemical.location}{chemical.cabinet ? ` (${chemical.cabinet})` : ''}
+            </span>
           </div>
           {chemical.expiry_date && (
             <div className="flex items-center justify-between text-xs">
