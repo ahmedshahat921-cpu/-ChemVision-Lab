@@ -148,11 +148,25 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
         matchesLab = loc.includes('storage') || loc.includes('المستودع') || loc.includes('المخزن') || loc.includes('مخزن')
       }
       
-      const digitMatch = loc.match(/\d+/)
-      const cShelf = digitMatch ? parseInt(digitMatch[0], 10) : 1
-      const matchesShelf = cShelf === shelf
+      const targetCabLower = cabinet.toLowerCase()
+      const matchesCab = cab === targetCabLower || cab.includes(targetCabLower) || loc.includes(targetCabLower)
       
-      const matchesCab = cab === cabinet.toLowerCase()
+      // Find the shelf number from the location string
+      // Let's strip the cabinet code (e.g. "c2") so we don't accidentally match the 2 in "c2" as a shelf number
+      const locWithoutCabinet = loc.replace(new RegExp(targetCabLower, 'g'), '')
+      
+      // Look for explicit shelf indicators first
+      const shelfMatch = locWithoutCabinet.match(/(?:shelf|الرف|رف)\s*(\d+)/i)
+      let cShelf = 1
+      if (shelfMatch) {
+        cShelf = parseInt(shelfMatch[1], 10)
+      } else {
+        // Look for any remaining digit in the location
+        const digitMatch = locWithoutCabinet.match(/\d+/)
+        cShelf = digitMatch ? parseInt(digitMatch[0], 10) : 1
+      }
+      
+      const matchesShelf = cShelf === shelf
       
       return matchesLab && matchesShelf && matchesCab
     })
