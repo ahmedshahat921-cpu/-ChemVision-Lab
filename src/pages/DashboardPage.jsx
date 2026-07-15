@@ -133,7 +133,18 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
         }
       }
       
-      setSelectedSeat({ shelf, cabinet: selectCab || 'C1' })
+      // Normalize cabinet code to match layout format (C1 - C6)
+      let normalizedCab = 'C1'
+      if (selectCab) {
+        const cabMatch = selectCab.match(/c\d+/i)
+        if (cabMatch) {
+          normalizedCab = cabMatch[0].toUpperCase()
+        } else {
+          normalizedCab = selectCab
+        }
+      }
+      
+      setSelectedSeat({ shelf, cabinet: normalizedCab })
     }
   }, [searchParams, chemicals])
 
