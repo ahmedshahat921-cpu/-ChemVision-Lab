@@ -148,8 +148,8 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
   const shelves = [1, 2, 3, 4]
   const cabinets = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
 
-  const findChemicalAt = (shelf, cabinet) => {
-    return (chemicals || []).find(c => {
+  const findChemicalsAt = (shelf, cabinet) => {
+    return (chemicals || []).filter(c => {
       if (!c.is_active) return false
       const loc = (c.location || '').toLowerCase()
       const cab = (c.cabinet || '').toLowerCase()
@@ -191,6 +191,28 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
     })
   }
 
+  const findChemicalAt = (shelf, cabinet) => {
+    return findChemicalsAt(shelf, cabinet)[0] || null
+  }
+
+  const activeLabChemicals = (chemicals || []).filter(c => {
+    if (!c.is_active) return false
+    const loc = (c.location || '').toLowerCase()
+    
+    if (activeLab === 'Lab A') {
+      return loc.includes('lab a') || loc.includes('lap a') || loc.includes('مختبر أ') || loc.includes('مختبر ا')
+    } else if (activeLab === 'Lab B') {
+      return loc.includes('lab b') || loc.includes('lap b') || loc.includes('مختبر ب')
+    } else if (activeLab === 'Lab C') {
+      return loc.includes('lab c') || loc.includes('lap c') || loc.includes('مختبر ج')
+    } else if (activeLab === 'Lab D') {
+      return loc.includes('lab d') || loc.includes('lap d') || loc.includes('مختبر د')
+    } else if (activeLab === 'Storage') {
+      return loc.includes('storage') || loc.includes('المستودع') || loc.includes('المخزن') || loc.includes('مخزن')
+    }
+    return false
+  })
+
   // Count availability
   let occupiedCount = 0
   let availableCount = 0
@@ -206,6 +228,7 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
   })
 
   const selectedChem = selectedSeat ? findChemicalAt(selectedSeat.shelf, selectedSeat.cabinet) : null
+  const selectedChems = selectedSeat ? findChemicalsAt(selectedSeat.shelf, selectedSeat.cabinet) : []
 
   return (
     <div className="space-y-4">
@@ -258,7 +281,8 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                 {/* Left Side (C1, C2, C3) */}
                 <div className="flex gap-2">
                   {['C1', 'C2', 'C3'].map(cab => {
-                    const chem = findChemicalAt(shelf, cab)
+                    const chemsAtSpot = findChemicalsAt(shelf, cab)
+                    const chem = chemsAtSpot[0] || null
                     const isSelected = selectedSeat?.shelf === shelf && selectedSeat?.cabinet === cab
                     
                     let bg = '#F0F2F5'
@@ -291,7 +315,14 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                       >
                         <span className="text-[8px] opacity-75">{lang === 'ar' ? 'رف' : 'S'}{shelf}</span>
                         <span>{cab}</span>
-                        {chem && <span className="absolute -top-1 -right-1 text-[8px]">🧪</span>}
+                        {chemsAtSpot.length > 0 && (
+                          <span 
+                            className="absolute -top-1.5 -right-1.5 text-[9px] text-white rounded-full w-4 h-4 flex items-center justify-center font-bold shadow-sm border border-white"
+                            style={{ background: isSelected ? '#10B981' : '#4A90E2' }}
+                          >
+                            {chemsAtSpot.length}
+                          </span>
+                        )}
                       </motion.button>
                     )
                   })}
@@ -305,7 +336,8 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                 {/* Right Side (C4, C5, C6) */}
                 <div className="flex gap-2">
                   {['C4', 'C5', 'C6'].map(cab => {
-                    const chem = findChemicalAt(shelf, cab)
+                    const chemsAtSpot = findChemicalsAt(shelf, cab)
+                    const chem = chemsAtSpot[0] || null
                     const isSelected = selectedSeat?.shelf === shelf && selectedSeat?.cabinet === cab
                     
                     let bg = '#F0F2F5'
@@ -338,7 +370,14 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                       >
                         <span className="text-[8px] opacity-75">{lang === 'ar' ? 'رف' : 'S'}{shelf}</span>
                         <span>{cab}</span>
-                        {chem && <span className="absolute -top-1 -right-1 text-[8px]">🧪</span>}
+                        {chemsAtSpot.length > 0 && (
+                          <span 
+                            className="absolute -top-1.5 -right-1.5 text-[9px] text-white rounded-full w-4 h-4 flex items-center justify-center font-bold shadow-sm border border-white"
+                            style={{ background: isSelected ? '#10B981' : '#4A90E2' }}
+                          >
+                            {chemsAtSpot.length}
+                          </span>
+                        )}
                       </motion.button>
                     )
                   })}
@@ -358,6 +397,14 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
           </h4>
           
           <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs p-2 rounded bg-white shadow-sm border border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">🧪</span>
+                <span>{lang === 'ar' ? 'إجمالي المواد في هذا المختبر' : 'Total Chemicals in this Lab'}</span>
+              </div>
+              <span className="font-bold text-blue-600">{activeLabChemicals.length}</span>
+            </div>
+
             <div className="flex items-center justify-between text-xs p-2 rounded bg-white shadow-sm border border-slate-100">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 rounded bg-[#E85D5D] border border-[#C94A4A]" />
@@ -389,20 +436,24 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                 <p className="text-xs font-bold text-slate-700">
                   📍 {lang === 'ar' ? 'الموقع المحدد:' : 'Selected Location:'} <span className="font-mono text-blue-600">{activeLab} - Shelf {selectedSeat.shelf} ({selectedSeat.cabinet})</span>
                 </p>
-                {selectedChem ? (
-                  <div className="p-2.5 rounded-lg bg-red-50 border border-red-100 space-y-1.5">
-                    <p className="text-xs font-bold text-red-800">{selectedChem.name}</p>
-                    <div className="flex justify-between text-[10px] text-slate-500 font-medium">
-                      <span>{lang === 'ar' ? 'الصيغة:' : 'Formula:'} {selectedChem.formula}</span>
-                      <span>{lang === 'ar' ? 'الكمية:' : 'Qty:'} {selectedChem.quantity} {selectedChem.quantity_unit}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/chemicals/${selectedChem.id}`)}
-                      className="w-full mt-2 py-1 text-[10px] font-bold text-white bg-red-600 hover:bg-red-700 rounded transition-colors text-center block cursor-pointer border-0"
-                    >
-                      {lang === 'ar' ? 'عرض تفاصيل المركب 🧪' : 'View Chemical Details'}
-                    </button>
+                {selectedChems.length > 0 ? (
+                  <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                    {selectedChems.map((chem) => (
+                      <div key={chem.id} className="p-2.5 rounded-lg bg-red-50 border border-red-100 space-y-1.5">
+                        <p className="text-xs font-bold text-red-800">{chem.name}</p>
+                        <div className="flex justify-between text-[10px] text-slate-500 font-medium">
+                          <span>{lang === 'ar' ? 'الصيغة:' : 'Formula:'} {chem.formula}</span>
+                          <span>{lang === 'ar' ? 'الكمية:' : 'Qty:'} {chem.quantity} {chem.quantity_unit}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/chemicals/${chem.id}`)}
+                          className="w-full mt-2 py-1 text-[10px] font-bold text-white bg-red-600 hover:bg-red-700 rounded transition-colors text-center block cursor-pointer border-0"
+                        >
+                          {lang === 'ar' ? 'عرض تفاصيل المركب 🧪' : 'View Chemical Details'}
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="p-2.5 rounded-lg bg-green-50 border border-green-100 space-y-2 text-center">
