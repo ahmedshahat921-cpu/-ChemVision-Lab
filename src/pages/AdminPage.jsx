@@ -64,6 +64,7 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
       return 
     }
     if (!aiLocation) { toast.error('Select a location first'); return }
+    if (!aiCabinet) { toast.error('Select a cabinet first'); return }
     if (!aiQuantity) { toast.error('Enter quantity first'); return }
     
     setAiLoading(true)
@@ -130,7 +131,13 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (!form.name || !form.formula || !form.location || !form.quantity) { toast.error('Fill required fields'); return }
+    if (!form.name || !form.formula || !form.location || !form.cabinet || !form.quantity) {
+      toast.error(lang === 'ar' 
+        ? 'يرجى ملء جميع الحقول المطلوبة بما في ذلك الموقع والخزانة!' 
+        : 'Please fill in all required fields, including Location and Cabinet!'
+      )
+      return
+    }
     
     // Clean up empty string fields to null for Postgres column compatibility
     const cleanedData = { ...form }
@@ -209,7 +216,7 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Cabinet</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Cabinet *</label>
                   <select 
                     value={aiCabinet} 
                     onChange={(e) => setAiCabinet(e.target.value)} 
@@ -359,7 +366,7 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                 { value: 'Storage - Shelf 1', label: 'Storage - Shelf 1' },
                 { value: 'Storage - Shelf 2', label: 'Storage - Shelf 2' },
               ]},
-              { label: 'Cabinet', key: 'cabinet', type: 'select', options: [
+              { label: 'Cabinet *', key: 'cabinet', type: 'select', options: [
                 { value: '', label: 'Select Cabinet' },
                 { value: 'C1', label: 'Cabinet C1' },
                 { value: 'C2', label: 'Cabinet C2' },
