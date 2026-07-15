@@ -135,8 +135,23 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
       const loc = (c.location || '').toLowerCase()
       const cab = (c.cabinet || '').toLowerCase()
       
-      const matchesLab = loc.startsWith(activeLab.toLowerCase()) || loc.includes(activeLab.toLowerCase())
-      const matchesShelf = loc.includes(`shelf ${shelf}`)
+      let matchesLab = false
+      if (activeLab === 'Lab A') {
+        matchesLab = loc.includes('lab a') || loc.includes('مختبر أ') || loc.includes('مختبر ا')
+      } else if (activeLab === 'Lab B') {
+        matchesLab = loc.includes('lab b') || loc.includes('مختبر ب')
+      } else if (activeLab === 'Lab C') {
+        matchesLab = loc.includes('lab c') || loc.includes('مختبر ج')
+      } else if (activeLab === 'Lab D') {
+        matchesLab = loc.includes('lab d') || loc.includes('مختبر د')
+      } else if (activeLab === 'Storage') {
+        matchesLab = loc.includes('storage') || loc.includes('المستودع') || loc.includes('المخزن') || loc.includes('مخزن')
+      }
+      
+      const digitMatch = loc.match(/\d+/)
+      const cShelf = digitMatch ? parseInt(digitMatch[0], 10) : 1
+      const matchesShelf = cShelf === shelf
+      
       const matchesCab = cab === cabinet.toLowerCase()
       
       return matchesLab && matchesShelf && matchesCab
