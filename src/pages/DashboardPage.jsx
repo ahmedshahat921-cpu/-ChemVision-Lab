@@ -103,10 +103,10 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
     if (selectLoc) {
       const lowerLoc = selectLoc.toLowerCase()
       let matchedLab = 'Lab A'
-      if (lowerLoc.includes('lab a') || lowerLoc.includes('مختبر أ')) matchedLab = 'Lab A'
-      else if (lowerLoc.includes('lab b') || lowerLoc.includes('مختبر ب')) matchedLab = 'Lab B'
-      else if (lowerLoc.includes('lab c') || lowerLoc.includes('مختبر ج')) matchedLab = 'Lab C'
-      else if (lowerLoc.includes('lab d') || lowerLoc.includes('مختبر د')) matchedLab = 'Lab D'
+      if (lowerLoc.includes('lab a') || lowerLoc.includes('lap a') || lowerLoc.includes('مختبر أ') || lowerLoc.includes('مختبر ا')) matchedLab = 'Lab A'
+      else if (lowerLoc.includes('lab b') || lowerLoc.includes('lap b') || lowerLoc.includes('مختبر ب')) matchedLab = 'Lab B'
+      else if (lowerLoc.includes('lab c') || lowerLoc.includes('lap c') || lowerLoc.includes('مختبر ج')) matchedLab = 'Lab C'
+      else if (lowerLoc.includes('lab d') || lowerLoc.includes('lap d') || lowerLoc.includes('مختبر د')) matchedLab = 'Lab D'
       else if (lowerLoc.includes('storage') || lowerLoc.includes('المستودع') || lowerLoc.includes('المخزن')) matchedLab = 'Storage'
       
       setActiveLab(matchedLab)
@@ -137,13 +137,13 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
       
       let matchesLab = false
       if (activeLab === 'Lab A') {
-        matchesLab = loc.includes('lab a') || loc.includes('مختبر أ') || loc.includes('مختبر ا')
+        matchesLab = loc.includes('lab a') || loc.includes('lap a') || loc.includes('مختبر أ') || loc.includes('مختبر ا')
       } else if (activeLab === 'Lab B') {
-        matchesLab = loc.includes('lab b') || loc.includes('مختبر ب')
+        matchesLab = loc.includes('lab b') || loc.includes('lap b') || loc.includes('مختبر ب')
       } else if (activeLab === 'Lab C') {
-        matchesLab = loc.includes('lab c') || loc.includes('مختبر ج')
+        matchesLab = loc.includes('lab c') || loc.includes('lap c') || loc.includes('مختبر ج')
       } else if (activeLab === 'Lab D') {
-        matchesLab = loc.includes('lab d') || loc.includes('مختبر د')
+        matchesLab = loc.includes('lab d') || loc.includes('lap d') || loc.includes('مختبر د')
       } else if (activeLab === 'Storage') {
         matchesLab = loc.includes('storage') || loc.includes('المستودع') || loc.includes('المخزن') || loc.includes('مخزن')
       }
