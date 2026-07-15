@@ -824,10 +824,9 @@ export default function ChemicalDetailPage() {
                 </div>
               </div>
 
-              {/* Clickable Location Card */}
               <motion.div 
                 whileHover={{ scale: 1.03, backgroundColor: '#EBF4FF', borderColor: '#4A90E2' }}
-                onClick={() => navigate(`/?selectLocation=${encodeURIComponent(chemical.location || '')}&selectCabinet=${encodeURIComponent(chemical.cabinet || '')}`)}
+                onClick={() => navigate(`/?selectChemicalId=${chemical.id}`)}
                 className="flex items-start gap-2 p-2.5 rounded-xl border border-neutral-100 cursor-pointer transition-all duration-200" 
                 style={{ background: '#F8F9FA' }}
               >

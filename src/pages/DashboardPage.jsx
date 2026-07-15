@@ -98,8 +98,18 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
   const [searchParams] = useSearchParams()
 
   useEffect(() => {
-    const selectLoc = searchParams.get('selectLocation')
-    const selectCab = searchParams.get('selectCabinet')
+    const selectChemId = searchParams.get('selectChemicalId')
+    let selectLoc = searchParams.get('selectLocation')
+    let selectCab = searchParams.get('selectCabinet')
+
+    if (selectChemId && chemicals && chemicals.length > 0) {
+      const chem = chemicals.find(c => c.id === selectChemId || String(c.id) === String(selectChemId))
+      if (chem) {
+        selectLoc = chem.location
+        selectCab = chem.cabinet
+      }
+    }
+
     if (selectLoc) {
       const lowerLoc = selectLoc.toLowerCase()
       let matchedLab = 'Lab A'
@@ -111,12 +121,21 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
       
       setActiveLab(matchedLab)
       
-      const shelfMatch = lowerLoc.match(/shelf\s*(\d+)/i) || lowerLoc.match(/الرف\s*(\d+)/) || lowerLoc.match(/shelf-(\d+)/) || lowerLoc.match(/(\d+)/)
-      const shelf = shelfMatch ? parseInt(shelfMatch[1], 10) : 1
+      const shelfMatch = lowerLoc.match(/(?:shelf|الرف|رف)\s*(\d+)/i)
+      let shelf = 1
+      if (shelfMatch) {
+        shelf = parseInt(shelfMatch[1], 10)
+      } else {
+        const cleanedLoc = lowerLoc.replace(new RegExp((selectCab || '').toLowerCase(), 'g'), '')
+        const digitMatch = cleanedLoc.match(/\d+/)
+        if (digitMatch) {
+          shelf = parseInt(digitMatch[0], 10)
+        }
+      }
       
       setSelectedSeat({ shelf, cabinet: selectCab || 'C1' })
     }
-  }, [searchParams])
+  }, [searchParams, chemicals])
 
   const labs = [
     { id: 'Lab A', name: lang === 'ar' ? 'مختبر أ' : 'Lab A' },
