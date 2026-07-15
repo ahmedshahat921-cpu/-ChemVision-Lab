@@ -315,14 +315,16 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                       >
                         <span className="text-[8px] opacity-75">{lang === 'ar' ? 'رف' : 'S'}{shelf}</span>
                         <span>{cab}</span>
-                        {chemsAtSpot.length > 0 && (
+                        {chemsAtSpot.length > 1 ? (
                           <span 
                             className="absolute -top-1.5 -right-1.5 text-[9px] text-white rounded-full w-4 h-4 flex items-center justify-center font-bold shadow-sm border border-white"
                             style={{ background: isSelected ? '#10B981' : '#4A90E2' }}
                           >
                             {chemsAtSpot.length}
                           </span>
-                        )}
+                        ) : chemsAtSpot.length === 1 ? (
+                          <span className="absolute -top-1 -right-1 text-[8px]">🧪</span>
+                        ) : null}
                       </motion.button>
                     )
                   })}
@@ -370,14 +372,16 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                       >
                         <span className="text-[8px] opacity-75">{lang === 'ar' ? 'رف' : 'S'}{shelf}</span>
                         <span>{cab}</span>
-                        {chemsAtSpot.length > 0 && (
+                        {chemsAtSpot.length > 1 ? (
                           <span 
                             className="absolute -top-1.5 -right-1.5 text-[9px] text-white rounded-full w-4 h-4 flex items-center justify-center font-bold shadow-sm border border-white"
                             style={{ background: isSelected ? '#10B981' : '#4A90E2' }}
                           >
                             {chemsAtSpot.length}
                           </span>
-                        )}
+                        ) : chemsAtSpot.length === 1 ? (
+                          <span className="absolute -top-1 -right-1 text-[8px]">🧪</span>
+                        ) : null}
                       </motion.button>
                     )
                   })}
