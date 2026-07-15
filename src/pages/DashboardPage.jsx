@@ -145,6 +145,14 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
       }
       
       setSelectedSeat({ shelf, cabinet: normalizedCab })
+
+      // Scroll to the seat map section to display the location immediately
+      setTimeout(() => {
+        const element = document.getElementById('seat-map-section')
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }, 300)
     }
   }, [searchParams, chemicals])
 
@@ -738,7 +746,7 @@ export default function DashboardPage() {
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Lab Storage Seat Map */}
-        <motion.div className="card p-5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+        <motion.div id="seat-map-section" className="card p-5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
           <div className="flex items-center justify-between mb-4">
             <div className="text-left">
               <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>
