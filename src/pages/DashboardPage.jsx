@@ -145,8 +145,8 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
     { id: 'Storage', name: lang === 'ar' ? 'المستودع' : 'Storage' },
   ]
 
-  const shelves = [1, 2, 3]
-  const cabinets = ['C1', 'C2', 'C3', 'C4', 'C5']
+  const shelves = [1, 2, 3, 4]
+  const cabinets = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
 
   const findChemicalAt = (shelf, cabinet) => {
     return (chemicals || []).find(c => {
@@ -255,9 +255,9 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
             {shelves.map((shelf) => (
               <div key={shelf} className="flex items-center justify-between gap-1 w-full">
                 
-                {/* Left Side (C1, C2) */}
+                {/* Left Side (C1, C2, C3) */}
                 <div className="flex gap-2">
-                  {['C1', 'C2'].map(cab => {
+                  {['C1', 'C2', 'C3'].map(cab => {
                     const chem = findChemicalAt(shelf, cab)
                     const isSelected = selectedSeat?.shelf === shelf && selectedSeat?.cabinet === cab
                     
@@ -302,9 +302,9 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                   {lang === 'ar' ? 'مـمـر' : 'AISLE'}
                 </div>
 
-                {/* Right Side (C3, C4, C5) */}
+                {/* Right Side (C4, C5, C6) */}
                 <div className="flex gap-2">
-                  {['C3', 'C4', 'C5'].map(cab => {
+                  {['C4', 'C5', 'C6'].map(cab => {
                     const chem = findChemicalAt(shelf, cab)
                     const isSelected = selectedSeat?.shelf === shelf && selectedSeat?.cabinet === cab
                     
@@ -398,7 +398,7 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                     </div>
                     <button
                       type="button"
-                      onClick={() => navigate(`/chemicals`)}
+                      onClick={() => navigate(`/chemicals/${selectedChem.id}`)}
                       className="w-full mt-2 py-1 text-[10px] font-bold text-white bg-red-600 hover:bg-red-700 rounded transition-colors text-center block cursor-pointer border-0"
                     >
                       {lang === 'ar' ? 'عرض تفاصيل المركب 🧪' : 'View Chemical Details'}

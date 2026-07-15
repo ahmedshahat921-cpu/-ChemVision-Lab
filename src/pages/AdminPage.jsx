@@ -201,17 +201,23 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                     <option value="Lab A - Shelf 1">Lab A - Shelf 1</option>
                     <option value="Lab A - Shelf 2">Lab A - Shelf 2</option>
                     <option value="Lab A - Shelf 3">Lab A - Shelf 3</option>
+                    <option value="Lab A - Shelf 4">Lab A - Shelf 4</option>
                     <option value="Lab B - Shelf 1">Lab B - Shelf 1</option>
                     <option value="Lab B - Shelf 2">Lab B - Shelf 2</option>
                     <option value="Lab B - Shelf 3">Lab B - Shelf 3</option>
+                    <option value="Lab B - Shelf 4">Lab B - Shelf 4</option>
                     <option value="Lab C - Shelf 1">Lab C - Shelf 1</option>
                     <option value="Lab C - Shelf 2">Lab C - Shelf 2</option>
                     <option value="Lab C - Shelf 3">Lab C - Shelf 3</option>
+                    <option value="Lab C - Shelf 4">Lab C - Shelf 4</option>
                     <option value="Lab D - Shelf 1">Lab D - Shelf 1</option>
                     <option value="Lab D - Shelf 2">Lab D - Shelf 2</option>
                     <option value="Lab D - Shelf 3">Lab D - Shelf 3</option>
+                    <option value="Lab D - Shelf 4">Lab D - Shelf 4</option>
                     <option value="Storage - Shelf 1">Storage - Shelf 1</option>
                     <option value="Storage - Shelf 2">Storage - Shelf 2</option>
+                    <option value="Storage - Shelf 3">Storage - Shelf 3</option>
+                    <option value="Storage - Shelf 4">Storage - Shelf 4</option>
                   </select>
                 </div>
 
@@ -228,6 +234,7 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                     <option value="C3">Cabinet C3</option>
                     <option value="C4">Cabinet C4</option>
                     <option value="C5">Cabinet C5</option>
+                    <option value="C6">Cabinet C6</option>
                   </select>
                 </div>
 
@@ -354,17 +361,23 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                 { value: 'Lab A - Shelf 1', label: 'Lab A - Shelf 1' },
                 { value: 'Lab A - Shelf 2', label: 'Lab A - Shelf 2' },
                 { value: 'Lab A - Shelf 3', label: 'Lab A - Shelf 3' },
+                { value: 'Lab A - Shelf 4', label: 'Lab A - Shelf 4' },
                 { value: 'Lab B - Shelf 1', label: 'Lab B - Shelf 1' },
                 { value: 'Lab B - Shelf 2', label: 'Lab B - Shelf 2' },
                 { value: 'Lab B - Shelf 3', label: 'Lab B - Shelf 3' },
+                { value: 'Lab B - Shelf 4', label: 'Lab B - Shelf 4' },
                 { value: 'Lab C - Shelf 1', label: 'Lab C - Shelf 1' },
                 { value: 'Lab C - Shelf 2', label: 'Lab C - Shelf 2' },
                 { value: 'Lab C - Shelf 3', label: 'Lab C - Shelf 3' },
+                { value: 'Lab C - Shelf 4', label: 'Lab C - Shelf 4' },
                 { value: 'Lab D - Shelf 1', label: 'Lab D - Shelf 1' },
                 { value: 'Lab D - Shelf 2', label: 'Lab D - Shelf 2' },
                 { value: 'Lab D - Shelf 3', label: 'Lab D - Shelf 3' },
+                { value: 'Lab D - Shelf 4', label: 'Lab D - Shelf 4' },
                 { value: 'Storage - Shelf 1', label: 'Storage - Shelf 1' },
                 { value: 'Storage - Shelf 2', label: 'Storage - Shelf 2' },
+                { value: 'Storage - Shelf 3', label: 'Storage - Shelf 3' },
+                { value: 'Storage - Shelf 4', label: 'Storage - Shelf 4' },
               ]},
               { label: 'Cabinet *', key: 'cabinet', type: 'select', options: [
                 { value: '', label: 'Select Cabinet' },
@@ -373,6 +386,7 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                 { value: 'C3', label: 'Cabinet C3' },
                 { value: 'C4', label: 'Cabinet C4' },
                 { value: 'C5', label: 'Cabinet C5' },
+                { value: 'C6', label: 'Cabinet C6' },
               ]},
               { label: 'CAS Number', key: 'cas_number', placeholder: '7664-93-9' },
               { label: 'Expiry Date', key: 'expiry_date', type: 'date' },
