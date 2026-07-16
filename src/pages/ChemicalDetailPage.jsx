@@ -758,13 +758,23 @@ export default function ChemicalDetailPage() {
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div>
                   <h1 className="font-heading font-bold text-2xl lg:text-3xl" style={{ color: '#2C3E50' }}>{translatedName}</h1>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <p className="text-lg font-mono font-semibold" style={{ color: '#4A90E2' }}>{chemical.formula}</p>
                     {chemical.cas_number && (
                       <span className="text-xs px-2 py-0.5 rounded bg-slate-100 font-mono text-slate-500">
                         CAS: {chemical.cas_number}
                       </span>
                     )}
+                    <span 
+                      className="text-xs font-bold px-2 py-0.5 rounded bg-blue-50 border border-blue-100 font-mono text-blue-600 cursor-pointer hover:bg-blue-100 transition-colors"
+                      title={lang === 'ar' ? 'انقر لنسخ المعرف' : 'Click to copy ID'}
+                      onClick={() => {
+                        navigator.clipboard.writeText(chemical.id)
+                        toast.success(lang === 'ar' ? 'تم نسخ المعرف!' : 'ID copied to clipboard!')
+                      }}
+                    >
+                      ID: {chemical.id}
+                    </span>
                   </div>
                 </div>
                 <span className="badge flex-shrink-0" style={{ background: h.bg, color: h.color, padding: '0.4rem 0.85rem', fontSize: '0.75rem', fontWeight: 'bold' }}>

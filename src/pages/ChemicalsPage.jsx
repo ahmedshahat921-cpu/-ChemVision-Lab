@@ -32,18 +32,18 @@ function MiniFlask({ hazardLevel }) {
   return (
     <svg width="44" height="48" viewBox="0 0 40 44" className="flex-shrink-0 drop-shadow-sm overflow-visible">
       {/* Liquid at the bottom */}
-      <path 
-        d="M 24 28 L 10 39 C 9 40, 11 41, 13 41 L 27 41 C 29 41, 31 40, 30 39 L 16 28 Z" 
+      <path
+        d="M 24 28 L 10 39 C 9 40, 11 41, 13 41 L 27 41 C 29 41, 31 40, 30 39 L 16 28 Z"
         fill={colorSet.primary}
         opacity="0.8"
       />
       <ellipse cx="20" cy="28" rx="4" ry="1" fill={colorSet.secondary} opacity="0.9" />
 
       {/* Flask Glass Outline */}
-      <path 
-        d="M 17 4 L 17 12 L 7 36 C 6 38, 9 41, 12 41 L 28 41 C 31 41, 34 38, 33 36 L 23 12 L 23 4 Z" 
-        fill="none" 
-        stroke="#94A3B8" 
+      <path
+        d="M 17 4 L 17 12 L 7 36 C 6 38, 9 41, 12 41 L 28 41 C 31 41, 34 38, 33 36 L 23 12 L 23 4 Z"
+        fill="none"
+        stroke="#94A3B8"
         strokeWidth="1.8"
         strokeLinejoin="round"
         opacity="0.75"
@@ -89,8 +89,8 @@ function ChemicalCard({ chemical, index }) {
           </div>
           {/* Hazard badge */}
           <span className="badge text-xs flex-shrink-0" style={{ background: h.bg, color: h.color }}>
-            {lang === 'ar' 
-              ? (chemical.hazard_level === 'safe' || chemical.hazard_level === 'low' ? 'آمن' : chemical.hazard_level === 'warning' || chemical.hazard_level === 'medium' ? 'تحذير' : 'خطر') 
+            {lang === 'ar'
+              ? (chemical.hazard_level === 'safe' || chemical.hazard_level === 'low' ? 'آمن' : chemical.hazard_level === 'warning' || chemical.hazard_level === 'medium' ? 'تحذير' : 'خطر')
               : chemical.hazard_level
             }
           </span>
@@ -108,21 +108,6 @@ function ChemicalCard({ chemical, index }) {
 
         {/* Details */}
         <div className="space-y-1.5 text-left">
-          <div className="flex items-center justify-between text-xs">
-            <span style={{ color: '#94A3B8' }}>{lang === 'ar' ? 'المعرف (ID)' : 'ID'}</span>
-            <span 
-              className="font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded cursor-pointer hover:bg-slate-200 transition-colors" 
-              style={{ color: '#64748B' }}
-              onClick={(e) => {
-                e.stopPropagation()
-                navigator.clipboard.writeText(chemical.id)
-                toast.success(lang === 'ar' ? 'تم نسخ المعرف!' : 'ID copied to clipboard!')
-              }}
-              title={lang === 'ar' ? 'انقر لنسخ المعرف' : 'Click to copy ID'}
-            >
-              {chemical.id.slice(0, 8)}...
-            </span>
-          </div>
           <div className="flex items-center justify-between text-xs">
             <span style={{ color: '#94A3B8' }}>{lang === 'ar' ? 'الكمية' : 'Quantity'}</span>
             <span className="font-medium" style={{ color: '#2C3E50' }}>{chemical.quantity} {chemical.quantity_unit}</span>
@@ -181,13 +166,13 @@ export default function ChemicalsPage() {
 
   useEffect(() => {
     fetchChemicals()
-    
+
     // Clear any previous filters before applying new parameters
     setFilter('hazardLevel', 'all')
     setFilter('location', 'all')
     setFilter('expiryStatus', 'all')
     setSearch('')
-    
+
     if (filterParam === 'expiring') {
       setFilter('expiryStatus', 'expiring')
       setShowFilters(true)
@@ -224,8 +209,8 @@ export default function ChemicalsPage() {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <h1 className="font-heading font-bold text-2xl text-left" style={{ color: '#2C3E50' }}>{t('inventory_title')}</h1>
         <p className="text-sm mt-1 text-left" style={{ color: '#64748B' }}>
-          {lang === 'ar' 
-            ? `تم العثور على ${(displayedChemicals || []).length} مادة كيميائية` 
+          {lang === 'ar'
+            ? `تم العثور على ${(displayedChemicals || []).length} مادة كيميائية`
             : `${(displayedChemicals || []).length} chemical${(displayedChemicals || []).length !== 1 ? 's' : ''} found`
           }
         </p>
@@ -298,8 +283,8 @@ export default function ChemicalsPage() {
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
-                          {opt === 'all' 
-                            ? (lang === 'ar' ? 'الكل' : 'All') 
+                          {opt === 'all'
+                            ? (lang === 'ar' ? 'الكل' : 'All')
                             : opt.charAt(0).toUpperCase() + opt.slice(1)
                           }
                         </motion.button>
@@ -342,8 +327,8 @@ export default function ChemicalsPage() {
               <p className="text-sm mt-1" style={{ color: '#94A3B8' }}>
                 {lang === 'ar' ? 'جرب تغيير شروط البحث أو الفلاتر النشطة' : 'Try adjusting your search or filters'}
               </p>
-              <button 
-                onClick={() => { setSearch(''); setFilter('hazardLevel', 'all'); setFilter('location', 'all'); setFilter('expiryStatus', 'all') }} 
+              <button
+                onClick={() => { setSearch(''); setFilter('hazardLevel', 'all'); setFilter('location', 'all'); setFilter('expiryStatus', 'all') }}
                 className="btn-secondary mt-4"
               >
                 {lang === 'ar' ? 'إعادة ضبط الفلاتر' : 'Clear filters'}

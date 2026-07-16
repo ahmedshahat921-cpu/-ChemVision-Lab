@@ -217,7 +217,6 @@ export const useChemicalStore = create((set, get) => ({
     if (query) result = result.filter(c =>
       c.name.toLowerCase().includes(query.toLowerCase()) ||
       c.formula.toLowerCase().includes(query.toLowerCase()) ||
-      c.id.toLowerCase().includes(query.toLowerCase()) ||
       (c.cas_number && c.cas_number.includes(query))
     )
     if (filters.hazardLevel !== 'all') result = result.filter(c => c.hazard_level === filters.hazardLevel)
@@ -246,10 +245,10 @@ export const useChemicalStore = create((set, get) => ({
     const { data, error } = await supabase.from('chemicals').update(updates).eq('id', id).select().single()
     if (error) return { success: false, error: error.message }
     const { chemicals } = get()
-    
+
     const exists = chemicals.some(c => c.id === id)
     let newChemicals
-    
+
     if (data.is_active) {
       if (exists) {
         newChemicals = chemicals.map(c => c.id === id ? data : c)
@@ -278,9 +277,9 @@ export const useChemicalStore = create((set, get) => ({
     // First check current quantity from DB to avoid stale data
     const { data: freshChemical, error: fetchError } = await supabase
       .from('chemicals').select('quantity').eq('id', chemicalId).single()
-    
+
     if (fetchError) return { success: false, error: fetchError.message }
-    
+
     const currentQty = freshChemical.quantity
     if (amount > currentQty) {
       return { success: false, error: `Insufficient stock. Available: ${currentQty} ${unit}` }
