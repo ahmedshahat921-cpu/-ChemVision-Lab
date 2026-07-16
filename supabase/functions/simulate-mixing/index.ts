@@ -19,7 +19,7 @@ serve(async (req) => {
     }
 
     const body = await req.json()
-    const { action, chemA, chemB, chemicalName } = body
+    const { action, chemA, chemB, chemicalName, messages, inventoryContext } = body
 
     // Helper function to call Gemini API
     async function callGemini(prompt: string, apiKey: string) {
@@ -40,6 +40,70 @@ serve(async (req) => {
       const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text
       if (!rawText) throw new Error("Empty response received from Gemini API.")
       return JSON.parse(rawText.trim())
+    }
+
+    // ═══════════════════════════════════════════════
+    // ACTION: chat
+    // Chatbot response with laboratory inventory context
+    // ═══════════════════════════════════════════════
+    if (action === 'chat') {
+      if (!messages || !Array.isArray(messages)) {
+        return new Response(
+          JSON.stringify({ error: "Missing or invalid messages parameter." }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      const inventoryStr = (inventoryContext || [])
+        .map((c: any) => `- Name: ${c.name}, Formula: ${c.formula || 'N/A'}, Qty: ${c.quantity} ${c.quantity_unit || ''}, Location: ${c.location || 'N/A'}, Cabinet: ${c.cabinet || 'N/A'}, Status: ${c.is_active ? 'Active' : 'Inactive'}, Expiry: ${c.expiry_date || 'N/A'}`)
+        .join('\n')
+
+      const systemInstructionText = `You are a professional chemical laboratory AI assistant named "ChemVision AI Companion".
+You assist students, researchers, and laboratory managers with:
+1. Finding chemicals in the lab.
+2. Checking inventory quantities and status.
+3. Reviewing safety precautions, hazard levels, GHS safety codes, and first aid measures.
+4. Answering general chemistry questions.
+
+Here is the CURRENT, REAL-TIME chemical inventory in the lab:
+${inventoryStr || 'No chemicals are currently in the inventory.'}
+
+IMPORTANT RULES:
+- Use the inventory context above to answer location or stock queries accurately. If a chemical is not in the list, state that it is not in the inventory.
+- Keep safety as the absolute highest priority. If asked about mixing dangerous chemicals, warn the user.
+- Respond in a clear, friendly, and professional manner.
+- Answer in the same language the user uses (Arabic or English).`
+
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GEMINI_API_KEY}`
+      
+      const payload = {
+        contents: messages.map((m: any) => ({
+          role: m.role === 'user' ? 'user' : 'model',
+          parts: [{ text: m.content || '' }]
+        })),
+        systemInstruction: {
+          parts: [{ text: systemInstructionText }]
+        }
+      }
+
+      const response = await fetch(geminiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Gemini API returned error code ${response.status}: ${errorText}`)
+      }
+
+      const data = await response.json()
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't generate a response."
+
+      return new Response(
+        JSON.stringify({ text: rawText }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // ═══════════════════════════════════════════════
