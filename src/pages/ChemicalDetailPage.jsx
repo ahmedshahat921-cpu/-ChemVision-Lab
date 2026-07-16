@@ -773,7 +773,7 @@ export default function ChemicalDetailPage() {
                         toast.success(lang === 'ar' ? 'تم نسخ المعرف!' : 'ID copied to clipboard!')
                       }}
                     >
-                      ID: {chemical.id}
+                      ID: {chemical.id.slice(0, 8)}
                     </span>
                   </div>
                 </div>
