@@ -868,7 +868,8 @@ export default function AdminPage() {
         {duplicateCheck && (
           <div className="modal-overlay" onClick={() => setDuplicateCheck(null)}>
             <motion.div
-              className="modal-content p-6 w-full max-w-md relative"
+              className="modal-content p-6 w-full relative"
+              style={{ maxWidth: '480px' }}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -949,7 +950,8 @@ export default function AdminPage() {
         {deleteConfirmation && (
           <div className="modal-overlay" onClick={() => setDeleteConfirmation(null)}>
             <motion.div
-              className="modal-content p-6 w-full max-w-sm relative"
+              className="modal-content p-6 w-full relative"
+              style={{ maxWidth: '400px' }}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -996,11 +998,11 @@ export default function AdminPage() {
         {occupiedCheck && (
           <div className="modal-overlay" onClick={() => setOccupiedCheck(null)}>
             <motion.div
-              className="modal-content p-6 w-full max-w-md relative"
+              className="modal-content p-6 w-full relative"
+              style={{ maxWidth: '480px', direction: lang === 'ar' ? 'rtl' : 'ltr', textAlign: lang === 'ar' ? 'right' : 'left' }}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              style={{ direction: lang === 'ar' ? 'rtl' : 'ltr', textAlign: lang === 'ar' ? 'right' : 'left' }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center gap-3 mb-4 text-rose-500">
