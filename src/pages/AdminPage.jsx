@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Edit, Trash2, Search, Download, X, Loader2, QrCode, FlaskConical, Sparkles, AlertTriangle } from 'lucide-react'
+import { Plus, Edit, Trash2, Search, Download, X, Loader2, QrCode, FlaskConical, Sparkles, AlertTriangle, ClipboardList, Calendar, TrendingUp, Package, Beaker } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../hooks/useLanguage'
 import { useChemicalStore } from '../store'
@@ -477,6 +477,10 @@ export default function AdminPage() {
   const [duplicateCheck, setDuplicateCheck] = useState(null) // null or { match, pendingData }
   const [deleteConfirmation, setDeleteConfirmation] = useState(null) // null or { id, name }
   const [occupiedCheck, setOccupiedCheck] = useState(null) // null or { location, cabinet, occupiedBy, pendingData, suggestions }
+  const [showTransactionLog, setShowTransactionLog] = useState(false)
+  const [transactionLogs, setTransactionLogs] = useState([])
+  const [logPeriod, setLogPeriod] = useState('week') // 'week' | 'month' | 'year'
+  const [logLoading, setLogLoading] = useState(false)
 
   const [searchParams] = useSearchParams()
 
@@ -492,6 +496,90 @@ export default function AdminPage() {
       emptyForm.cabinet = prefillCab || ''
     }
   }, [searchParams])
+
+  const fetchTransactionLogs = async (period) => {
+    setLogLoading(true)
+    try {
+      const now = new Date()
+      let since = new Date()
+      if (period === 'week') since.setDate(now.getDate() - 7)
+      else if (period === 'month') since.setMonth(now.getMonth() - 1)
+      else if (period === 'year') since.setFullYear(now.getFullYear() - 1)
+
+      const { data: usageLogs, error: usageErr } = await supabase
+        .from('usage_logs')
+        .select('*, chemicals(name, formula)')
+        .gte('timestamp', since.toISOString())
+        .order('timestamp', { ascending: false })
+
+      if (usageErr) throw usageErr
+
+      // Build transaction records from usage_logs (consume events)
+      const consumeLogs = (usageLogs || []).map(l => ({
+        id: l.id,
+        type: 'consume',
+        chemical: l.chemicals?.name || 'Unknown Chemical',
+        formula: l.chemicals?.formula || '',
+        amount: `${l.amount_used} ${l.unit}`,
+        purpose: l.purpose || '—',
+        timestamp: l.timestamp,
+      }))
+
+      // Add add/delete events from chemicals created_at / deleted (from chemicals list)
+      const addLogs = (chemicals || [])
+        .filter(c => {
+          const createdAt = new Date(c.created_at || 0)
+          return createdAt >= since
+        })
+        .map(c => ({
+          id: `add-${c.id}`,
+          type: 'add',
+          chemical: c.name,
+          formula: c.formula || '',
+          amount: `${c.quantity} ${c.quantity_unit}`,
+          purpose: c.location ? `${c.location} / ${c.cabinet}` : '—',
+          timestamp: c.created_at,
+        }))
+
+      const all = [...consumeLogs, ...addLogs].sort((a, b) =>
+        new Date(b.timestamp) - new Date(a.timestamp)
+      )
+
+      setTransactionLogs(all)
+    } catch (err) {
+      toast.error('Failed to load transaction logs: ' + err.message)
+    } finally {
+      setLogLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (showTransactionLog) fetchTransactionLogs(logPeriod)
+  }, [showTransactionLog, logPeriod])
+
+  const downloadReport = () => {
+    const periodLabel = logPeriod === 'week' ? 'Last 7 Days' : logPeriod === 'month' ? 'Last 30 Days' : 'Last Year'
+    const lines = [
+      `ChemVision Lab - Transaction Report (${periodLabel})`,
+      `Generated: ${new Date().toLocaleString()}`,
+      '',
+      'Date/Time,Type,Chemical,Formula,Amount/Location,Purpose/Location',
+      ...transactionLogs.map(l =>
+        `"${new Date(l.timestamp).toLocaleString()}","${l.type === 'consume' ? 'Consumption' : 'Added to Inventory'}","${l.chemical}","${l.formula}","${l.amount}","${l.purpose}"`
+      )
+    ]
+    const csvContent = lines.join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `chemvision-transactions-${logPeriod}-${new Date().toISOString().slice(0,10)}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    toast.success('Report downloaded!')
+  }
 
   const filtered = chemicals.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.formula.toLowerCase().includes(search.toLowerCase()))
 
@@ -772,10 +860,18 @@ export default function AdminPage() {
           <h1 className="font-heading font-bold text-2xl" style={{ color: '#2C3E50' }}>⚙️ Admin Panel</h1>
           <p className="text-sm mt-1" style={{ color: '#64748B' }}>Manage chemical inventory</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <button className="btn-secondary" onClick={() => setShowQRBatch(!showQRBatch)}>
             <QrCode size={16} /> Batch QR
           </button>
+          <motion.button
+            className="btn-secondary"
+            onClick={() => setShowTransactionLog(true)}
+            whileHover={{ scale: 1.02 }}
+            style={{ borderColor: '#A855F7', color: '#7C3AED', background: '#F5F3FF' }}
+          >
+            <ClipboardList size={16} /> {lang === 'ar' ? 'سجل المعاملات' : 'Transaction Log'}
+          </motion.button>
           <motion.button className="btn-primary" onClick={() => { setEditingChemical(null); setShowForm(true) }} whileHover={{ scale: 1.02 }}>
             <Plus size={16} /> Add Chemical
           </motion.button>
@@ -1060,6 +1156,195 @@ export default function AdminPage() {
                   className="btn-secondary flex-1 justify-center py-2.5 border-slate-200 text-slate-700 hover:bg-slate-50 font-bold"
                 >
                   {lang === 'ar' ? 'إلغاء وتعديل يدوي' : 'Cancel & Edit'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Transaction Log Modal */}
+      <AnimatePresence>
+        {showTransactionLog && (
+          <div className="modal-overlay" onClick={() => setShowTransactionLog(false)}>
+            <motion.div
+              className="modal-content w-full relative flex flex-col"
+              style={{ maxWidth: '780px', maxHeight: '88vh' }}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-5 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #7C3AED, #A855F7)' }}>
+                    <ClipboardList size={18} className="text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-heading font-bold text-base text-slate-800">
+                      {lang === 'ar' ? 'سجل المعاملات والتقارير' : 'Transaction Log & Reports'}
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      {lang === 'ar' ? 'جميع العمليات على مواد المخزون' : 'All inventory operations & consumption events'}
+                    </p>
+                  </div>
+                </div>
+                <button onClick={() => setShowTransactionLog(false)} className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+                  <X size={18} className="text-slate-400" />
+                </button>
+              </div>
+
+              {/* Period Filter + Download */}
+              <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-100" style={{ background: '#FAFBFD' }}>
+                <div className="flex items-center gap-2">
+                  <Calendar size={14} className="text-slate-400" />
+                  <span className="text-xs font-medium text-slate-500">{lang === 'ar' ? 'الفترة الزمنية:' : 'Time Period:'}</span>
+                  {['week', 'month', 'year'].map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setLogPeriod(p)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                      style={{
+                        background: logPeriod === p ? 'linear-gradient(135deg, #7C3AED, #A855F7)' : '#F0F2F5',
+                        color: logPeriod === p ? 'white' : '#64748B',
+                      }}
+                    >
+                      {p === 'week' ? (lang === 'ar' ? 'الأسبوع' : 'Week') : p === 'month' ? (lang === 'ar' ? 'الشهر' : 'Month') : (lang === 'ar' ? 'السنة' : 'Year')}
+                    </button>
+                  ))}
+                </div>
+                <motion.button
+                  onClick={downloadReport}
+                  disabled={transactionLogs.length === 0}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <Download size={13} />
+                  {lang === 'ar' ? 'تحميل CSV' : 'Download CSV'}
+                </motion.button>
+              </div>
+
+              {/* Summary stats */}
+              {!logLoading && transactionLogs.length > 0 && (
+                <div className="grid grid-cols-3 gap-3 px-5 pt-4">
+                  {[
+                    {
+                      label: lang === 'ar' ? 'إجمالي العمليات' : 'Total Events',
+                      value: transactionLogs.length,
+                      color: '#7C3AED', bg: '#F5F3FF',
+                      icon: <TrendingUp size={14} />,
+                    },
+                    {
+                      label: lang === 'ar' ? 'عمليات الاستهلاك' : 'Consumptions',
+                      value: transactionLogs.filter(l => l.type === 'consume').length,
+                      color: '#E85D5D', bg: '#FDEAEA',
+                      icon: <Beaker size={14} />,
+                    },
+                    {
+                      label: lang === 'ar' ? 'مواد أضيفت' : 'Chemicals Added',
+                      value: transactionLogs.filter(l => l.type === 'add').length,
+                      color: '#10B981', bg: '#ECFDF5',
+                      icon: <Package size={14} />,
+                    },
+                  ].map(stat => (
+                    <div key={stat.label} className="flex items-center gap-2 p-3 rounded-xl border" style={{ background: stat.bg, borderColor: stat.color + '30' }}>
+                      <span style={{ color: stat.color }}>{stat.icon}</span>
+                      <div>
+                        <p className="text-lg font-bold leading-none" style={{ color: stat.color }}>{stat.value}</p>
+                        <p className="text-[10px] font-medium mt-0.5 text-slate-500">{stat.label}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Logs list */}
+              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2">
+                {logLoading ? (
+                  <div className="flex flex-col items-center justify-center py-12 gap-3">
+                    <Loader2 size={28} className="animate-spin text-violet-500" />
+                    <p className="text-sm text-slate-400">{lang === 'ar' ? 'جاري تحميل السجل...' : 'Loading transactions...'}</p>
+                  </div>
+                ) : transactionLogs.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 gap-3">
+                    <ClipboardList size={36} className="text-slate-200" />
+                    <p className="text-sm text-slate-400 font-medium">
+                      {lang === 'ar' ? 'لا توجد معاملات في هذه الفترة الزمنية' : 'No transactions found in this period'}
+                    </p>
+                  </div>
+                ) : (
+                  transactionLogs.map((log, i) => (
+                    <motion.div
+                      key={log.id}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.025 }}
+                      className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 transition-all"
+                    >
+                      {/* Type Icon */}
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{
+                          background: log.type === 'consume' ? '#FDEAEA' : '#ECFDF5',
+                          color: log.type === 'consume' ? '#E85D5D' : '#10B981',
+                        }}
+                      >
+                        {log.type === 'consume' ? <Beaker size={14} /> : <Package size={14} />}
+                      </div>
+
+                      {/* Details */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-semibold text-slate-800 truncate">{log.chemical}</span>
+                          {log.formula && (
+                            <code className="text-[10px] px-1.5 py-0.5 rounded font-mono" style={{ background: '#EBF4FF', color: '#2D6A9F' }}>{log.formula}</code>
+                          )}
+                          <span
+                            className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                            style={{
+                              background: log.type === 'consume' ? '#FDEAEA' : '#ECFDF5',
+                              color: log.type === 'consume' ? '#E85D5D' : '#10B981',
+                            }}
+                          >
+                            {log.type === 'consume'
+                              ? (lang === 'ar' ? 'استهلاك' : 'Consumption')
+                              : (lang === 'ar' ? 'إضافة للمخزون' : 'Added')}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-0.5 truncate">
+                          {log.type === 'consume' ? '📋 ' : '📍 '}
+                          {log.purpose}
+                          {log.amount && <span className="font-semibold text-slate-700"> — {log.amount}</span>}
+                        </p>
+                      </div>
+
+                      {/* Timestamp */}
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-[10px] font-medium text-slate-400">
+                          {new Date(log.timestamp).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US')}
+                        </p>
+                        <p className="text-[10px] text-slate-300">
+                          {new Date(log.timestamp).toLocaleTimeString(lang === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between" style={{ background: '#FAFBFD' }}>
+                <p className="text-xs text-slate-400">
+                  {transactionLogs.length > 0 && `${transactionLogs.length} ${lang === 'ar' ? 'معاملة' : 'transactions'}`}
+                </p>
+                <button
+                  onClick={() => setShowTransactionLog(false)}
+                  className="btn-secondary py-1.5 px-4 text-xs font-bold"
+                >
+                  {lang === 'ar' ? 'إغلاق' : 'Close'}
                 </button>
               </div>
             </motion.div>
