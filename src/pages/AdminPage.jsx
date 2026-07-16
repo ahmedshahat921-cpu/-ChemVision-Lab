@@ -572,8 +572,9 @@ export default function AdminPage() {
       element.style.width = '800px'
       element.classList.remove('hidden')
       
-      // Capture the element using html2canvas
-      const canvas = await html2canvas(element, {
+      // Capture the element using html2canvas, resolving default exports for Vite/Rollup
+      const html2canvasFn = html2canvas.default || html2canvas
+      const canvas = await html2canvasFn(element, {
         scale: 2,
         useCORS: true,
         logging: false
@@ -613,7 +614,12 @@ export default function AdminPage() {
       toast.success(lang === 'ar' ? 'تم تحميل ملف الـ PDF بنجاح!' : 'PDF downloaded successfully!', { id: toastId })
     } catch (error) {
       console.error('PDF generation failed:', error)
-      toast.error(lang === 'ar' ? 'فشل تحميل ملف الـ PDF' : 'Failed to download PDF', { id: toastId })
+      toast.error(
+        lang === 'ar' 
+          ? `فشل تحميل ملف الـ PDF: ${error.message}` 
+          : `Failed to download PDF: ${error.message}`, 
+        { id: toastId }
+      )
     }
   }
 
