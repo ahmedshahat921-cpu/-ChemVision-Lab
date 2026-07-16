@@ -19,8 +19,48 @@ const emptyForm = {
 
 function ChemicalForm({ initial, onSave, onClose, loading }) {
   const [form, setForm] = useState(initial || emptyForm)
+  const { chemicals } = useChemicalStore()
+  const { lang } = useLanguage()
   const [fetching, setFetching] = useState(false)
   const [aiLoading, setAiLoading] = useState(false)
+
+  const allLocations = [
+    'Lab A - Shelf 1', 'Lab A - Shelf 2', 'Lab A - Shelf 3', 'Lab A - Shelf 4',
+    'Lab B - Shelf 1', 'Lab B - Shelf 2', 'Lab B - Shelf 3', 'Lab B - Shelf 4',
+    'Lab C - Shelf 1', 'Lab C - Shelf 2', 'Lab C - Shelf 3', 'Lab C - Shelf 4',
+    'Lab D - Shelf 1', 'Lab D - Shelf 2', 'Lab D - Shelf 3', 'Lab D - Shelf 4',
+    'Storage - Shelf 1', 'Storage - Shelf 2', 'Storage - Shelf 3', 'Storage - Shelf 4',
+  ]
+  const allCabinets = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
+
+  const isSpotOccupied = (loc, cab) => {
+    return (chemicals || []).some(c => {
+      if (!c.is_active || !c.location || !c.cabinet) return false
+      if (c.id === (initial?.id || null)) return false
+      
+      const cLocNorm = c.location.replace(/\s+/g, '').toLowerCase()
+      const locNorm = loc.replace(/\s+/g, '').toLowerCase()
+      if (cLocNorm !== locNorm) return false
+      
+      const cCabMatch = c.cabinet.match(/C\d+/i)
+      const cCabNorm = cCabMatch ? cCabMatch[0].toUpperCase() : ''
+      const cabMatch = cab.match(/C\d+/i)
+      const cabNorm = cabMatch ? cabMatch[0].toUpperCase() : ''
+      
+      return cCabNorm === cabNorm
+    })
+  }
+
+  const getAvailableLocations = () => {
+    return allLocations.filter(loc => {
+      return allCabinets.some(cab => !isSpotOccupied(loc, cab))
+    })
+  }
+
+  const getAvailableCabinets = (selectedLoc) => {
+    if (!selectedLoc) return []
+    return allCabinets.filter(cab => !isSpotOccupied(selectedLoc, cab))
+  }
 
   // AI Wizard sub-modal states
   const [aiPromptOpen, setAiPromptOpen] = useState(false)
@@ -194,30 +234,16 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                   <label className="block text-xs font-medium text-gray-600 mb-1">Location *</label>
                   <select
                     value={aiLocation}
-                    onChange={(e) => setAiLocation(e.target.value)}
+                    onChange={(e) => {
+                      setAiLocation(e.target.value)
+                      setAiCabinet('')
+                    }}
                     className="input-field py-2.5 text-sm bg-white w-full border border-gray-300 rounded-lg"
                   >
                     <option value="">Select Location</option>
-                    <option value="Lab A - Shelf 1">Lab A - Shelf 1</option>
-                    <option value="Lab A - Shelf 2">Lab A - Shelf 2</option>
-                    <option value="Lab A - Shelf 3">Lab A - Shelf 3</option>
-                    <option value="Lab A - Shelf 4">Lab A - Shelf 4</option>
-                    <option value="Lab B - Shelf 1">Lab B - Shelf 1</option>
-                    <option value="Lab B - Shelf 2">Lab B - Shelf 2</option>
-                    <option value="Lab B - Shelf 3">Lab B - Shelf 3</option>
-                    <option value="Lab B - Shelf 4">Lab B - Shelf 4</option>
-                    <option value="Lab C - Shelf 1">Lab C - Shelf 1</option>
-                    <option value="Lab C - Shelf 2">Lab C - Shelf 2</option>
-                    <option value="Lab C - Shelf 3">Lab C - Shelf 3</option>
-                    <option value="Lab C - Shelf 4">Lab C - Shelf 4</option>
-                    <option value="Lab D - Shelf 1">Lab D - Shelf 1</option>
-                    <option value="Lab D - Shelf 2">Lab D - Shelf 2</option>
-                    <option value="Lab D - Shelf 3">Lab D - Shelf 3</option>
-                    <option value="Lab D - Shelf 4">Lab D - Shelf 4</option>
-                    <option value="Storage - Shelf 1">Storage - Shelf 1</option>
-                    <option value="Storage - Shelf 2">Storage - Shelf 2</option>
-                    <option value="Storage - Shelf 3">Storage - Shelf 3</option>
-                    <option value="Storage - Shelf 4">Storage - Shelf 4</option>
+                    {getAvailableLocations().map(loc => (
+                      <option key={loc} value={loc}>{loc}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -229,12 +255,9 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                     className="input-field py-2.5 text-sm bg-white w-full border border-gray-300 rounded-lg"
                   >
                     <option value="">Select Cabinet</option>
-                    <option value="C1">Cabinet C1</option>
-                    <option value="C2">Cabinet C2</option>
-                    <option value="C3">Cabinet C3</option>
-                    <option value="C4">Cabinet C4</option>
-                    <option value="C5">Cabinet C5</option>
-                    <option value="C6">Cabinet C6</option>
+                    {getAvailableCabinets(aiLocation).map(cab => (
+                      <option key={cab} value={cab}>Cabinet {cab}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -359,37 +382,13 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
               {
                 label: 'Location *', key: 'location', type: 'select', options: [
                   { value: '', label: 'Select Location' },
-                  { value: 'Lab A - Shelf 1', label: 'Lab A - Shelf 1' },
-                  { value: 'Lab A - Shelf 2', label: 'Lab A - Shelf 2' },
-                  { value: 'Lab A - Shelf 3', label: 'Lab A - Shelf 3' },
-                  { value: 'Lab A - Shelf 4', label: 'Lab A - Shelf 4' },
-                  { value: 'Lab B - Shelf 1', label: 'Lab B - Shelf 1' },
-                  { value: 'Lab B - Shelf 2', label: 'Lab B - Shelf 2' },
-                  { value: 'Lab B - Shelf 3', label: 'Lab B - Shelf 3' },
-                  { value: 'Lab B - Shelf 4', label: 'Lab B - Shelf 4' },
-                  { value: 'Lab C - Shelf 1', label: 'Lab C - Shelf 1' },
-                  { value: 'Lab C - Shelf 2', label: 'Lab C - Shelf 2' },
-                  { value: 'Lab C - Shelf 3', label: 'Lab C - Shelf 3' },
-                  { value: 'Lab C - Shelf 4', label: 'Lab C - Shelf 4' },
-                  { value: 'Lab D - Shelf 1', label: 'Lab D - Shelf 1' },
-                  { value: 'Lab D - Shelf 2', label: 'Lab D - Shelf 2' },
-                  { value: 'Lab D - Shelf 3', label: 'Lab D - Shelf 3' },
-                  { value: 'Lab D - Shelf 4', label: 'Lab D - Shelf 4' },
-                  { value: 'Storage - Shelf 1', label: 'Storage - Shelf 1' },
-                  { value: 'Storage - Shelf 2', label: 'Storage - Shelf 2' },
-                  { value: 'Storage - Shelf 3', label: 'Storage - Shelf 3' },
-                  { value: 'Storage - Shelf 4', label: 'Storage - Shelf 4' },
+                  ...getAvailableLocations().map(loc => ({ value: loc, label: loc }))
                 ]
               },
               {
                 label: 'Cabinet *', key: 'cabinet', type: 'select', options: [
                   { value: '', label: 'Select Cabinet' },
-                  { value: 'C1', label: 'Cabinet C1' },
-                  { value: 'C2', label: 'Cabinet C2' },
-                  { value: 'C3', label: 'Cabinet C3' },
-                  { value: 'C4', label: 'Cabinet C4' },
-                  { value: 'C5', label: 'Cabinet C5' },
-                  { value: 'C6', label: 'Cabinet C6' },
+                  ...getAvailableCabinets(form.location).map(cab => ({ value: cab, label: `Cabinet ${cab}` }))
                 ]
               },
               { label: 'CAS Number', key: 'cas_number', placeholder: '7664-93-9' },
@@ -400,7 +399,13 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                 {type === 'select' ? (
                   <select
                     value={form[key] || ''}
-                    onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                    onChange={(e) => {
+                      if (key === 'location') {
+                        setForm({ ...form, location: e.target.value, cabinet: '' })
+                      } else {
+                        setForm({ ...form, [key]: e.target.value })
+                      }
+                    }}
                     className="input-field py-2 text-sm bg-white"
                   >
                     {options.map(opt => (
