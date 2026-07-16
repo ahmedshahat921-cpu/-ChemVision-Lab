@@ -746,6 +746,7 @@ export default function AdminPage() {
                   whileHover={{ background: '#F8F9FA' }}>
                   <td className="px-4 py-3">
                     <p className="text-sm font-medium" style={{ color: '#2C3E50' }}>{c.name}</p>
+                    <p className="text-[10px] font-mono text-slate-400 mt-0.5 select-all" title={lang === 'ar' ? 'انقر ثلاث مرات لتحديد المعرف ونسخه' : 'Triple-click to select and copy ID'}>ID: {c.id}</p>
                   </td>
                   <td className="px-4 py-3"><code className="text-xs px-2 py-0.5 rounded" style={{ background: '#EBF4FF', color: '#2D6A9F' }}>{c.formula}</code></td>
                   <td className="px-4 py-3"><span className={`badge badge-${c.hazard_level}`}>{c.hazard_level}</span></td>

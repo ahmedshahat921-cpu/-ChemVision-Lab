@@ -109,6 +109,21 @@ function ChemicalCard({ chemical, index }) {
         {/* Details */}
         <div className="space-y-1.5 text-left">
           <div className="flex items-center justify-between text-xs">
+            <span style={{ color: '#94A3B8' }}>{lang === 'ar' ? 'المعرف (ID)' : 'ID'}</span>
+            <span 
+              className="font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded cursor-pointer hover:bg-slate-200 transition-colors" 
+              style={{ color: '#64748B' }}
+              onClick={(e) => {
+                e.stopPropagation()
+                navigator.clipboard.writeText(chemical.id)
+                toast.success(lang === 'ar' ? 'تم نسخ المعرف!' : 'ID copied to clipboard!')
+              }}
+              title={lang === 'ar' ? 'انقر لنسخ المعرف' : 'Click to copy ID'}
+            >
+              {chemical.id.slice(0, 8)}...
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
             <span style={{ color: '#94A3B8' }}>{lang === 'ar' ? 'الكمية' : 'Quantity'}</span>
             <span className="font-medium" style={{ color: '#2C3E50' }}>{chemical.quantity} {chemical.quantity_unit}</span>
           </div>

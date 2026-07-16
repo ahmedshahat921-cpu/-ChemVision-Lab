@@ -217,6 +217,7 @@ export const useChemicalStore = create((set, get) => ({
     if (query) result = result.filter(c =>
       c.name.toLowerCase().includes(query.toLowerCase()) ||
       c.formula.toLowerCase().includes(query.toLowerCase()) ||
+      c.id.toLowerCase().includes(query.toLowerCase()) ||
       (c.cas_number && c.cas_number.includes(query))
     )
     if (filters.hazardLevel !== 'all') result = result.filter(c => c.hazard_level === filters.hazardLevel)
