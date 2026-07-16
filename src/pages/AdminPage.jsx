@@ -558,27 +558,209 @@ export default function AdminPage() {
   }, [showTransactionLog, logPeriod])
 
   const downloadReport = () => {
-    const periodLabel = logPeriod === 'week' ? 'Last 7 Days' : logPeriod === 'month' ? 'Last 30 Days' : 'Last Year'
-    const lines = [
-      `ChemVision Lab - Transaction Report (${periodLabel})`,
-      `Generated: ${new Date().toLocaleString()}`,
-      '',
-      'Date/Time,Type,Chemical,Formula,Amount/Location,Purpose/Location',
-      ...transactionLogs.map(l =>
-        `"${new Date(l.timestamp).toLocaleString()}","${l.type === 'consume' ? 'Consumption' : 'Added to Inventory'}","${l.chemical}","${l.formula}","${l.amount}","${l.purpose}"`
-      )
-    ]
-    const csvContent = lines.join('\n')
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `chemvision-transactions-${logPeriod}-${new Date().toISOString().slice(0,10)}.csv`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-    toast.success('Report downloaded!')
+    const periodLabel = logPeriod === 'week' 
+      ? (lang === 'ar' ? 'الأسبوع الأخير' : 'Last 7 Days') 
+      : logPeriod === 'month' 
+        ? (lang === 'ar' ? 'الشهر الأخير' : 'Last 30 Days') 
+        : (lang === 'ar' ? 'السنة الأخيرة' : 'Last Year')
+    
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      toast.error(lang === 'ar' ? 'يرجى السماح بالنوافذ المنبثقة لتحميل التقرير PDF' : 'Please allow popups to download PDF report')
+      return
+    }
+
+    const html = `
+      <html>
+        <head>
+          <title>ChemVision Lab - Transaction Report</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;600;700&display=swap');
+            body {
+              font-family: ${lang === 'ar' ? "'Cairo', sans-serif" : "'Inter', sans-serif"};
+              color: #1E293B;
+              margin: 40px;
+              padding: 0;
+              direction: ${lang === 'ar' ? 'rtl' : 'ltr'};
+              background: #FFF;
+            }
+            .header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              border-bottom: 3px solid #7C3AED;
+              padding-bottom: 20px;
+              margin-bottom: 30px;
+            }
+            .logo {
+              font-size: 26px;
+              font-weight: 700;
+              color: #7C3AED;
+            }
+            .title {
+              font-size: 20px;
+              font-weight: 700;
+              color: #1E293B;
+            }
+            .meta-info {
+              margin-bottom: 30px;
+              font-size: 13px;
+              color: #64748B;
+              line-height: 1.6;
+              background: #F8FAFC;
+              padding: 15px;
+              border-radius: 12px;
+              border: 1px solid #E2E8F0;
+            }
+            .summary-cards {
+              display: grid;
+              grid-template-cols: repeat(3, 1fr);
+              gap: 15px;
+              margin-bottom: 35px;
+            }
+            .card {
+              border: 1px solid #E2E8F0;
+              border-radius: 12px;
+              padding: 15px;
+              text-align: center;
+              box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            }
+            .card-title {
+              font-size: 11px;
+              font-weight: 600;
+              color: #64748B;
+              margin-bottom: 6px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            .card-value {
+              font-size: 24px;
+              font-weight: 700;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 30px;
+            }
+            th, td {
+              border: 1px solid #E2E8F0;
+              padding: 12px 14px;
+              text-align: ${lang === 'ar' ? 'right' : 'left'};
+              font-size: 12px;
+            }
+            th {
+              background-color: #F8FAFC;
+              color: #475569;
+              font-weight: 600;
+              font-size: 11px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            tr:nth-child(even) {
+              background-color: #F8FAFC;
+            }
+            .badge {
+              display: inline-block;
+              padding: 4px 8px;
+              border-radius: 8px;
+              font-size: 10px;
+              font-weight: 700;
+            }
+            .badge-consume {
+              background-color: #FDEAEA;
+              color: #E85D5D;
+            }
+            .badge-add {
+              background-color: #ECFDF5;
+              color: #10B981;
+            }
+            .footer-note {
+              margin-top: 50px;
+              text-align: center;
+              font-size: 11px;
+              color: #94A3B8;
+              border-top: 1px dashed #E2E8F0;
+              padding-top: 20px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo">🧪 ChemVision Lab Hub</div>
+            <div class="title">${lang === 'ar' ? 'سجل المعاملات والتقارير' : 'Transaction Log Report'}</div>
+          </div>
+          
+          <div class="meta-info">
+            <div><strong>${lang === 'ar' ? 'الفترة الزمنية للتقرير:' : 'Report Time Period:'}</strong> ${periodLabel}</div>
+            <div><strong>${lang === 'ar' ? 'تاريخ ووقت التصدير:' : 'Generated At:'}</strong> ${new Date().toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</div>
+            <div><strong>${lang === 'ar' ? 'تم التصدير بواسطة:' : 'Generated By:'}</strong> Admin Panel</div>
+          </div>
+
+          <div class="summary-cards">
+            <div class="card" style="border-color: #C084FC; background-color: #FAF5FF;">
+              <div class="card-title" style="color: #7C3AED;">${lang === 'ar' ? 'إجمالي العمليات' : 'Total Events'}</div>
+              <div class="card-value" style="color: #7C3AED;">${transactionLogs.length}</div>
+            </div>
+            <div class="card" style="border-color: #FCA5A5; background-color: #FEF2F2;">
+              <div class="card-title" style="color: #DC2626;">${lang === 'ar' ? 'عمليات الاستهلاك' : 'Consumptions'}</div>
+              <div class="card-value" style="color: #DC2626;">${transactionLogs.filter(l => l.type === 'consume').length}</div>
+            </div>
+            <div class="card" style="border-color: #86EFAC; background-color: #F0FDF4;">
+              <div class="card-title" style="color: #16A34A;">${lang === 'ar' ? 'مواد كيميائية مضافة' : 'Chemicals Added'}</div>
+              <div class="card-value" style="color: #16A34A;">${transactionLogs.filter(l => l.type === 'add').length}</div>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>${lang === 'ar' ? 'التاريخ والوقت' : 'Date & Time'}</th>
+                <th>${lang === 'ar' ? 'العملية' : 'Event Type'}</th>
+                <th>${lang === 'ar' ? 'المادة الكيميائية' : 'Chemical'}</th>
+                <th>${lang === 'ar' ? 'الصيغة الكيميائية' : 'Formula'}</th>
+                <th>${lang === 'ar' ? 'الكمية / الموقع' : 'Amount / Location'}</th>
+                <th>${lang === 'ar' ? 'التفاصيل / الغرض' : 'Purpose / Location'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${transactionLogs.map(l => `
+                <tr>
+                  <td style="white-space: nowrap;">${new Date(l.timestamp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</td>
+                  <td>
+                    <span class="badge ${l.type === 'consume' ? 'badge-consume' : 'badge-add'}">
+                      ${l.type === 'consume' ? (lang === 'ar' ? 'استهلاك' : 'Consumption') : (lang === 'ar' ? 'إضافة' : 'Added')}
+                    </span>
+                  </td>
+                  <td><strong>${l.chemical}</strong></td>
+                  <td><code style="font-family: monospace; background: #EEF2F6; padding: 2px 6px; border-radius: 4px; color: #1E293B;">${l.formula || '—'}</code></td>
+                  <td>${l.amount}</td>
+                  <td>${l.purpose}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <div class="footer-note">
+            ${lang === 'ar' 
+              ? 'تم إنشاء هذا التقرير تلقائيًا بواسطة نظام ChemVision لإدارة المختبرات الذكية.' 
+              : 'This report was automatically generated by ChemVision Smart Laboratory Management System.'
+            }
+          </div>
+          
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() {
+                window.close();
+              }, 500);
+            }
+          </script>
+        </body>
+      </html>
+    `
+    printWindow.document.write(html)
+    printWindow.document.close()
+    toast.success(lang === 'ar' ? 'تم فتح نافذة طباعة التقرير كـ PDF!' : 'Opened PDF print preview window!')
   }
 
   const filtered = chemicals.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.formula.toLowerCase().includes(search.toLowerCase()))
@@ -1223,7 +1405,7 @@ export default function AdminPage() {
                   whileTap={{ scale: 0.97 }}
                 >
                   <Download size={13} />
-                  {lang === 'ar' ? 'تحميل CSV' : 'Download CSV'}
+                  {lang === 'ar' ? 'تحميل PDF' : 'Download PDF'}
                 </motion.button>
               </div>
 
