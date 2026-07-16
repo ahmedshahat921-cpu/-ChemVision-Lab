@@ -621,6 +621,67 @@ export default function DashboardPage() {
     ...item,
     day: lang === 'ar' ? daysOfWeekAr[item.dayIndex] : daysOfWeekEn[item.dayIndex]
   }))
+  const getExpiryData = () => {
+    const now = new Date()
+    const in30Days = new Date()
+    in30Days.setDate(now.getDate() + 30)
+    const in90Days = new Date()
+    in90Days.setDate(now.getDate() + 90)
+
+    let expired = 0
+    let expiring30 = 0
+    let expiring90 = 0
+    let valid = 0
+
+    const activeChems = (chemicals || []).filter(c => c.is_active)
+
+    activeChems.forEach(c => {
+      if (!c.expiry_date) {
+        valid++
+        return
+      }
+      const expDate = new Date(c.expiry_date)
+      if (expDate < now) {
+        expired++
+      } else if (expDate <= in30Days) {
+        expiring30++
+      } else if (expDate <= in90Days) {
+        expiring90++
+      } else {
+        valid++
+      }
+    })
+
+    return [
+      { 
+        level: lang === 'ar' ? 'منتهية' : 'Expired', 
+        count: expired, 
+        color: '#E85D5D',
+        description: lang === 'ar' ? 'تخلص منها فوراً' : 'Immediate disposal'
+      },
+      { 
+        level: lang === 'ar' ? 'خلال 30 يوم' : 'In 30 Days', 
+        count: expiring30, 
+        color: '#F5A623',
+        description: lang === 'ar' ? 'تجديد قريب' : 'Reorder soon'
+      },
+      { 
+        level: lang === 'ar' ? 'خلال 90 يوم' : 'In 90 Days', 
+        count: expiring90, 
+        color: '#4A90E2',
+        description: lang === 'ar' ? 'مخطط للتجديد' : 'Planned status'
+      },
+      { 
+        level: lang === 'ar' ? 'صلاحية آمنة' : 'Valid / Safe', 
+        count: valid, 
+        color: '#5DB9A0',
+        description: lang === 'ar' ? 'صالحة وآمنة' : 'Safe shelf life'
+      }
+    ]
+  }
+
+  const expiryData = getExpiryData()
+
 
   return (
     <div className={`p-4 lg:p-6 space-y-6 ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
@@ -769,34 +830,57 @@ export default function DashboardPage() {
           <LabStorageSeatMap chemicals={chemicals} lang={lang} navigate={navigate} />
         </motion.div>
 
-        {/* Hazard Distribution */}
+        {/* Expiry & Safety Status Tracker */}
         <motion.div className="card p-5" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
           <div className="flex items-center justify-between mb-4">
             <div className="text-left">
-              <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>{t('chemical_stability')}</h3>
+              <h3 className="font-heading font-semibold text-base" style={{ color: '#2C3E50' }}>
+                {lang === 'ar' ? 'حالة صلاحية وسلامة المخزون 📅' : 'Chemical Expiry & Safety Status 📅'}
+              </h3>
               <p className="text-xs" style={{ color: '#94A3B8' }}>
-                {lang === 'ar' ? 'تصنيف المواد حسب درجة الأمان الكيميائي' : 'Chemicals by hazard level'}
+                {lang === 'ar' ? 'متابعة فورية وتصنيف للكيماويات حسب تاريخ الصلاحية' : 'Real-time tracking of chemical expiration states'}
               </p>
             </div>
-            <AlertTriangle size={18} style={{ color: '#F5A623' }} />
+            <AlertTriangle size={18} style={{ color: '#E85D5D' }} />
           </div>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={[
-              { level: lang === 'ar' ? 'منخفض' : 'Low', count: (chemicals || []).filter(c => c.hazard_level === 'low').length, color: '#5DB9A0' },
-              { level: lang === 'ar' ? 'متوسط' : 'Medium', count: (chemicals || []).filter(c => c.hazard_level === 'medium').length, color: '#F5A623' },
-              { level: lang === 'ar' ? 'مرتفع' : 'High', count: (chemicals || []).filter(c => c.hazard_level === 'high').length, color: '#E85D5D' },
-              { level: lang === 'ar' ? 'خطير' : 'Critical', count: (chemicals || []).filter(c => c.hazard_level === 'critical').length, color: '#A02A2A' },
-            ]}>
-              <XAxis dataKey="level" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+
+          <ResponsiveContainer width="100%" height={160}>
+            <BarChart data={expiryData}>
+              <XAxis dataKey="level" tick={{ fontSize: 10, fill: '#64748B', fontWeight: 'bold' }} axisLine={false} tickLine={false} />
               <YAxis hide />
-              <Tooltip contentStyle={{ borderRadius: '0.5rem', border: '1px solid #E2E8F0', fontSize: '0.8rem' }} />
-              <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                {[{ color: '#5DB9A0' }, { color: '#F5A623' }, { color: '#E85D5D' }, { color: '#A02A2A' }].map((entry, index) => (
+              <Tooltip 
+                contentStyle={{ borderRadius: '0.75rem', border: '1px solid #E2E8F0', fontSize: '0.75rem', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} 
+                formatter={(value, name, props) => [`${value} ${lang === 'ar' ? 'مواد' : 'chemicals'}`, props.payload.description]}
+              />
+              <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={40}>
+                {expiryData.map((entry, index) => (
                   <Cell key={index} fill={entry.color} />
                 ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+
+          {/* Expiry Details Breakdown */}
+          <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t" style={{ borderColor: '#F0F2F5' }}>
+            {expiryData.map((item, idx) => {
+              const percentage = (chemicals || []).filter(c => c.is_active).length > 0
+                ? Math.round((item.count / (chemicals || []).filter(c => c.is_active).length) * 100)
+                : 0
+              return (
+                <div key={idx} className="flex items-center gap-2 p-2 rounded-xl border border-slate-100 bg-slate-50/50">
+                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] font-bold text-slate-700 truncate">{item.level}</p>
+                    <p className="text-[9px] text-slate-400 truncate">{item.description}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-bold text-slate-800">{item.count}</p>
+                    <p className="text-[9px] font-mono text-slate-400">{percentage}%</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </motion.div>
       </div>
 
