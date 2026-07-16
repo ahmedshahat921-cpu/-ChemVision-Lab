@@ -7,6 +7,8 @@ import { useChemicalStore } from '../store'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 import { QRCodeSVG as QRCode } from 'qrcode.react'
+import { jsPDF } from 'jspdf'
+import html2canvas from 'html2canvas'
 
 const PUBCHEM_BASE = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound'
 
@@ -557,8 +559,62 @@ export default function AdminPage() {
     if (showTransactionLog) fetchTransactionLogs(logPeriod)
   }, [showTransactionLog, logPeriod])
 
-  const downloadReport = () => {
-    window.print()
+  const downloadReport = async () => {
+    const toastId = toast.loading(lang === 'ar' ? 'جاري تحضير ملف الـ PDF للتحميل...' : 'Preparing PDF file for download...')
+    try {
+      const element = document.getElementById('print-section')
+      
+      // Temporarily render off-screen to allow html2canvas to capture it
+      element.style.display = 'block'
+      element.style.position = 'absolute'
+      element.style.left = '-9999px'
+      element.style.top = '0'
+      element.style.width = '800px'
+      element.classList.remove('hidden')
+      
+      // Capture the element using html2canvas
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      })
+      
+      const imgData = canvas.toDataURL('image/jpeg', 0.95)
+      
+      // Calculate width and height for A4 page format
+      const imgWidth = 210 // A4 width in mm
+      const pageHeight = 297 // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      let heightLeft = imgHeight
+      
+      const doc = new jsPDF('p', 'mm', 'a4')
+      let position = 0
+      
+      doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight)
+      heightLeft -= pageHeight
+      
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight
+        doc.addPage()
+        doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight)
+        heightLeft -= pageHeight
+      }
+      
+      doc.save(`chemvision-report-${logPeriod}-${new Date().toISOString().slice(0,10)}.pdf`)
+      
+      // Clean up styles
+      element.style.display = 'none'
+      element.style.position = ''
+      element.style.left = ''
+      element.style.top = ''
+      element.style.width = ''
+      element.classList.add('hidden')
+      
+      toast.success(lang === 'ar' ? 'تم تحميل ملف الـ PDF بنجاح!' : 'PDF downloaded successfully!', { id: toastId })
+    } catch (error) {
+      console.error('PDF generation failed:', error)
+      toast.error(lang === 'ar' ? 'فشل تحميل ملف الـ PDF' : 'Failed to download PDF', { id: toastId })
+    }
   }
 
   const filtered = chemicals.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.formula.toLowerCase().includes(search.toLowerCase()))
