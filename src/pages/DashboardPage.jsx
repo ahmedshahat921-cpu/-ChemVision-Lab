@@ -303,6 +303,7 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                     const chemsAtSpot = findChemicalsAt(shelf, cab)
                     const chem = chemsAtSpot[0] || null
                     const isSelected = selectedSeat?.shelf === shelf && selectedSeat?.cabinet === cab
+                    const hasExpired = chemsAtSpot.some(c => c.expiry_date && new Date(c.expiry_date) < new Date())
                     
                     let bg = '#F0F2F5'
                     let border = '1px solid #E2E8F0'
@@ -344,6 +345,9 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                         ) : chemsAtSpot.length === 1 ? (
                           <span className="absolute -top-1 -right-1 text-[8px]">🧪</span>
                         ) : null}
+                        {hasExpired && !isSelected && (
+                          <span className="absolute -bottom-1 -left-1 text-[9px] animate-pulse">⚠️</span>
+                        )}
                       </motion.button>
                     )
                   })}
@@ -360,6 +364,7 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                     const chemsAtSpot = findChemicalsAt(shelf, cab)
                     const chem = chemsAtSpot[0] || null
                     const isSelected = selectedSeat?.shelf === shelf && selectedSeat?.cabinet === cab
+                    const hasExpired = chemsAtSpot.some(c => c.expiry_date && new Date(c.expiry_date) < new Date())
                     
                     let bg = '#F0F2F5'
                     let border = '1px solid #E2E8F0'
@@ -401,6 +406,9 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                         ) : chemsAtSpot.length === 1 ? (
                           <span className="absolute -top-1 -right-1 text-[8px]">🧪</span>
                         ) : null}
+                        {hasExpired && !isSelected && (
+                          <span className="absolute -bottom-1 -left-1 text-[9px] animate-pulse">⚠️</span>
+                        )}
                       </motion.button>
                     )
                   })}

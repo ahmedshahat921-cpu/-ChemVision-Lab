@@ -84,12 +84,19 @@ function ChemicalSelector({ label, selected, onSelect, chemicals, exclude }) {
                     <p className="text-sm font-medium" style={{ color: '#2C3E50' }}>{c.name}</p>
                     <p className="text-xs" style={{ color: '#94A3B8' }}>{c.formula}</p>
                   </div>
-                  <span className={`badge ml-auto badge-${c.hazard_level}`}>
-                    {lang === 'ar' 
-                      ? (c.hazard_level === 'safe' ? 'آمن' : c.hazard_level === 'warning' ? 'تحذير' : 'خطر') 
-                      : c.hazard_level
-                    }
-                  </span>
+                  <div className="flex flex-col items-end gap-1 ml-auto flex-shrink-0">
+                    <span className={`badge badge-${c.hazard_level}`}>
+                      {lang === 'ar' 
+                        ? (c.hazard_level === 'safe' || c.hazard_level === 'low' ? 'آمن' : c.hazard_level === 'warning' || c.hazard_level === 'medium' ? 'تحذير' : 'خطر') 
+                        : c.hazard_level
+                      }
+                    </span>
+                    {c.expiry_date && new Date(c.expiry_date) < new Date() && (
+                      <span className="text-[9px] font-bold bg-red-100 text-red-700 px-1 py-0.5 rounded shadow-sm border border-red-200">
+                        {lang === 'ar' ? 'منتهي' : 'Expired'}
+                      </span>
+                    )}
+                  </div>
                 </motion.button>
               ))}
             </div>

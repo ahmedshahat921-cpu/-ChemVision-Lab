@@ -88,12 +88,18 @@ function ChemicalCard({ chemical, index }) {
             </div>
           </div>
           {/* Hazard badge */}
-          <span className="badge text-xs flex-shrink-0" style={{ background: h.bg, color: h.color }}>
-            {lang === 'ar'
-              ? (chemical.hazard_level === 'safe' || chemical.hazard_level === 'low' ? 'آمن' : chemical.hazard_level === 'warning' || chemical.hazard_level === 'medium' ? 'تحذير' : 'خطر')
-              : chemical.hazard_level
-            }
-          </span>
+          {isExpired ? (
+            <span className="badge text-[10px] font-bold flex-shrink-0 animate-pulse border" style={{ background: '#FDEAEA', color: '#E85D5D', borderColor: '#E85D5D' }}>
+              ⚠️ {lang === 'ar' ? 'منتهي الصلاحية' : 'EXPIRED'}
+            </span>
+          ) : (
+            <span className="badge text-xs flex-shrink-0" style={{ background: h.bg, color: h.color }}>
+              {lang === 'ar'
+                ? (chemical.hazard_level === 'safe' || chemical.hazard_level === 'low' ? 'آمن' : chemical.hazard_level === 'warning' || chemical.hazard_level === 'medium' ? 'تحذير' : 'خطر')
+                : chemical.hazard_level
+              }
+            </span>
+          )}
         </div>
 
         {/* GHS icons */}

@@ -507,6 +507,17 @@ function ReportUsageModal({ chemical, onClose, onSuccess }) {
       return
     }
 
+    // Validate chemical is expired
+    const isExpired = chemical.expiry_date && new Date(chemical.expiry_date) < new Date()
+    if (isExpired) {
+      toast.error(
+        lang === 'ar'
+          ? `المادة منتهية الصلاحية تماماً ولا يمكن استخدامها أو سحب أي كمية منها.`
+          : `This chemical has expired and cannot be used or consumed.`
+      )
+      return
+    }
+
     // Validate chemical is already depleted
     if (chemical.quantity <= 0) {
       toast.error(
@@ -728,6 +739,8 @@ export default function ChemicalDetailPage() {
   const translatedLocation = getTranslation(chemical, 'location', lang)
   const detailedData = getChemicalData(chemical.name) || chemical.detailed_data || null
 
+  const isExpired = chemical.expiry_date && new Date(chemical.expiry_date) < new Date()
+
   return (
     <div className={`p-4 lg:p-6 max-w-7xl mx-auto ${lang === 'ar' ? 'rtl text-right' : 'ltr text-left'}`}>
 
@@ -741,6 +754,23 @@ export default function ChemicalDetailPage() {
         <ArrowLeft size={16} className="group-hover:text-blue-500 transition-colors" style={lang === 'ar' ? { transform: 'rotate(180deg)' } : {}} />
         {lang === 'ar' ? 'العودة إلى المواد الكيميائية' : 'Back to chemicals'}
       </motion.button>
+
+      {isExpired && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 p-4 mb-5 rounded-2xl border"
+          style={{ background: '#FDEAEA', borderColor: '#FCA5A5', color: '#A02A2A' }}
+        >
+          <AlertTriangle className="flex-shrink-0 animate-bounce" size={20} />
+          <div className="text-xs md:text-sm font-semibold">
+            {lang === 'ar' 
+              ? 'تنبيه أمني هام: لقد انتهت صلاحية هذه المادة الكيميائية! يرجى التخلص منها فوراً وفقًا لإجراءات السلامة وعدم استخدامها في أي تجارب مخبرية.'
+              : 'Important Safety Alert: This chemical has expired! Please dispose of it immediately according to safety regulations and do not use it in any laboratory experiments.'
+            }
+          </div>
+        </motion.div>
+      )}
 
       {/* ══════════════════════════════════════════════
           ZONE 1: Premium Top Row — Details (col-span-8) + Molecule Viewer (col-span-4)
@@ -1149,15 +1179,32 @@ export default function ChemicalDetailPage() {
 
           {/* Action button (Report Usage) - aligned properly, not full width */}
           <div className={`flex ${lang === 'ar' ? 'justify-start' : 'justify-end'}`}>
-            <motion.button
-              className="btn-primary px-6 py-2.5 ripple shadow-md text-xs font-bold"
-              onClick={() => setShowReportModal(true)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-            >
-              <Package size={14} /> {lang === 'ar' ? 'تسجيل استهلاك المادة' : 'Report Usage'}
-            </motion.button>
+            {isExpired ? (
+              <div 
+                className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl border border-red-200 text-xs font-bold cursor-not-allowed select-none shadow-sm"
+                style={{ background: '#FDEAEA', color: '#E85D5D' }}
+                title={lang === 'ar' ? 'المادة منتهية الصلاحية - تم قفل الاستهلاك' : 'Chemical Expired - Usage Disabled'}
+                onClick={() => {
+                  toast.error(
+                    lang === 'ar'
+                      ? 'لا يمكن تسجيل استهلاك مادة منتهية الصلاحية!'
+                      : 'Cannot report usage for an expired chemical!'
+                  )
+                }}
+              >
+                <AlertTriangle size={14} /> {lang === 'ar' ? 'منتهي الصلاحية - تم القفل' : 'Expired - Locked'}
+              </div>
+            ) : (
+              <motion.button
+                className="btn-primary px-6 py-2.5 ripple shadow-md text-xs font-bold"
+                onClick={() => setShowReportModal(true)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+              >
+                <Package size={14} /> {lang === 'ar' ? 'تسجيل استهلاك المادة' : 'Report Usage'}
+              </motion.button>
+            )}
           </div>
         </div>
       </div>
