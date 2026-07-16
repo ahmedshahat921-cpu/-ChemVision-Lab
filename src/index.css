@@ -67,7 +67,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
-  font-size: 106.25%; /* Scales base 16px to 17px for increased readability across the entire site */
+  font-size: 112.5%; /* Scales base 16px to 18px for larger, highly readable text across all pages */
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
