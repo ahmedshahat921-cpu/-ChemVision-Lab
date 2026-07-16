@@ -471,6 +471,7 @@ export default function AdminPage() {
   const [showQRBatch, setShowQRBatch] = useState(false)
   const [duplicateCheck, setDuplicateCheck] = useState(null) // null or { match, pendingData }
   const [deleteConfirmation, setDeleteConfirmation] = useState(null) // null or { id, name }
+  const [occupiedCheck, setOccupiedCheck] = useState(null) // null or { location, cabinet, occupiedBy, pendingData, suggestions }
 
   const [searchParams] = useSearchParams()
 
@@ -500,10 +501,14 @@ export default function AdminPage() {
       )
 
       if (occupiedChem) {
-        toast.error(lang === 'ar'
-          ? `⚠️ هذا الموقع (${data.location} - ${data.cabinet}) مشغول حالياً بواسطة "${occupiedChem.name}".`
-          : `⚠️ This spot (${data.location} - ${data.cabinet}) is occupied by "${occupiedChem.name}".`
-        )
+        const suggestions = getEmptySpots(data.location)
+        setOccupiedCheck({
+          location: data.location,
+          cabinet: data.cabinet,
+          occupiedBy: occupiedChem.name,
+          pendingData: data,
+          suggestions: suggestions
+        })
         return
       }
     }
@@ -637,10 +642,14 @@ export default function AdminPage() {
       )
 
       if (occupiedChem) {
-        toast.error(lang === 'ar'
-          ? `⚠️ هذا الموقع (${pendingData.location} - ${pendingData.cabinet}) مشغول حالياً بواسطة "${occupiedChem.name}".`
-          : `⚠️ This spot (${pendingData.location} - ${pendingData.cabinet}) is occupied by "${occupiedChem.name}".`
-        )
+        const suggestions = getEmptySpots(pendingData.location)
+        setOccupiedCheck({
+          location: pendingData.location,
+          cabinet: pendingData.cabinet,
+          occupiedBy: occupiedChem.name,
+          pendingData: { ...pendingData, id: match.id, isRestore: true },
+          suggestions: suggestions
+        })
         return
       }
     }
@@ -660,6 +669,69 @@ export default function AdminPage() {
       setShowForm(false)
     } else {
       toast.error('Failed to restore: ' + res.error)
+    }
+  }
+
+  const getEmptySpots = (currentLocation) => {
+    const list = []
+    let targetLab = "Lab A"
+    if (currentLocation) {
+      const match = currentLocation.match(/(Lab\s+[A-D]|Storage)/i)
+      if (match) {
+        targetLab = match[1]
+      }
+    }
+    const labsList = [targetLab, "Lab A", "Lab B", "Lab C", "Lab D", "Storage"]
+    const uniqueLabs = [...new Set(labsList)]
+    const shelvesList = [1, 2, 3, 4]
+    const cabinetsList = ["C1", "C2", "C3", "C4", "C5", "C6"]
+    
+    for (const lab of uniqueLabs) {
+      for (const shelf of shelvesList) {
+        for (const cab of cabinetsList) {
+          const locStr = `${lab} - Shelf ${shelf}`
+          const isOccupied = (chemicals || []).some(c =>
+            c.is_active &&
+            c.id !== (editingChemical?.id || occupiedCheck?.pendingData?.id || null) &&
+            (c.location || '').toLowerCase() === locStr.toLowerCase() &&
+            (c.cabinet || '').toLowerCase() === cab.toLowerCase()
+          )
+          if (!isOccupied) {
+            list.push({ location: locStr, cabinet: cab })
+            if (list.length >= 4) return list
+          }
+        }
+      }
+    }
+    return list
+  }
+
+  const handleSelectSuggestedSpot = async (spot) => {
+    if (!occupiedCheck) return
+    const updatedData = {
+      ...occupiedCheck.pendingData,
+      location: spot.location,
+      cabinet: spot.cabinet
+    }
+    setOccupiedCheck(null)
+    
+    if (occupiedCheck.pendingData.isRestore) {
+      setSaving(true)
+      const res = await updateChemical(occupiedCheck.pendingData.id, {
+        ...updatedData,
+        is_active: true
+      })
+      setSaving(false)
+      if (res.success) {
+        toast.success(`"${occupiedCheck.pendingData.name}" has been restored and updated successfully!`)
+        generateDetailedData(occupiedCheck.pendingData.id, updatedData.name)
+        setDuplicateCheck(null)
+        setShowForm(false)
+      } else {
+        toast.error('Failed to restore: ' + res.error)
+      }
+    } else {
+      await handleSave(updatedData)
     }
   }
 
@@ -907,6 +979,80 @@ export default function AdminPage() {
                   className="btn-secondary flex-1 justify-center py-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-medium"
                 >
                   Cancel
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Occupied Spot Alert Modal */}
+      <AnimatePresence>
+        {occupiedCheck && (
+          <div className="modal-overlay" onClick={() => setOccupiedCheck(null)}>
+            <motion.div
+              className="modal-content p-6 w-full max-w-md relative"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              style={{ direction: lang === 'ar' ? 'rtl' : 'ltr', textAlign: lang === 'ar' ? 'right' : 'left' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-4 text-rose-500">
+                <AlertTriangle size={32} />
+                <h3 className="font-heading font-bold text-lg text-slate-800">
+                  {lang === 'ar' ? 'الموقع مشغول حالياً' : 'Storage Location Occupied'}
+                </h3>
+              </div>
+
+              <div className="space-y-3 text-sm text-slate-600 mb-6 leading-relaxed">
+                <p>
+                  {lang === 'ar' ? (
+                    <>
+                      عذراً، هذا المكان <strong>({occupiedCheck.location} - {occupiedCheck.cabinet})</strong> ممتلئ ومستغل حالياً بواسطة المركب <strong>"{occupiedCheck.occupiedBy}"</strong>.
+                    </>
+                  ) : (
+                    <>
+                      Sorry, this spot <strong>({occupiedCheck.location} - {occupiedCheck.cabinet})</strong> is currently occupied by <strong>"{occupiedCheck.occupiedBy}"</strong>.
+                    </>
+                  )}
+                </p>
+                <p className="text-xs font-bold text-slate-400 border-t pt-2 uppercase tracking-wide">
+                  {lang === 'ar' ? 'الأماكن الشاغرة المقترحة:' : 'Suggested Available Spots:'}
+                </p>
+                
+                {occupiedCheck.suggestions.length === 0 ? (
+                  <p className="text-xs italic text-red-500 font-semibold">
+                    {lang === 'ar' ? 'لا توجد أماكن شاغرة حالياً في المستودع!' : 'No empty spots available in the storage right now!'}
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2 mt-2">
+                    {occupiedCheck.suggestions.map((spot, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSelectSuggestedSpot(spot)}
+                        className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:border-emerald-500 hover:bg-emerald-50 text-left text-xs font-semibold text-slate-700 transition-all cursor-pointer shadow-sm"
+                        style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}
+                      >
+                        <div>
+                          <span className="block text-slate-800">{spot.location}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">Cabinet: {spot.cabinet}</span>
+                        </div>
+                        <span className="text-[10px] text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full font-bold">
+                          {lang === 'ar' ? 'اختيار' : 'Choose'}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 border-t pt-4">
+                <button
+                  onClick={() => setOccupiedCheck(null)}
+                  className="btn-secondary flex-1 justify-center py-2.5 border-slate-200 text-slate-700 hover:bg-slate-50 font-bold"
+                >
+                  {lang === 'ar' ? 'إلغاء وتعديل يدوي' : 'Cancel & Edit'}
                 </button>
               </div>
             </motion.div>
