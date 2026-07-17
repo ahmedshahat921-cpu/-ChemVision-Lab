@@ -1395,15 +1395,15 @@ export default function AdminPage() {
       </AnimatePresence>
 
       {/* Print Section (Hidden on screen, shown on print) */}
-      <div id="print-section" className="hidden">
-        <div className="flex justify-between items-center border-b-2 border-violet-600 pb-4 mb-6" style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
-          <div className="text-2xl font-bold text-violet-600">🧪 ChemVision Lab Hub</div>
-          <div className="text-lg font-bold text-slate-800">
+      <div id="print-section" className="hidden" style={{ color: '#1E293B', backgroundColor: '#FFFFFF' }}>
+        <div className="flex justify-between items-center pb-4 mb-6" style={{ borderBottom: '2px solid #7C3AED', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+          <div className="text-2xl font-bold" style={{ color: '#7C3AED' }}>🧪 ChemVision Lab Hub</div>
+          <div className="text-lg font-bold" style={{ color: '#1E293B' }}>
             {lang === 'ar' ? 'تقرير سجل المعاملات والتقارير' : 'Transaction Log Report'}
           </div>
         </div>
 
-        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 text-sm text-slate-600 leading-relaxed" style={{ direction: lang === 'ar' ? 'rtl' : 'ltr', textAlign: lang === 'ar' ? 'right' : 'left' }}>
+        <div className="p-4 rounded-xl mb-6 text-sm leading-relaxed" style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', direction: lang === 'ar' ? 'rtl' : 'ltr', textAlign: lang === 'ar' ? 'right' : 'left' }}>
           <div><strong>{lang === 'ar' ? 'الفترة الزمنية للتقرير:' : 'Report Time Period:'}</strong> {
             logPeriod === 'week' 
               ? (lang === 'ar' ? 'الأسبوع الأخير' : 'Last 7 Days') 
@@ -1417,51 +1417,51 @@ export default function AdminPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="border border-violet-200 bg-violet-50/50 p-3 rounded-lg text-center">
-            <div className="text-xs text-violet-600 font-semibold">{lang === 'ar' ? 'إجمالي العمليات' : 'Total Events'}</div>
-            <div className="text-xl font-bold text-violet-700">{transactionLogs.length}</div>
+          <div className="p-3 rounded-lg text-center" style={{ border: '1px solid #DDD6FE', backgroundColor: '#F5F3FF' }}>
+            <div className="text-xs font-semibold" style={{ color: '#7C3AED' }}>{lang === 'ar' ? 'إجمالي العمليات' : 'Total Events'}</div>
+            <div className="text-xl font-bold" style={{ color: '#6D28D9' }}>{transactionLogs.length}</div>
           </div>
-          <div className="border border-red-200 bg-red-50/50 p-3 rounded-lg text-center">
-            <div className="text-xs text-red-600 font-semibold">{lang === 'ar' ? 'عمليات الاستهلاك' : 'Consumptions'}</div>
-            <div className="text-xl font-bold text-red-700">{transactionLogs.filter(l => l.type === 'consume').length}</div>
+          <div className="p-3 rounded-lg text-center" style={{ border: '1px solid #FEE2E2', backgroundColor: '#FEF2F2' }}>
+            <div className="text-xs font-semibold" style={{ color: '#EF4444' }}>{lang === 'ar' ? 'عمليات الاستهلاك' : 'Consumptions'}</div>
+            <div className="text-xl font-bold" style={{ color: '#B91C1C' }}>{transactionLogs.filter(l => l.type === 'consume').length}</div>
           </div>
-          <div className="border border-emerald-200 bg-emerald-50/50 p-3 rounded-lg text-center">
-            <div className="text-xs text-emerald-600 font-semibold">{lang === 'ar' ? 'مواد كيميائية مضافة' : 'Chemicals Added'}</div>
-            <div className="text-xl font-bold text-emerald-700">{transactionLogs.filter(l => l.type === 'add').length}</div>
+          <div className="p-3 rounded-lg text-center" style={{ border: '1px solid #D1FAE5', backgroundColor: '#ECFDF5' }}>
+            <div className="text-xs font-semibold" style={{ color: '#10B981' }}>{lang === 'ar' ? 'مواد كيميائية مضافة' : 'Chemicals Added'}</div>
+            <div className="text-xl font-bold" style={{ color: '#047857' }}>{transactionLogs.filter(l => l.type === 'add').length}</div>
           </div>
         </div>
 
         {/* Table */}
-        <table className="w-full border-collapse text-xs border border-slate-200" style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
+        <table className="w-full border-collapse text-xs" style={{ border: '1px solid #E2E8F0', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
           <thead>
-            <tr className="bg-slate-100 text-slate-700 border-b border-slate-200">
-              <th className="p-3 text-left border border-slate-200" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{lang === 'ar' ? 'التاريخ والوقت' : 'Date & Time'}</th>
-              <th className="p-3 text-left border border-slate-200" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{lang === 'ar' ? 'العملية' : 'Event Type'}</th>
-              <th className="p-3 text-left border border-slate-200" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{lang === 'ar' ? 'المادة الكيميائية' : 'Chemical'}</th>
-              <th className="p-3 text-left border border-slate-200" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{lang === 'ar' ? 'الصيغة الكيميائية' : 'Formula'}</th>
-              <th className="p-3 text-left border border-slate-200" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{lang === 'ar' ? 'الكمية / الموقع' : 'Amount / Location'}</th>
-              <th className="p-3 text-left border border-slate-200" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{lang === 'ar' ? 'التفاصيل / الغرض' : 'Purpose / Location'}</th>
+            <tr style={{ borderBottom: '1px solid #E2E8F0' }}>
+              <th className="p-3 font-semibold" style={{ border: '1px solid #E2E8F0', backgroundColor: '#F1F5F9', color: '#475569', textAlign: lang === 'ar' ? 'right' : 'left' }}>{lang === 'ar' ? 'التاريخ والوقت' : 'Date & Time'}</th>
+              <th className="p-3 font-semibold" style={{ border: '1px solid #E2E8F0', backgroundColor: '#F1F5F9', color: '#475569', textAlign: lang === 'ar' ? 'right' : 'left' }}>{lang === 'ar' ? 'العملية' : 'Event Type'}</th>
+              <th className="p-3 font-semibold" style={{ border: '1px solid #E2E8F0', backgroundColor: '#F1F5F9', color: '#475569', textAlign: lang === 'ar' ? 'right' : 'left' }}>{lang === 'ar' ? 'المادة الكيميائية' : 'Chemical'}</th>
+              <th className="p-3 font-semibold" style={{ border: '1px solid #E2E8F0', backgroundColor: '#F1F5F9', color: '#475569', textAlign: lang === 'ar' ? 'right' : 'left' }}>{lang === 'ar' ? 'الصيغة الكيميائية' : 'Formula'}</th>
+              <th className="p-3 font-semibold" style={{ border: '1px solid #E2E8F0', backgroundColor: '#F1F5F9', color: '#475569', textAlign: lang === 'ar' ? 'right' : 'left' }}>{lang === 'ar' ? 'الكمية / الموقع' : 'Amount / Location'}</th>
+              <th className="p-3 font-semibold" style={{ border: '1px solid #E2E8F0', backgroundColor: '#F1F5F9', color: '#475569', textAlign: lang === 'ar' ? 'right' : 'left' }}>{lang === 'ar' ? 'التفاصيل / الغرض' : 'Purpose / Location'}</th>
             </tr>
           </thead>
           <tbody>
-            {transactionLogs.map(l => (
-              <tr key={l.id} className="border-b border-slate-200 odd:bg-white even:bg-slate-50/50">
-                <td className="p-3 border border-slate-200 whitespace-nowrap" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{new Date(l.timestamp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</td>
-                <td className="p-3 border border-slate-200 text-center" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${l.type === 'consume' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+            {transactionLogs.map((l, index) => (
+              <tr key={l.id} style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: index % 2 === 0 ? '#FFFFFF' : '#F8FAFC' }}>
+                <td className="p-3 whitespace-nowrap" style={{ border: '1px solid #E2E8F0', textAlign: lang === 'ar' ? 'right' : 'left' }}>{new Date(l.timestamp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</td>
+                <td className="p-3 text-center" style={{ border: '1px solid #E2E8F0', textAlign: lang === 'ar' ? 'right' : 'left' }}>
+                  <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold" style={{ backgroundColor: l.type === 'consume' ? '#FEE2E2' : '#D1FAE5', color: l.type === 'consume' ? '#B91C1C' : '#047857' }}>
                     {l.type === 'consume' ? (lang === 'ar' ? 'استهلاك' : 'Consumption') : (lang === 'ar' ? 'إضافة' : 'Added')}
                   </span>
                 </td>
-                <td className="p-3 border border-slate-200 font-semibold" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{l.chemical}</td>
-                <td className="p-3 border border-slate-200 font-mono text-[10px]" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{l.formula || '—'}</td>
-                <td className="p-3 border border-slate-200" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{l.amount}</td>
-                <td className="p-3 border border-slate-200" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>{l.purpose}</td>
+                <td className="p-3 font-semibold" style={{ border: '1px solid #E2E8F0', textAlign: lang === 'ar' ? 'right' : 'left' }}>{l.chemical}</td>
+                <td className="p-3 font-mono text-[10px]" style={{ border: '1px solid #E2E8F0', textAlign: lang === 'ar' ? 'right' : 'left' }}>{l.formula || '—'}</td>
+                <td className="p-3" style={{ border: '1px solid #E2E8F0', textAlign: lang === 'ar' ? 'right' : 'left' }}>{l.amount}</td>
+                <td className="p-3" style={{ border: '1px solid #E2E8F0', textAlign: lang === 'ar' ? 'right' : 'left' }}>{l.purpose}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
-        <div className="text-center text-[10px] text-slate-400 mt-10 pt-4 border-t border-dashed border-slate-200">
+        <div className="text-center text-[10px] mt-10 pt-4" style={{ color: '#94A3B8', borderTop: '1px dashed #E2E8F0' }}>
           {lang === 'ar' 
             ? 'تم إنشاء هذا التقرير تلقائيًا بواسطة نظام ChemVision لإدارة المختبرات الذكية.' 
             : 'This report was automatically generated by ChemVision Smart Laboratory Management System.'
