@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../store'
 import ParticlesBackground, { FloatingMolecule } from '../components/animations/ParticlesBackground'
 import toast from 'react-hot-toast'
+import { supabase } from '../lib/supabase'
 
 // Page transition variants
 const pageVariants = {
@@ -51,6 +52,20 @@ export default function LoginPage() {
       setShake(true)
       setTimeout(() => setShake(false), 600)
       toast.error(result.error || 'Invalid credentials')
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      })
+      if (error) throw error
+    } catch (err) {
+      toast.error(err.message || 'Failed to initiate Google sign-in')
     }
   }
 
@@ -259,7 +274,7 @@ export default function LoginPage() {
               className="btn-secondary w-full justify-center py-3"
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => toast('Google sign-in coming soon!')}
+              onClick={handleGoogleSignIn}
             >
               <svg width="18" height="18" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
