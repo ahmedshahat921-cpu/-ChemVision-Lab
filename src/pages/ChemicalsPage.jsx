@@ -108,25 +108,25 @@ function ChemicalCard({ chemical, index }) {
             {chemical.ghs_codes.slice(0, 4).map(code => (
               <span key={code} className="text-base" title={code}>{GHSIcons[code] || '⚗️'}</span>
             ))}
-            {chemical.ghs_codes.length > 4 && <span className="text-xs" style={{ color: '#94A3B8' }}>+{chemical.ghs_codes.length - 4}</span>}
+            {chemical.ghs_codes.length > 4 && <span className="text-xs" style={{ color: '#64748B' }}>+{chemical.ghs_codes.length - 4}</span>}
           </div>
         )}
 
         {/* Details */}
         <div className="space-y-1.5 text-left">
           <div className="flex items-center justify-between text-xs">
-            <span style={{ color: '#94A3B8' }}>{lang === 'ar' ? 'الكمية' : 'Quantity'}</span>
+            <span style={{ color: '#64748B' }}>{lang === 'ar' ? 'الكمية' : 'Quantity'}</span>
             <span className="font-medium" style={{ color: '#2C3E50' }}>{chemical.quantity} {chemical.quantity_unit}</span>
           </div>
           <div className="flex items-center justify-between text-xs">
-            <span style={{ color: '#94A3B8' }}>{lang === 'ar' ? 'الموقع' : 'Location'}</span>
+            <span style={{ color: '#64748B' }}>{lang === 'ar' ? 'الموقع' : 'Location'}</span>
             <span className="font-medium truncate ml-2" style={{ color: '#2C3E50', maxWidth: '160px' }} title={`${chemical.location}${chemical.cabinet ? ` (${chemical.cabinet})` : ''}`}>
               {chemical.location}{chemical.cabinet ? ` (${chemical.cabinet})` : ''}
             </span>
           </div>
           {chemical.expiry_date && (
             <div className="flex items-center justify-between text-xs">
-              <span style={{ color: '#94A3B8' }}>{lang === 'ar' ? 'تاريخ الانتهاء' : 'Expires'}</span>
+              <span style={{ color: '#64748B' }}>{lang === 'ar' ? 'تاريخ الانتهاء' : 'Expires'}</span>
               <span className="font-medium flex items-center gap-1" style={{ color: isExpired ? '#E85D5D' : isExpiringSoon ? '#F5A623' : '#5DB9A0' }}>
                 {(isExpired || isExpiringSoon) && <Clock size={10} />}
                 {new Date(chemical.expiry_date).toLocaleDateString()}

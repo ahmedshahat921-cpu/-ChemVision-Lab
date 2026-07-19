@@ -162,17 +162,6 @@ export default function AppLayout() {
             <button className="lg:hidden" onClick={() => setMobileOpen(true)}>
               <Menu size={20} style={{ color: '#64748B' }} />
             </button>
-            {/* Search bar */}
-            <div className="relative hidden sm:block">
-              <Search size={15} className={`absolute ${lang === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} style={{ color: '#94A3B8' }} />
-              <input
-                type="text"
-                placeholder={t('search_placeholder')}
-                className={`input-field ${lang === 'ar' ? 'pr-9' : 'pl-9'} py-2 text-sm`}
-                style={{ width: '280px', fontSize: '0.85rem' }}
-                onFocus={() => navigate('/chemicals')}
-              />
-            </div>
           </div>
 
           <div className="flex items-center gap-3">
