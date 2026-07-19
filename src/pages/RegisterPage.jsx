@@ -23,7 +23,7 @@ const fieldVariants = {
 }
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', role: 'user' })
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', role: 'user', securityAnswer: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [shake, setShake] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
@@ -34,7 +34,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!form.name || !form.email || !form.password) {
+    if (!form.name || !form.email || !form.password || !form.securityAnswer) {
       setShake(true); setTimeout(() => setShake(false), 600)
       toast.error('Please fill all fields')
       return
@@ -49,7 +49,14 @@ export default function RegisterPage() {
       return
     }
 
-    const result = await register(form.email, form.password, form.name, form.role)
+    const cleanAns = form.securityAnswer.trim()
+    if (cleanAns.includes(' ') || cleanAns.includes('\t') || cleanAns.includes('\n')) {
+      setShake(true); setTimeout(() => setShake(false), 600)
+      toast.error('سؤال الأمان: يرجى كتابة اسم واحد فقط (بدون مسافات)')
+      return
+    }
+
+    const result = await register(form.email, form.password, form.name, form.role, form.securityAnswer)
 
     if (result.success) {
       if (result.autoLogin) {
@@ -208,6 +215,31 @@ export default function RegisterPage() {
               <div className="relative">
                 <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
                 <input id="reg-confirm" name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} placeholder="••••••••" className="input-field pl-10" />
+              </div>
+            </motion.div>
+
+            {/* Security Question */}
+            <motion.div variants={fieldVariants}>
+              <div className="p-3.5 rounded-xl text-xs font-semibold mb-2.5 leading-relaxed" style={{ background: '#FFF7ED', color: '#EA580C', border: '1px solid #FFEDD5' }}>
+                💡 سؤال الأمان سيُستخدم لاسترجاع حسابك إذا نسيت كلمة المرور دون الحاجة للبريد الإلكتروني. يرجى كتابة اسم معلمك المفضل ككلمة واحدة فقط (مثال: أحمد).
+              </div>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>
+                Security Question: Who is your favorite teacher? (ما هو اسم مدرسك المفضل؟)
+              </label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
+                <input
+                  id="reg-security-answer"
+                  name="securityAnswer"
+                  type="text"
+                  value={form.securityAnswer}
+                  onChange={handleChange}
+                  placeholder="Enter a single word only (e.g. Ahmed)"
+                  className="input-field pl-10"
+                />
+              </div>
+              <div className="text-xs mt-1" style={{ color: '#E11D48', fontWeight: 500 }}>
+                ⚠️ تنبيه: يجب إدخال اسم واحد فقط بدون مسافات.
               </div>
             </motion.div>
 

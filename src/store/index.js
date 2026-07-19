@@ -46,7 +46,7 @@ export const useAuthStore = create(
         }
       },
 
-      register: async (email, password, name, role = 'user') => {
+      register: async (email, password, name, role = 'user', securityAnswer = '') => {
         set({ loading: true, error: null, needsEmailConfirm: false })
         try {
           const { data, error } = await supabase.auth.signUp({
@@ -59,16 +59,19 @@ export const useAuthStore = create(
           })
           if (error) throw error
 
-          // Case 1: Session returned immediately = email confirm is OFF → auto login
-          if (data.session) {
-            // Create profile manually (trigger might not have fired yet)
+          // Create/Upsert profile manually to store security answer immediately
+          if (data.user) {
             await supabase.from('profiles').upsert({
               id: data.user.id,
               name,
               email,
               role,
+              security_answer: securityAnswer.trim().toLowerCase(),
             }, { onConflict: 'id' })
+          }
 
+          // Case 1: Session returned immediately = email confirm is OFF → auto login
+          if (data.session) {
             const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single()
             set({ user: data.user, profile, loading: false })
             return { success: true, autoLogin: true }

@@ -8,6 +8,7 @@ import { useAuthStore } from './store'
 // Pages
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import DashboardPage from './pages/DashboardPage'
 import ChemicalsPage from './pages/ChemicalsPage'
 import ChemicalDetailPage from './pages/ChemicalDetailPage'
@@ -97,6 +98,7 @@ export default function App() {
           {/* Public Routes */}
           <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+          <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
 
           {/* Protected Routes */}
           <Route path="/" element={<PrivateRoute><AppLayout /></PrivateRoute>}>

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,7 +20,12 @@ serve(async (req) => {
     }
 
     const body = await req.json()
-    const { action, chemA, chemB, chemicalName, messages, inventoryContext } = body
+    const { action, chemA, chemB, chemicalName, messages, inventoryContext, email, security_answer, new_password } = body
+
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
     // Helper function to call Gemini API
     async function callGemini(prompt: string, apiKey: string) {
@@ -40,6 +46,113 @@ serve(async (req) => {
       const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text
       if (!rawText) throw new Error("Empty response received from Gemini API.")
       return JSON.parse(rawText.trim())
+    }
+
+    // ═══════════════════════════════════════════════
+    // ACTION: get-security-question
+    // Checks if a profile exists by email and gets recovery state
+    // ═══════════════════════════════════════════════
+    if (action === 'get-security-question') {
+      if (!email) {
+        return new Response(
+          JSON.stringify({ error: "Missing email parameter." }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      const { data: profile, error } = await supabaseAdmin
+        .from('profiles')
+        .select('security_answer')
+        .eq('email', email.trim().toLowerCase())
+        .maybeSingle()
+
+      if (error) {
+        return new Response(
+          JSON.stringify({ error: error.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      if (!profile) {
+        return new Response(
+          JSON.stringify({ error: "Email address not registered." }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      return new Response(
+        JSON.stringify({ has_question: !!profile.security_answer }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // ═══════════════════════════════════════════════
+    // ACTION: reset-password-via-security-question
+    // Resets password if security answer matches
+    // ═══════════════════════════════════════════════
+    if (action === 'reset-password-via-security-question') {
+      if (!email || !security_answer || !new_password) {
+        return new Response(
+          JSON.stringify({ error: "Missing required parameters (email, security_answer, new_password)." }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Fetch user profile to match security answer
+      const { data: profile, error: profErr } = await supabaseAdmin
+        .from('profiles')
+        .select('id, security_answer')
+        .eq('email', email.trim().toLowerCase())
+        .maybeSingle()
+
+      if (profErr) {
+        return new Response(
+          JSON.stringify({ error: profErr.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      if (!profile) {
+        return new Response(
+          JSON.stringify({ error: "User not found." }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      if (!profile.security_answer) {
+        return new Response(
+          JSON.stringify({ error: "No security question configured for this account." }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      const cleanStored = profile.security_answer.trim().toLowerCase()
+      const cleanInput = security_answer.trim().toLowerCase()
+
+      if (cleanStored !== cleanInput) {
+        return new Response(
+          JSON.stringify({ error: "Incorrect answer to security question." }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Use admin client to update user password
+      const { error: resetErr } = await supabaseAdmin.auth.admin.updateUserById(
+        profile.id,
+        { password: new_password }
+      )
+
+      if (resetErr) {
+        return new Response(
+          JSON.stringify({ error: resetErr.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Password reset successfully." }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // ═══════════════════════════════════════════════
