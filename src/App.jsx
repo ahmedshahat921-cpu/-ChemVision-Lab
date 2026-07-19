@@ -46,11 +46,28 @@ export default function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUser(session.user)
-        const { data: profile } = await supabase
+        let { data: profile } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
-          .single()
+          .maybeSingle()
+
+        if (!profile) {
+          const { data: newProfile, error: insErr } = await supabase
+            .from('profiles')
+            .insert({
+              id: session.user.id,
+              name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0],
+              email: session.user.email,
+              role: 'user',
+            })
+            .select()
+            .single()
+
+          if (!insErr && newProfile) {
+            profile = newProfile
+          }
+        }
         setProfile(profile)
       } else {
         setUser(null)
