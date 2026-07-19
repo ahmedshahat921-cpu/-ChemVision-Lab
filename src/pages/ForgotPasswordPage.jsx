@@ -211,11 +211,12 @@ export default function ForgotPasswordPage() {
           {step === 1 && (
             <motion.form
               onSubmit={handleEmailSubmit}
-              animate={shake ? { x: [-8, 8, -8, 8, 0] } : {}}
-              transition={{ duration: 0.4 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={shake ? { x: [-8, 8, -8, 8, 0], y: 0 } : { opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
               className="space-y-5"
             >
-              <motion.div variants={fieldVariants}>
+              <div>
                 <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Email address</label>
                 <div className="relative">
                   <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
@@ -229,9 +230,9 @@ export default function ForgotPasswordPage() {
                     autoComplete="email"
                   />
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div variants={fieldVariants}>
+              <div>
                 <motion.button
                   type="submit"
                   disabled={loading}
@@ -245,7 +246,7 @@ export default function ForgotPasswordPage() {
                     <>Verify Email <ArrowRight size={18} /></>
                   )}
                 </motion.button>
-              </motion.div>
+              </div>
             </motion.form>
           )}
 
@@ -253,11 +254,12 @@ export default function ForgotPasswordPage() {
           {step === 2 && (
             <motion.form
               onSubmit={handleAnswerSubmit}
-              animate={shake ? { x: [-8, 8, -8, 8, 0] } : {}}
-              transition={{ duration: 0.4 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={shake ? { x: [-8, 8, -8, 8, 0], y: 0 } : { opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
               className="space-y-5"
             >
-              <motion.div variants={fieldVariants}>
+              <div>
                 <div className="p-3.5 rounded-xl text-xs font-semibold mb-3 leading-relaxed" style={{ background: '#FFF7ED', color: '#EA580C', border: '1px solid #FFEDD5' }}>
                   💡 أدخل إجابة سؤال الأمان التي اخترتها أثناء التسجيل لاستعادة الحساب (اسم واحد فقط).
                 </div>
@@ -278,9 +280,9 @@ export default function ForgotPasswordPage() {
                 <div className="text-xs mt-1" style={{ color: '#E11D48', fontWeight: 500 }}>
                   ⚠️ تنبيه: يجب إدخال اسم واحد فقط بدون مسافات.
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div variants={fieldVariants}>
+              <div>
                 <motion.button
                   type="submit"
                   className="btn-primary w-full justify-center py-3 ripple"
@@ -289,7 +291,7 @@ export default function ForgotPasswordPage() {
                 >
                   Verify Answer <ArrowRight size={18} />
                 </motion.button>
-              </motion.div>
+              </div>
             </motion.form>
           )}
 
@@ -297,11 +299,12 @@ export default function ForgotPasswordPage() {
           {step === 3 && (
             <motion.form
               onSubmit={handleResetSubmit}
-              animate={shake ? { x: [-8, 8, -8, 8, 0] } : {}}
-              transition={{ duration: 0.4 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={shake ? { x: [-8, 8, -8, 8, 0], y: 0 } : { opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
               className="space-y-5"
             >
-              <motion.div variants={fieldVariants}>
+              <div>
                 <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>New Password</label>
                 <div className="relative">
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
@@ -322,9 +325,9 @@ export default function ForgotPasswordPage() {
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div variants={fieldVariants}>
+              <div>
                 <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Confirm New Password</label>
                 <div className="relative">
                   <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
@@ -337,9 +340,9 @@ export default function ForgotPasswordPage() {
                     className="input-field pl-10"
                   />
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div variants={fieldVariants}>
+              <div>
                 <motion.button
                   type="submit"
                   disabled={loading}
@@ -353,7 +356,7 @@ export default function ForgotPasswordPage() {
                     <>Reset Password <ArrowRight size={18} /></>
                   )}
                 </motion.button>
-              </motion.div>
+              </div>
             </motion.form>
           )}
 
