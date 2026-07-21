@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
 
     if (cleanAnswer.includes(' ') || cleanAnswer.includes('\t') || cleanAnswer.includes('\n')) {
       setShake(true); setTimeout(() => setShake(false), 600)
-      toast.error('سؤال الأمان: يجب إدخال اسم واحد فقط بدون مسافات')
+      toast.error('Security Question: Please enter a single word only (no spaces)')
       return
     }
 
@@ -261,10 +261,10 @@ export default function ForgotPasswordPage() {
             >
               <div>
                 <div className="p-3.5 rounded-xl text-xs font-semibold mb-3 leading-relaxed" style={{ background: '#FFF7ED', color: '#EA580C', border: '1px solid #FFEDD5' }}>
-                  💡 أدخل إجابة سؤال الأمان التي اخترتها أثناء التسجيل لاستعادة الحساب (اسم واحد فقط).
+                  💡 Enter the security answer you chose during registration to recover your account (single word only).
                 </div>
                 <label className="block text-sm font-semibold mb-1.5" style={{ color: '#E28743' }}>
-                  Security Question: Who is your favorite teacher? (ما هو اسم مدرسك المفضل؟)
+                  Security Question: Who is your favorite teacher?
                 </label>
                 <div className="relative">
                   <KeyRound size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
@@ -278,7 +278,7 @@ export default function ForgotPasswordPage() {
                   />
                 </div>
                 <div className="text-xs mt-1" style={{ color: '#E11D48', fontWeight: 500 }}>
-                  ⚠️ تنبيه: يجب إدخال اسم واحد فقط بدون مسافات.
+                  ⚠️ Warning: Please enter a single word only with no spaces.
                 </div>
               </div>
 
