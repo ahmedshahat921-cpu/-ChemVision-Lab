@@ -138,25 +138,20 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-            className="absolute bottom-20 right-0 w-[380px] max-w-[90vw] h-[520px] rounded-2xl border flex flex-col overflow-hidden shadow-2xl"
-            style={{
-              background: 'rgba(255, 255, 255, 0.92)',
-              backdropFilter: 'blur(16px)',
-              borderColor: 'rgba(226, 232, 240, 0.7)'
-            }}
+            className="absolute bottom-20 right-0 w-[380px] max-w-[90vw] h-[520px] rounded-2xl border flex flex-col overflow-hidden shadow-2xl bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 transition-colors backdrop-blur-xl"
           >
             {/* Header */}
             <div className="px-5 py-4 border-b flex items-center justify-between text-white" style={{ background: 'linear-gradient(135deg, #0F2D52, #1E3A8A)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                  <Bot size={18} className="text-violet-300" />
+                <div className="w-8.5 h-8.5 rounded-xl bg-white/10 flex items-center justify-center border border-white/10">
+                  <Bot size={20} className="text-violet-300" />
                 </div>
                 <div>
                   <h4 className="font-heading font-bold text-sm leading-tight flex items-center gap-1">
                     {lang === 'ar' ? 'مساعد كيمياء الذكي' : 'ChemVision Companion'}
-                    <Sparkles size={12} className="text-yellow-400" />
+                    <Sparkles size={12} className="text-yellow-400 animate-pulse" />
                   </h4>
-                  <p className="text-[10px] text-emerald-400 flex items-center gap-1 font-medium mt-0.5">
+                  <p className="text-[10px] text-emerald-400 flex items-center gap-1 font-semibold mt-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
                     {lang === 'ar' ? 'متصل بالذكاء الاصطناعي' : 'AI Assistant Online'}
                   </p>
@@ -167,22 +162,22 @@ export default function Chatbot() {
                 title={lang === 'ar' ? 'مسح المحادثة' : 'Clear Chat'}
                 className="p-1.5 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
               >
-                <Trash2 size={15} />
+                <Trash2 size={16} />
               </button>
             </div>
 
             {/* Message Area */}
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 flex flex-col">
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3.5 flex flex-col bg-slate-50/50 dark:bg-slate-950/60">
               {messages.map((m, index) => (
                 <div
                   key={index}
-                  className={`flex flex-col max-w-[80%] ${m.role === 'user' ? 'self-end' : 'self-start'}`}
+                  className={`flex flex-col max-w-[85%] ${m.role === 'user' ? 'self-end' : 'self-start'}`}
                 >
                   <div
-                    className={`px-3.5 py-2.5 rounded-2xl text-xs leading-relaxed shadow-sm ${
+                    className={`px-4 py-3 rounded-2xl text-xs leading-relaxed shadow-xs ${
                       m.role === 'user'
-                        ? 'bg-violet-600 text-white rounded-tr-none'
-                        : 'bg-white text-slate-800 border border-slate-200/50 rounded-tl-none'
+                        ? 'bg-violet-600 text-white rounded-tr-none font-medium'
+                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200/80 dark:border-slate-700/80 rounded-tl-none font-medium'
                     }`}
                     style={{
                       textAlign: lang === 'ar' ? 'right' : 'left',
@@ -191,7 +186,7 @@ export default function Chatbot() {
                   >
                     {m.content}
                   </div>
-                  <span className="text-[9px] text-slate-400 mt-1 px-1 self-end font-medium">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-400 mt-1 px-1 self-end font-semibold">
                     {m.role === 'user' ? (lang === 'ar' ? 'أنت' : 'You') : (lang === 'ar' ? 'المساعد' : 'Companion')}
                   </span>
                 </div>
@@ -200,9 +195,9 @@ export default function Chatbot() {
               {/* Thinking Loader */}
               {loading && (
                 <div className="flex flex-col max-w-[80%] self-start">
-                  <div className="px-4 py-3 rounded-2xl rounded-tl-none bg-white border border-slate-200/50 flex items-center gap-1.5">
-                    <Loader2 size={12} className="animate-spin text-violet-600" />
-                    <span className="text-slate-400 text-[10px] font-medium">
+                  <div className="px-4 py-3 rounded-2xl rounded-tl-none bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 flex items-center gap-2 shadow-xs">
+                    <Loader2 size={14} className="animate-spin text-violet-500" />
+                    <span className="text-slate-600 dark:text-slate-300 text-xs font-semibold">
                       {lang === 'ar' ? 'جاري التفكير...' : 'Companion is thinking...'}
                     </span>
                   </div>
@@ -213,21 +208,21 @@ export default function Chatbot() {
             </div>
 
             {/* Input Form */}
-            <form onSubmit={handleSend} className="p-3 border-t bg-white/50 flex gap-2" style={{ borderColor: 'rgba(226, 232, 240, 0.7)' }}>
+            <form onSubmit={handleSend} className="p-3 border-t bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex gap-2">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={loading}
                 placeholder={lang === 'ar' ? 'اكتب سؤالك الكيميائي هنا...' : 'Ask your chemistry question...'}
-                className="flex-1 px-3.5 py-2 border border-slate-200 rounded-xl text-xs bg-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/50 disabled:opacity-60 transition-all"
+                className="flex-1 px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/50 disabled:opacity-60 transition-all font-medium"
               />
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
-                className="w-9 h-9 rounded-xl bg-violet-600 hover:bg-violet-700 text-white flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex-shrink-0"
+                className="w-10 h-10 rounded-xl bg-violet-600 hover:bg-violet-700 text-white flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex-shrink-0 shadow-sm"
               >
-                <Send size={15} />
+                <Send size={16} />
               </button>
             </form>
           </motion.div>
