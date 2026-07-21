@@ -203,15 +203,17 @@ body {
 .badge-high { background: #FDEAEA; color: #A02A2A; }
 .badge-critical { background: #E85D5D; color: white; }
 
-/* ===== INPUT ===== */
 .input-field {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
   border: 1.5px solid #E2E8F0;
   border-radius: 0.625rem;
   font-family: var(--font-sans);
   font-size: 0.9rem;
-  color: #2C3E50;
+  color: var(--text-primary, #2C3E50);
   background: #FFFFFF;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   outline: none;
@@ -221,6 +223,60 @@ body {
   box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
 }
 .input-field::placeholder { color: #94A3B8; }
+
+/* ===== INPUT PADDING WITH ICONS ===== */
+.input-field.pl-10,
+.input-field.pl-11,
+.input-icon-left {
+  padding-left: 2.85rem !important;
+}
+
+.input-field.pr-10,
+.input-field.pr-11,
+.input-icon-right {
+  padding-right: 2.85rem !important;
+}
+
+.input-field.pl-10.pr-10,
+.input-field.pl-10.pr-11,
+.input-field.pl-11.pr-10,
+.input-field.pl-11.pr-11 {
+  padding-left: 2.85rem !important;
+  padding-right: 2.85rem !important;
+}
+
+/* RTL Support for Arabic input fields */
+.rtl .input-field.pl-10,
+.rtl .input-field.pl-11,
+[dir="rtl"] .input-field.pl-10,
+[dir="rtl"] .input-field.pl-11 {
+  padding-left: 1rem !important;
+  padding-right: 2.85rem !important;
+}
+
+.rtl .input-field.pr-10,
+.rtl .input-field.pr-11,
+[dir="rtl"] .input-field.pr-10,
+[dir="rtl"] .input-field.pr-11 {
+  padding-right: 1rem !important;
+  padding-left: 2.85rem !important;
+}
+
+/* Chrome/Edge Autofill contrast fix */
+.input-field:-webkit-autofill,
+.input-field:-webkit-autofill:hover, 
+.input-field:-webkit-autofill:focus {
+  -webkit-text-fill-color: #0F172A !important;
+  -webkit-box-shadow: 0 0 0px 1000px #EDF2F7 inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.dark .input-field:-webkit-autofill,
+.dark .input-field:-webkit-autofill:hover, 
+.dark .input-field:-webkit-autofill:focus {
+  -webkit-text-fill-color: #F8FAFC !important;
+  -webkit-box-shadow: 0 0 0px 1000px #0F172A inset !important;
+}
 
 /* ===== GLASS EFFECT ===== */
 .glass {

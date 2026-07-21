@@ -97,13 +97,13 @@ export default function SecurityQuestionModal() {
                 {lang === 'ar' ? 'سؤال الأمان: ما هو اسم مدرسك المفضل؟' : 'Security Question: Who is your favorite teacher?'}
               </label>
               <div className="relative">
-                <KeyRound size={16} className={`absolute ${lang === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} style={{ color: '#94A3B8' }} />
+                <KeyRound size={18} className={`absolute ${lang === 'ar' ? 'right-3.5' : 'left-3.5'} top-1/2 -translate-y-1/2 pointer-events-none z-10`} style={{ color: '#94A3B8' }} />
                 <input
                   type="text"
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
                   placeholder={lang === 'ar' ? 'أدخل اسم واحد فقط (مثال: أحمد)' : 'Enter a single word only (e.g. Ahmed)'}
-                  className={`input-field ${lang === 'ar' ? 'pr-10' : 'pl-10'}`}
+                  className={`input-field ${lang === 'ar' ? 'pr-11' : 'pl-11'}`}
                   autoFocus
                 />
               </div>

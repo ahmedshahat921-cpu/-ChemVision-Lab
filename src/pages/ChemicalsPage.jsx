@@ -230,7 +230,7 @@ export default function ChemicalsPage() {
             animate={{ scale: isSearchFocused ? 1.01 : 1 }}
             transition={{ duration: 0.2 }}
           >
-            <Search size={18} className={`absolute ${lang === 'ar' ? 'right-3.5' : 'left-3.5'} top-1/2 -translate-y-1/2`} style={{ color: isSearchFocused ? '#4A90E2' : '#94A3B8' }} />
+            <Search size={18} className={`absolute ${lang === 'ar' ? 'right-3.5' : 'left-3.5'} top-1/2 -translate-y-1/2 pointer-events-none z-10`} style={{ color: isSearchFocused ? '#4A90E2' : '#94A3B8' }} />
             <input
               ref={searchRef}
               type="text"
@@ -239,11 +239,11 @@ export default function ChemicalsPage() {
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
               placeholder={lang === 'ar' ? 'البحث بالاسم، الصيغة، رقم CAS...' : 'Search by name, formula, CAS number...'}
-              className={`input-field ${lang === 'ar' ? 'pr-11 pl-10' : 'pl-11 pr-10'}`}
+              className={`input-field ${lang === 'ar' ? 'pr-11 pl-11' : 'pl-11 pr-11'}`}
               id="chemicals-search"
             />
             {searchQuery && (
-              <button onClick={() => setSearch('')} className={`absolute ${lang === 'ar' ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2`}>
+              <button onClick={() => setSearch('')} className={`absolute ${lang === 'ar' ? 'left-3.5' : 'right-3.5'} top-1/2 -translate-y-1/2 z-10 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors`}>
                 <X size={16} style={{ color: '#94A3B8' }} />
               </button>
             )}

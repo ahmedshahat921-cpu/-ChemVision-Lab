@@ -271,14 +271,14 @@ export default function ForgotPasswordPage() {
               <div>
                 <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Email address</label>
                 <div className="relative">
-                  <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
+                  <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
                   <input
                     id="recover-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="input-field pl-10"
+                    className="input-field pl-11"
                     autoComplete="email"
                   />
                 </div>
@@ -319,14 +319,14 @@ export default function ForgotPasswordPage() {
                   Security Question: Who is your favorite teacher?
                 </label>
                 <div className="relative">
-                  <KeyRound size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
+                  <KeyRound size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
                   <input
                     id="recover-answer"
                     type="text"
                     value={securityAnswer}
                     onChange={(e) => setSecurityAnswer(e.target.value)}
                     placeholder="Enter the single word answer"
-                    className="input-field pl-10"
+                    className="input-field pl-11"
                   />
                 </div>
                 <div className="text-xs mt-1" style={{ color: '#E11D48', fontWeight: 500 }}>
@@ -359,22 +359,22 @@ export default function ForgotPasswordPage() {
               <div>
                 <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>New Password</label>
                 <div className="relative">
-                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
+                  <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
                   <input
                     id="recover-new-password"
                     type={showPassword ? 'text' : 'password'}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Min 6 characters"
-                    className="input-field pl-10 pr-10"
+                    className="input-field pl-11 pr-11"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 z-10 rounded-md hover:bg-slate-100 transition-colors"
                     style={{ color: '#94A3B8' }}
                   >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
@@ -382,14 +382,14 @@ export default function ForgotPasswordPage() {
               <div>
                 <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Confirm New Password</label>
                 <div className="relative">
-                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
+                  <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
                   <input
                     id="recover-confirm-password"
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="input-field pl-10"
+                    className="input-field pl-11"
                   />
                 </div>
               </div>

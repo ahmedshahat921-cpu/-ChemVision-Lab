@@ -211,14 +211,14 @@ export default function LoginPage() {
             <motion.div variants={fieldVariants}>
               <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Email address</label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
+                <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
                 <input
                   id="login-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="input-field pl-10"
+                  className="input-field pl-11"
                   autoComplete="email"
                 />
               </div>
@@ -228,26 +228,26 @@ export default function LoginPage() {
             <motion.div variants={fieldVariants}>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="text-sm font-medium" style={{ color: '#2C3E50' }}>Password</label>
-                <Link to="/forgot-password" className="text-xs" style={{ color: '#4A90E2' }}>Forgot password?</Link>
+                <Link to="/forgot-password" className="text-xs font-semibold" style={{ color: '#4A90E2' }}>Forgot password?</Link>
               </div>
               <div className="relative">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
+                <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
                 <input
                   id="login-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="input-field pl-10 pr-10"
+                  className="input-field pl-11 pr-11"
                   autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 z-10 rounded-md hover:bg-slate-100 transition-colors"
                   style={{ color: '#94A3B8' }}
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </motion.div>

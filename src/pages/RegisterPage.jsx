@@ -184,8 +184,8 @@ export default function RegisterPage() {
             <motion.div variants={fieldVariants}>
               <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Full name</label>
               <div className="relative">
-                <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
-                <input id="reg-name" name="name" type="text" value={form.name} onChange={handleChange} placeholder="Dr. Ahmed Shahat" className="input-field pl-10" />
+                <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
+                <input id="reg-name" name="name" type="text" value={form.name} onChange={handleChange} placeholder="Dr. Ahmed Shahat" className="input-field pl-11" />
               </div>
             </motion.div>
 
@@ -193,8 +193,8 @@ export default function RegisterPage() {
             <motion.div variants={fieldVariants}>
               <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Email address</label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
-                <input id="reg-email" name="email" type="email" value={form.email} onChange={handleChange} placeholder="you@example.com" className="input-field pl-10" />
+                <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
+                <input id="reg-email" name="email" type="email" value={form.email} onChange={handleChange} placeholder="you@example.com" className="input-field pl-11" />
               </div>
             </motion.div>
 
@@ -202,8 +202,8 @@ export default function RegisterPage() {
             <motion.div variants={fieldVariants}>
               <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Role</label>
               <div className="relative">
-                <Shield size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
-                <select id="reg-role" name="role" value={form.role} onChange={handleChange} className="input-field pl-10 appearance-none" style={{ cursor: 'pointer' }}>
+                <Shield size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
+                <select id="reg-role" name="role" value={form.role} onChange={handleChange} className="input-field pl-11 appearance-none" style={{ cursor: 'pointer' }}>
                   <option value="user">Lab Technician / Student / Researcher</option>
                   <option value="admin">Lab Administrator</option>
                 </select>
@@ -214,10 +214,10 @@ export default function RegisterPage() {
             <motion.div variants={fieldVariants}>
               <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Password</label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
-                <input id="reg-password" name="password" type={showPassword ? 'text' : 'password'} value={form.password} onChange={handleChange} placeholder="Min 6 characters" className="input-field pl-10 pr-10" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }}>
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
+                <input id="reg-password" name="password" type={showPassword ? 'text' : 'password'} value={form.password} onChange={handleChange} placeholder="Min 6 characters" className="input-field pl-11 pr-11" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 z-10 rounded-md hover:bg-slate-100 transition-colors" style={{ color: '#94A3B8' }}>
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </motion.div>
@@ -226,8 +226,8 @@ export default function RegisterPage() {
             <motion.div variants={fieldVariants}>
               <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Confirm password</label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
-                <input id="reg-confirm" name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} placeholder="••••••••" className="input-field pl-10" />
+                <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
+                <input id="reg-confirm" name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} placeholder="••••••••" className="input-field pl-11" />
               </div>
             </motion.div>
 
@@ -240,7 +240,7 @@ export default function RegisterPage() {
                 Security Question: Who is your favorite teacher?
               </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#94A3B8' }} />
+                <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
                 <input
                   id="reg-security-answer"
                   name="securityAnswer"
@@ -248,7 +248,7 @@ export default function RegisterPage() {
                   value={form.securityAnswer}
                   onChange={handleChange}
                   placeholder="Enter a single word only (e.g. Ahmed)"
-                  className="input-field pl-10"
+                  className="input-field pl-11"
                 />
               </div>
               <div className="text-xs mt-1" style={{ color: '#E11D48', fontWeight: 500 }}>
