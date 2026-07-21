@@ -402,13 +402,6 @@ export default function LabMapPage() {
             )}
           </AnimatePresence>
 
-          <div className="card p-4 text-white shadow-md" style={{ background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', border: 'none' }}>
-            <h4 className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">{lang === 'ar' ? 'إجمالي حالة المخزون' : 'Overall Inventory Status'}</h4>
-            <div className="grid grid-cols-2 gap-2 text-center">
-              <div className="p-2 rounded-lg bg-white bg-opacity-10"><span className="text-[10px] text-slate-400 block">{lang === 'ar' ? 'المواد الكلية' : 'Total Materials'}</span><span className="text-lg font-bold">{chemicals.length}</span></div>
-              <div className="p-2 rounded-lg bg-white bg-opacity-10"><span className="text-[10px] text-slate-400 block">{lang === 'ar' ? 'أقسام المختبر' : 'Lab Rooms'}</span><span className="text-lg font-bold">{labLayout.length}</span></div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
