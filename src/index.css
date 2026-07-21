@@ -224,42 +224,31 @@ body {
 }
 .input-field::placeholder { color: #94A3B8; }
 
-/* ===== INPUT PADDING WITH ICONS ===== */
+/* ===== INPUT PADDING WITH ICONS (UNIVERSAL LTR & RTL SAFE) ===== */
 .input-field.pl-10,
 .input-field.pl-11,
+.input-field.px-10,
+.input-field.px-11,
 .input-icon-left {
-  padding-left: 2.85rem !important;
+  padding-left: 3rem !important;
 }
 
 .input-field.pr-10,
 .input-field.pr-11,
+.input-field.px-10,
+.input-field.px-11,
 .input-icon-right {
-  padding-right: 2.85rem !important;
+  padding-right: 3rem !important;
 }
 
 .input-field.pl-10.pr-10,
 .input-field.pl-10.pr-11,
 .input-field.pl-11.pr-10,
-.input-field.pl-11.pr-11 {
-  padding-left: 2.85rem !important;
-  padding-right: 2.85rem !important;
-}
-
-/* RTL Support for Arabic input fields */
-.rtl .input-field.pl-10,
-.rtl .input-field.pl-11,
-[dir="rtl"] .input-field.pl-10,
-[dir="rtl"] .input-field.pl-11 {
-  padding-left: 1rem !important;
-  padding-right: 2.85rem !important;
-}
-
-.rtl .input-field.pr-10,
-.rtl .input-field.pr-11,
-[dir="rtl"] .input-field.pr-10,
-[dir="rtl"] .input-field.pr-11 {
-  padding-right: 1rem !important;
-  padding-left: 2.85rem !important;
+.input-field.pl-11.pr-11,
+.input-field.px-10,
+.input-field.px-11 {
+  padding-left: 3rem !important;
+  padding-right: 3rem !important;
 }
 
 /* Chrome/Edge Autofill contrast fix */

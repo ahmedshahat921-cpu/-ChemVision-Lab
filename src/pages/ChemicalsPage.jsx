@@ -239,7 +239,7 @@ export default function ChemicalsPage() {
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
               placeholder={lang === 'ar' ? 'البحث بالاسم، الصيغة، رقم CAS...' : 'Search by name, formula, CAS number...'}
-              className={`input-field ${lang === 'ar' ? 'pr-11 pl-11' : 'pl-11 pr-11'}`}
+              className="input-field px-11"
               id="chemicals-search"
             />
             {searchQuery && (
