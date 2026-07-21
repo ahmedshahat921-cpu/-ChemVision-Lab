@@ -63,6 +63,18 @@
   --shadow-modal: 0 20px 60px rgba(0,0,0,0.15);
 }
 
+:root {
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-subtle: #475569;
+}
+
+.dark {
+  --text-primary: #F8FAFC;
+  --text-secondary: #E2E8F0;
+  --text-subtle: #CBD5E1;
+}
+
 /* ===== GLOBAL RESET ===== */
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -75,7 +87,7 @@ html {
 body {
   font-family: var(--font-sans);
   background-color: #F0F2F5;
-  color: #2C3E50;
+  color: var(--text-primary);
   margin: 0;
   padding: 0;
   overflow-x: hidden;

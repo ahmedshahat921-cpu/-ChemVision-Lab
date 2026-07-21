@@ -83,8 +83,8 @@ function ChemicalCard({ chemical, index }) {
             {/* Clean Mini Conical Flask Icon instead of formula text */}
             <MiniFlask hazardLevel={chemical.hazard_level} />
             <div className="min-w-0 text-left">
-              <h3 className="font-semibold text-sm leading-tight truncate text-left text-slate-800 dark:text-slate-100" style={{ maxWidth: '140px' }}>{chemical.name}</h3>
-              <p className="text-xs mt-0.5 text-left text-slate-500 dark:text-slate-400">{chemical.formula}</p>
+              <h3 className="font-bold text-sm leading-tight truncate text-left" style={{ color: 'var(--text-primary)', maxWidth: '140px' }}>{chemical.name}</h3>
+              <p className="text-xs mt-0.5 text-left font-medium" style={{ color: 'var(--text-subtle)' }}>{chemical.formula}</p>
             </div>
           </div>
           {/* Hazard badge */}
@@ -108,25 +108,25 @@ function ChemicalCard({ chemical, index }) {
             {chemical.ghs_codes.slice(0, 4).map(code => (
               <span key={code} className="text-base" title={code}>{GHSIcons[code] || '⚗️'}</span>
             ))}
-            {chemical.ghs_codes.length > 4 && <span className="text-xs text-slate-500 dark:text-slate-400">+{chemical.ghs_codes.length - 4}</span>}
+            {chemical.ghs_codes.length > 4 && <span className="text-xs font-semibold" style={{ color: 'var(--text-subtle)' }}>+{chemical.ghs_codes.length - 4}</span>}
           </div>
         )}
 
         {/* Details */}
         <div className="space-y-1.5 text-left">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-500 dark:text-slate-400 font-medium">{lang === 'ar' ? 'الكمية' : 'Quantity'}</span>
-            <span className="font-bold text-slate-800 dark:text-slate-100">{chemical.quantity} {chemical.quantity_unit}</span>
+            <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>{lang === 'ar' ? 'الكمية' : 'Quantity'}</span>
+            <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{chemical.quantity} {chemical.quantity_unit}</span>
           </div>
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-500 dark:text-slate-400 font-medium">{lang === 'ar' ? 'الموقع' : 'Location'}</span>
-            <span className="font-bold truncate ml-2 text-slate-800 dark:text-slate-100" style={{ maxWidth: '160px' }} title={`${chemical.location}${chemical.cabinet ? ` (${chemical.cabinet})` : ''}`}>
+            <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>{lang === 'ar' ? 'الموقع' : 'Location'}</span>
+            <span className="font-bold truncate ml-2" style={{ color: 'var(--text-primary)', maxWidth: '160px' }} title={`${chemical.location}${chemical.cabinet ? ` (${chemical.cabinet})` : ''}`}>
               {chemical.location}{chemical.cabinet ? ` (${chemical.cabinet})` : ''}
             </span>
           </div>
           {chemical.expiry_date && (
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500 dark:text-slate-400 font-medium">{lang === 'ar' ? 'تاريخ الانتهاء' : 'Expires'}</span>
+              <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>{lang === 'ar' ? 'تاريخ الانتهاء' : 'Expires'}</span>
               <span className="font-bold flex items-center gap-1" style={{ color: isExpired ? '#E85D5D' : isExpiringSoon ? '#F5A623' : '#5DB9A0' }}>
                 {(isExpired || isExpiringSoon) && <Clock size={10} />}
                 {new Date(chemical.expiry_date).toLocaleDateString()}
