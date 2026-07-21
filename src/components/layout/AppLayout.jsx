@@ -10,9 +10,11 @@ import { useAuthStore } from '../../store'
 import toast from 'react-hot-toast'
 
 import { useLanguage } from '../../hooks/useLanguage'
+import { useTheme } from '../../hooks/useTheme'
 import NotificationsPanel from './NotificationsPanel'
 import Chatbot from './Chatbot'
 import SecurityQuestionModal from './SecurityQuestionModal'
+import { Sun, Moon } from 'lucide-react'
 
 const navItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'dashboard' },
@@ -33,6 +35,7 @@ export default function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const { profile, logout } = useAuthStore()
   const { lang, t, toggleLanguage } = useLanguage()
+  const { theme, isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -46,7 +49,7 @@ export default function AppLayout() {
   useEffect(() => { setMobileOpen(false) }, [location.pathname])
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#F0F2F5' }} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="flex h-screen overflow-hidden transition-colors duration-300" style={{ background: isDark ? '#0B0F19' : '#F0F2F5' }} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       {/* Mobile overlay */}
       <AnimatePresence>
         {mobileOpen && (
@@ -166,12 +169,28 @@ export default function AppLayout() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Theme Toggle Button */}
+            <motion.button
+              whileHover={{ scale: 1.08, rotate: 15 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleTheme}
+              className="p-2 rounded-xl border transition-all flex items-center justify-center shadow-sm"
+              style={{
+                background: isDark ? '#334155' : '#F0F2F5',
+                borderColor: isDark ? '#475569' : '#E2E8F0',
+                color: isDark ? '#F59E0B' : '#4A90E2'
+              }}
+              title={isDark ? (lang === 'ar' ? 'الوضع النهاري' : 'Switch to Light Mode') : (lang === 'ar' ? 'الوضع الليلي' : 'Switch to Dark Mode')}
+            >
+              {isDark ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-blue-600" />}
+            </motion.button>
+
             {/* Language Switcher Button */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               onClick={toggleLanguage}
               className="px-2.5 py-1.5 rounded-lg text-xs font-bold font-mono tracking-wider transition uppercase"
-              style={{ background: '#F0F2F5', color: '#1B3A6B' }}
+              style={{ background: isDark ? '#334155' : '#F0F2F5', color: isDark ? '#60A5FA' : '#1B3A6B' }}
             >
               {lang === 'ar' ? 'EN' : 'العربية'}
             </motion.button>

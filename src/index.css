@@ -358,3 +358,72 @@ body {
     print-color-adjust: exact !important;
   }
 }
+
+/* ===== DARK MODE PRO STYLING ===== */
+.dark body {
+  background-color: #0B0F19 !important;
+  color: #F8FAFC !important;
+}
+
+.dark .card,
+.dark .stat-card,
+.dark .modal-content {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark .card:hover,
+.dark .stat-card:hover {
+  border-color: #475569 !important;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15) !important;
+}
+
+.dark .input-field {
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+}
+
+.dark .input-field:focus {
+  border-color: #3B82F6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+.dark .input-field::placeholder {
+  color: #64748B !important;
+}
+
+.dark header {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+}
+
+.dark aside {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+  box-shadow: 2px 0 16px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .sidebar-link {
+  color: #94A3B8 !important;
+}
+
+.dark .sidebar-link:hover {
+  background-color: #334155 !important;
+  color: #60A5FA !important;
+}
+
+.dark .sidebar-link.active {
+  background: linear-gradient(135deg, #1E3A8A 0%, #1E293B 100%) !important;
+  color: #60A5FA !important;
+  border-left-color: #3B82F6 !important;
+  font-weight: 600;
+}
+
+.dark .glass {
+  background: rgba(30, 41, 59, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
