@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Eye, EyeOff, FlaskConical, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react'
 import { useNavigate, Link } from 'react-router-dom'
@@ -6,6 +6,8 @@ import { useAuthStore } from '../store'
 import ParticlesBackground, { FloatingMolecule } from '../components/animations/ParticlesBackground'
 import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
+
+const LOGIN_FORMULAS = ['H₂O', 'NaCl', 'O₂', 'CO₂', 'NaHCO₃', 'HCl', 'CH₄', 'CaCO₃']
 
 // Page transition variants
 const pageVariants = {
@@ -31,9 +33,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [shake, setShake] = useState(false)
+  const [chemCount, setChemCount] = useState(null)
 
   const { login, loading } = useAuthStore()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    supabase.from('chemicals').select('id', { count: 'exact', head: true })
+      .then(({ count }) => { if (count !== null) setChemCount(count) })
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -83,8 +91,8 @@ export default function LoginPage() {
         className="hidden lg:flex lg:w-3/5 relative overflow-hidden flex-col justify-between p-12"
         style={{ background: 'linear-gradient(145deg, #0F2D52 0%, #1B3A6B 40%, #2D6A9F 100%)' }}
       >
-        <ParticlesBackground />
-        <FloatingMolecule />
+        <ParticlesBackground formulas={LOGIN_FORMULAS} />
+        <FloatingMolecule molecule="hexagonal" />
 
         {/* Logo */}
         <motion.div
@@ -117,10 +125,10 @@ export default function LoginPage() {
             Advanced chemical inventory management with real-time hazard detection, 3D molecular visualization, and AI-powered mixing safety analysis.
           </p>
 
-          {/* Stats */}
+          {/* Stats – chemical count is live from Supabase */}
           <div className="flex gap-8 mt-10">
             {[
-              { value: '15+', label: 'Chemicals' },
+              { value: chemCount !== null ? `${chemCount}+` : '…', label: 'Chemicals', live: true },
               { value: '8+', label: 'Mixing Rules' },
               { value: '100%', label: 'Safety First' },
             ].map((s, i) => (
@@ -130,7 +138,12 @@ export default function LoginPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.7 + i * 0.1 }}
               >
-                <div className="text-white font-bold text-3xl font-heading">{s.value}</div>
+                <div className="text-white font-bold text-3xl font-heading flex items-end gap-1">
+                  {s.value}
+                  {s.live && chemCount !== null && (
+                    <span className="text-xs font-normal mb-1 px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(122,184,245,0.2)', color: '#7AB8F5' }}>live</span>
+                  )}
+                </div>
                 <div className="text-blue-300 text-sm">{s.label}</div>
               </motion.div>
             ))}
@@ -157,7 +170,18 @@ export default function LoginPage() {
       </div>
 
       {/* RIGHT PANEL – Login Form */}
-      <div className="w-full lg:w-2/5 flex items-center justify-center p-8" style={{ background: '#FFFFFF' }}>
+      <div className="w-full lg:w-2/5 flex flex-col" style={{ background: '#FFFFFF' }}>
+        {/* Mobile-only branded header */}
+        <div className="flex lg:hidden items-center gap-3 px-6 pt-6 pb-4 border-b" style={{ borderColor: '#E2E8F0' }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1B3A6B, #2D6A9F)' }}>
+            <FlaskConical size={18} color="white" />
+          </div>
+          <div>
+            <p className="font-heading font-bold text-sm" style={{ color: '#2C3E50' }}>ChemVision Lab Hub</p>
+            <p className="text-xs" style={{ color: '#94A3B8' }}>Sign in to your account</p>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-8">
         <motion.div
           className="w-full max-w-md"
           variants={containerVariants}
@@ -299,6 +323,7 @@ export default function LoginPage() {
             ChemVision Lab Hub v2.0 • © 2026
           </motion.p>
         </motion.div>
+        </div>
       </div>
     </motion.div>
   )

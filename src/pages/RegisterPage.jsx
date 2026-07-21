@@ -6,6 +6,8 @@ import { useAuthStore } from '../store'
 import ParticlesBackground, { FloatingMolecule } from '../components/animations/ParticlesBackground'
 import toast from 'react-hot-toast'
 
+const REGISTER_FORMULAS = ['NaOH', 'KCl', 'Ca(OH)₂', 'MgSO₄', 'Na₂CO₃', 'K₂SO₄', 'CaCl₂', 'NH₄Cl']
+
 const pageVariants = {
   initial: { opacity: 0, x: 40 },
   animate: { opacity: 1, x: 0 },
@@ -126,8 +128,8 @@ export default function RegisterPage() {
     <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.4 }} className="min-h-screen flex">
       {/* LEFT PANEL */}
       <div className="hidden lg:flex lg:w-2/5 relative overflow-hidden flex-col justify-between p-12" style={{ background: 'linear-gradient(145deg, #0F2D52 0%, #1B3A6B 50%, #2D6A9F 100%)' }}>
-        <ParticlesBackground />
-        <FloatingMolecule />
+        <ParticlesBackground formulas={REGISTER_FORMULAS} />
+        <FloatingMolecule molecule="triangular" />
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex items-center gap-3 relative z-10">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.15)' }}>
             <FlaskConical size={28} color="white" />
@@ -159,7 +161,18 @@ export default function RegisterPage() {
       </div>
 
       {/* RIGHT PANEL – Register Form */}
-      <div className="w-full lg:w-3/5 flex items-center justify-center p-8" style={{ background: '#FFFFFF' }}>
+      <div className="w-full lg:w-3/5 flex flex-col" style={{ background: '#FFFFFF' }}>
+        {/* Mobile-only branded header */}
+        <div className="flex lg:hidden items-center gap-3 px-6 pt-6 pb-4 border-b" style={{ borderColor: '#E2E8F0' }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1B3A6B, #2D6A9F)' }}>
+            <FlaskConical size={18} color="white" />
+          </div>
+          <div>
+            <p className="font-heading font-bold text-sm" style={{ color: '#2C3E50' }}>ChemVision Lab Hub</p>
+            <p className="text-xs" style={{ color: '#94A3B8' }}>Create your account</p>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-8">
         <motion.div className="w-full max-w-lg" variants={containerVariants} initial="hidden" animate="visible">
           <motion.div variants={fieldVariants} className="mb-8">
             <h2 className="font-heading font-bold text-3xl mb-2" style={{ color: '#2C3E50' }}>Create your account</h2>
@@ -256,6 +269,7 @@ export default function RegisterPage() {
             <Link to="/login" className="font-semibold" style={{ color: '#4A90E2' }}>Sign in</Link>
           </motion.p>
         </motion.div>
+        </div>
       </div>
     </motion.div>
   )

@@ -1,10 +1,18 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, FlaskConical, Mail, Lock, ArrowRight, Loader2, KeyRound } from 'lucide-react'
+import { Eye, EyeOff, FlaskConical, Mail, Lock, ArrowRight, Loader2, KeyRound, CheckCircle2 } from 'lucide-react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import ParticlesBackground, { FloatingMolecule } from '../components/animations/ParticlesBackground'
 import toast from 'react-hot-toast'
+
+const FORGOT_FORMULAS = ['H₂O₂', 'HCl', 'NH₃', 'HNO₃', 'H₂SO₃', 'HF', 'H₂S', 'HOCl']
+
+const RECOVERY_STEPS = [
+  { id: 1, label: 'Verify Email', desc: 'Confirm your registered email address' },
+  { id: 2, label: 'Security Question', desc: 'Answer your favorite teacher question' },
+  { id: 3, label: 'Reset Password', desc: 'Set a new secure password' },
+]
 
 const pageVariants = {
   initial: { opacity: 0, x: 40 },
@@ -144,8 +152,8 @@ export default function ForgotPasswordPage() {
         className="hidden lg:flex lg:w-2/5 relative overflow-hidden flex-col justify-between p-12"
         style={{ background: 'linear-gradient(145deg, #0F2D52 0%, #1B3A6B 40%, #2D6A9F 100%)' }}
       >
-        <ParticlesBackground />
-        <FloatingMolecule />
+        <ParticlesBackground formulas={FORGOT_FORMULAS} />
+        <FloatingMolecule molecule="linear" />
 
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -172,9 +180,42 @@ export default function ForgotPasswordPage() {
             Easy Recovery.<br />
             <span style={{ color: '#E28743' }}>Instant Access.</span>
           </h2>
-          <p className="text-blue-200 leading-relaxed max-w-sm">
+          <p className="text-blue-200 leading-relaxed max-w-sm mb-8">
             Recover your account securely using your predefined security answers without waiting for email links.
           </p>
+
+          {/* Live Step Indicator */}
+          <div className="space-y-3">
+            {RECOVERY_STEPS.map((s) => {
+              const isDone = step > s.id
+              const isActive = step === s.id
+              return (
+                <motion.div
+                  key={s.id}
+                  className="flex items-start gap-3"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.7 + s.id * 0.1 }}
+                >
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold"
+                    style={{
+                      background: isDone ? '#5DB9A0' : isActive ? '#E28743' : 'rgba(255,255,255,0.1)',
+                      color: isDone || isActive ? 'white' : 'rgba(255,255,255,0.4)',
+                      border: isActive ? '2px solid #F5A623' : 'none',
+                      transition: 'all 0.4s ease'
+                    }}
+                  >
+                    {isDone ? <CheckCircle2 size={14} /> : s.id}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: isActive ? '#F5A623' : isDone ? '#5DB9A0' : 'rgba(255,255,255,0.45)' }}>{s.label}</p>
+                    <p className="text-xs" style={{ color: isActive ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.3)' }}>{s.desc}</p>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
         </motion.div>
 
         <motion.div
@@ -188,7 +229,18 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* RIGHT PANEL */}
-      <div className="w-full lg:w-3/5 flex items-center justify-center p-8" style={{ background: '#FFFFFF' }}>
+      <div className="w-full lg:w-3/5 flex flex-col" style={{ background: '#FFFFFF' }}>
+        {/* Mobile-only branded header */}
+        <div className="flex lg:hidden items-center gap-3 px-6 pt-6 pb-4 border-b" style={{ borderColor: '#E2E8F0' }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1B3A6B, #2D6A9F)' }}>
+            <FlaskConical size={18} color="white" />
+          </div>
+          <div>
+            <p className="font-heading font-bold text-sm" style={{ color: '#2C3E50' }}>ChemVision Lab Hub</p>
+            <p className="text-xs" style={{ color: '#94A3B8' }}>Recover your account</p>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-8">
         <motion.div
           className="w-full max-w-md"
           variants={containerVariants}
@@ -365,6 +417,7 @@ export default function ForgotPasswordPage() {
             ChemVision Lab Hub v2.0 • © 2026
           </motion.p>
         </motion.div>
+        </div>
       </div>
     </motion.div>
   )

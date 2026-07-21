@@ -1,16 +1,17 @@
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 
-// Animated floating particles canvas for Login page background
-export default function ParticlesBackground() {
+// Animated floating particles canvas for auth page backgrounds
+// formulas prop: array of chemical formula strings to float upward
+export default function ParticlesBackground({ formulas }) {
   const canvasRef = useRef(null)
+  const formulaSet = formulas || ['H₂SO₄', 'NaOH', 'C₆H₁₂O₆', 'HCl', 'NH₃', 'H₂O₂', 'CH₃OH', 'CuSO₄']
 
   useEffect(() => {
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     let animId
     let particles = []
-    let mouse = { x: -1000, y: -1000 }
 
     const resize = () => {
       canvas.width = canvas.offsetWidth
@@ -62,12 +63,11 @@ export default function ParticlesBackground() {
       })
     }
 
-    // Chemical formulas floating
-    const formulas = ['H₂SO₄', 'NaOH', 'C₆H₁₂O₆', 'HCl', 'NH₃', 'H₂O₂', 'CH₃OH', 'CuSO₄']
-    const floatingTexts = formulas.map((f, i) => ({
+    // Use the passed-in or default formula set
+    const floatingTexts = formulaSet.map((f) => ({
       text: f,
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
+      x: Math.random() * (canvas.width || 300),
+      y: Math.random() * (canvas.height || 600),
       speed: Math.random() * 0.3 + 0.1,
       opacity: Math.random() * 0.3 + 0.1,
     }))
@@ -108,15 +108,45 @@ export default function ParticlesBackground() {
   )
 }
 
-// Molecule Atom component for 3D-like CSS animation
-export function FloatingMolecule() {
-  return (
-    <motion.div
-      className="absolute bottom-10 right-10 opacity-20"
-      animate={{ rotate: 360 }}
-      transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-      style={{ zIndex: 1 }}
-    >
+// molecule prop: 'hexagonal' (default, benzene-like) | 'triangular' (3-atom) | 'linear' (2-atom bent)
+export function FloatingMolecule({ molecule = 'hexagonal' }) {
+  const getMolecule = () => {
+    if (molecule === 'triangular') {
+      // NaOH / water-like — 3 atoms in a triangle
+      return (
+        <svg width="180" height="180" viewBox="0 0 180 180" fill="none">
+          <circle cx="90" cy="35" r="10" fill="white" />
+          <circle cx="145" cy="130" r="8" fill="white" opacity="0.8" />
+          <circle cx="35" cy="130" r="8" fill="white" opacity="0.8" />
+          <line x1="90" y1="35" x2="145" y2="130" stroke="white" strokeWidth="2" opacity="0.5" />
+          <line x1="90" y1="35" x2="35" y2="130" stroke="white" strokeWidth="2" opacity="0.5" />
+          <line x1="145" y1="130" x2="35" y2="130" stroke="white" strokeWidth="2" opacity="0.5" />
+          <ellipse cx="90" cy="95" rx="55" ry="22" stroke="white" strokeWidth="1" fill="none" opacity="0.25" />
+        </svg>
+      )
+    }
+
+    if (molecule === 'linear') {
+      // H₂O₂ / HCl-like — linear molecule
+      return (
+        <svg width="180" height="180" viewBox="0 0 180 180" fill="none">
+          <circle cx="90" cy="90" r="10" fill="white" />
+          <circle cx="90" cy="30" r="7" fill="white" opacity="0.85" />
+          <circle cx="90" cy="150" r="7" fill="white" opacity="0.85" />
+          <circle cx="35" cy="90" r="6" fill="white" opacity="0.7" />
+          <circle cx="145" cy="90" r="6" fill="white" opacity="0.7" />
+          <line x1="90" y1="90" x2="90" y2="30" stroke="white" strokeWidth="2" opacity="0.5" />
+          <line x1="90" y1="90" x2="90" y2="150" stroke="white" strokeWidth="2" opacity="0.5" />
+          <line x1="90" y1="90" x2="35" y2="90" stroke="white" strokeWidth="1.5" opacity="0.4" />
+          <line x1="90" y1="90" x2="145" y2="90" stroke="white" strokeWidth="1.5" opacity="0.4" />
+          <ellipse cx="90" cy="90" rx="50" ry="18" stroke="white" strokeWidth="1" fill="none" opacity="0.2" />
+          <ellipse cx="90" cy="90" rx="18" ry="50" stroke="white" strokeWidth="1" fill="none" opacity="0.2" />
+        </svg>
+      )
+    }
+
+    // Default: hexagonal benzene-like
+    return (
       <svg width="200" height="200" viewBox="0 0 200 200" fill="none">
         <circle cx="100" cy="100" r="8" fill="white" />
         <circle cx="100" cy="40" r="6" fill="white" opacity="0.8" />
@@ -131,10 +161,21 @@ export function FloatingMolecule() {
         <line x1="100" y1="100" x2="100" y2="160" stroke="white" strokeWidth="1.5" opacity="0.5" />
         <line x1="100" y1="100" x2="45" y2="130" stroke="white" strokeWidth="1.5" opacity="0.5" />
         <line x1="100" y1="100" x2="45" y2="70" stroke="white" strokeWidth="1.5" opacity="0.5" />
-        {/* Ring */}
         <ellipse cx="100" cy="100" rx="60" ry="25" stroke="white" strokeWidth="1" fill="none" opacity="0.3" />
         <ellipse cx="100" cy="100" rx="25" ry="60" stroke="white" strokeWidth="1" fill="none" opacity="0.3" />
       </svg>
+    )
+  }
+
+  return (
+    <motion.div
+      className="absolute bottom-10 right-10 opacity-20"
+      animate={{ rotate: 360 }}
+      transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+      style={{ zIndex: 1 }}
+    >
+      {getMolecule()}
     </motion.div>
   )
 }
+
