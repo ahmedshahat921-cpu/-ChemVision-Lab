@@ -12,6 +12,7 @@ import toast from 'react-hot-toast'
 import { useLanguage } from '../../hooks/useLanguage'
 import NotificationsPanel from './NotificationsPanel'
 import Chatbot from './Chatbot'
+import SecurityQuestionModal from './SecurityQuestionModal'
 
 const navItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'dashboard' },
@@ -210,6 +211,8 @@ export default function AppLayout() {
 
       {/* Global Chatbot Assistant */}
       <Chatbot />
+      {/* Global Security Question Setup Modal */}
+      <SecurityQuestionModal />
     </div>
   )
 }
