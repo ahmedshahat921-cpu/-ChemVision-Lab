@@ -1107,15 +1107,14 @@ export default function ChemicalDetailPage() {
           <motion.div className="card overflow-hidden" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
             {accordionItems.map(({ key, title, content }, i) => (
               <div key={key} style={{ borderBottom: i < accordionItems.length - 1 ? '1px solid #F0F2F5' : 'none' }}>
-                <motion.button
-                  className="w-full flex items-center justify-between p-4 font-semibold text-sm transition-all"
+                <button
+                  className="w-full flex items-center justify-between p-4 font-semibold text-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60"
                   style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}
                   onClick={() => setOpenAccordion(openAccordion === key ? null : key)}
-                  whileHover={{ background: '#F8FAFC' }}
                 >
-                  <span style={{ color: '#2C3E50' }}>{title}</span>
-                  <motion.span animate={{ rotate: openAccordion === key ? 180 : 0 }} style={{ color: '#94A3B8' }}>▼</motion.span>
-                </motion.button>
+                  <span style={{ color: 'var(--text-primary)' }}>{title}</span>
+                  <motion.span animate={{ rotate: openAccordion === key ? 180 : 0 }} style={{ color: 'var(--text-subtle)' }}>▼</motion.span>
+                </button>
                 <AnimatePresence>
                   {openAccordion === key && (
                     <motion.div

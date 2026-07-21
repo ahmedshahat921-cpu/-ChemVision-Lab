@@ -974,36 +974,54 @@ export default function AdminPage() {
       {/* Table */}
       <motion.div className="card overflow-hidden" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead style={{ background: '#F8F9FA', borderBottom: '1px solid #E2E8F0' }}>
+          <table className="w-full" style={{ textAlign: lang === 'ar' ? 'right' : 'left' }}>
+            <thead className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800">
               <tr>
-                {['Chemical', 'Formula', 'Hazard', 'Quantity', 'Location', 'Expiry', 'Actions'].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold" style={{ color: '#64748B' }}>{h}</th>
+                {[
+                  { en: 'Chemical', ar: 'المادة الكيميائية' },
+                  { en: 'Formula', ar: 'الصيغة' },
+                  { en: 'Hazard', ar: 'الخطورة' },
+                  { en: 'Quantity', ar: 'الكمية' },
+                  { en: 'Location', ar: 'الموقع' },
+                  { en: 'Expiry', ar: 'الانتهاء' },
+                  { en: 'Actions', ar: 'الإجراءات' }
+                ].map(h => (
+                  <th key={h.en} className="px-4 py-3 text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>
+                    {lang === 'ar' ? h.ar : h.en}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.map((c, i) => (
-                <motion.tr key={c.id} className="border-b" style={{ borderColor: '#F0F2F5' }}
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
-                  whileHover={{ background: '#F8F9FA' }}>
+                <motion.tr
+                  key={c.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: i * 0.03 }}
+                  className="border-b border-slate-100 dark:border-slate-800/80 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-colors"
+                >
                   <td className="px-4 py-3">
-                    <p className="text-sm font-medium" style={{ color: '#2C3E50' }}>{c.name}</p>
+                    <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{c.name}</p>
                   </td>
-                  <td className="px-4 py-3"><code className="text-xs px-2 py-0.5 rounded" style={{ background: '#EBF4FF', color: '#2D6A9F' }}>{c.formula}</code></td>
+                  <td className="px-4 py-3">
+                    <code className="text-xs px-2 py-0.5 rounded font-mono font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/60">
+                      {c.formula}
+                    </code>
+                  </td>
                   <td className="px-4 py-3"><span className={`badge badge-${c.hazard_level}`}>{c.hazard_level}</span></td>
-                  <td className="px-4 py-3 text-sm" style={{ color: '#2C3E50' }}>{c.quantity} {c.quantity_unit}</td>
-                  <td className="px-4 py-3 text-sm" style={{ color: '#64748B' }}>{c.location}</td>
-                  <td className="px-4 py-3 text-xs" style={{ color: c.expiry_date && new Date(c.expiry_date) < new Date() ? '#E85D5D' : '#64748B' }}>
+                  <td className="px-4 py-3 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{c.quantity} {c.quantity_unit}</td>
+                  <td className="px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{c.location}</td>
+                  <td className="px-4 py-3 text-xs font-semibold" style={{ color: c.expiry_date && new Date(c.expiry_date) < new Date() ? '#E85D5D' : 'var(--text-subtle)' }}>
                     {c.expiry_date ? new Date(c.expiry_date).toLocaleDateString() : '—'}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex gap-1">
-                      <button onClick={() => { setEditingChemical(c); setShowForm(true) }} className="p-1.5 rounded-lg" style={{ background: '#EBF4FF' }}>
-                        <Edit size={13} style={{ color: '#4A90E2' }} />
+                    <div className="flex gap-1.5">
+                      <button onClick={() => { setEditingChemical(c); setShowForm(true) }} className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer">
+                        <Edit size={14} />
                       </button>
-                      <button onClick={() => handleDeleteClick(c.id, c.name)} className="p-1.5 rounded-lg" style={{ background: '#FDEAEA' }}>
-                        <Trash2 size={13} style={{ color: '#E85D5D' }} />
+                      <button onClick={() => handleDeleteClick(c.id, c.name)} className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors cursor-pointer">
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </td>
@@ -1012,7 +1030,10 @@ export default function AdminPage() {
             </tbody>
           </table>
           {filtered.length === 0 && (
-            <div className="text-center py-12"><FlaskConical size={32} style={{ color: '#CBD5E1', margin: '0 auto 0.5rem' }} /><p style={{ color: '#94A3B8' }}>No chemicals found</p></div>
+            <div className="text-center py-12">
+              <FlaskConical size={32} className="text-slate-400 mx-auto mb-2" />
+              <p className="font-semibold text-slate-400 text-sm">{lang === 'ar' ? 'لم يتم العثور على مواد كيميائية' : 'No chemicals found'}</p>
+            </div>
           )}
         </div>
       </motion.div>

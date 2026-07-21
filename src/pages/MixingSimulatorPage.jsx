@@ -71,18 +71,17 @@ function ChemicalSelector({ label, selected, onSelect, chemicals, exclude }) {
             </div>
             <div className="max-h-48 overflow-y-auto">
               {filtered.map(c => (
-                <motion.button
+                <button
                   key={c.id}
                   onClick={() => { onSelect(c); setOpen(false); setSearch('') }}
-                  className="w-full flex items-center gap-3 p-3 text-left transition-colors"
-                  whileHover={{ background: '#EBF4FF' }}
+                  className="w-full flex items-center gap-3 p-3 text-left transition-colors hover:bg-violet-50 dark:hover:bg-violet-950/60"
                 >
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold font-mono flex-shrink-0" style={{ background: '#EBF4FF', color: '#2D6A9F' }}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
                     {c.formula.slice(0, 3)}
                   </div>
                   <div className="text-left">
-                    <p className="text-sm font-medium" style={{ color: '#2C3E50' }}>{c.name}</p>
-                    <p className="text-xs" style={{ color: '#94A3B8' }}>{c.formula}</p>
+                    <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{c.name}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>{c.formula}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1 ml-auto flex-shrink-0">
                     <span className={`badge badge-${c.hazard_level}`}>
@@ -97,7 +96,7 @@ function ChemicalSelector({ label, selected, onSelect, chemicals, exclude }) {
                       </span>
                     )}
                   </div>
-                </motion.button>
+                </button>
               ))}
             </div>
           </motion.div>
