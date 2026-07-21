@@ -422,64 +422,64 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
         </div>
 
         {/* Right Side Info & Legend */}
-        <div className="card p-4 space-y-4 border border-slate-100 bg-[#FAFBFD]">
-          <h4 className="font-bold text-xs text-slate-500 uppercase tracking-wider text-left">
+        <div className="card p-4 space-y-4 border border-slate-200 dark:border-slate-800 bg-[#FAFBFD] dark:bg-slate-900/70">
+          <h4 className="font-bold text-xs text-slate-600 dark:text-slate-300 uppercase tracking-wider text-left">
             {lang === 'ar' ? 'حالة المقاعد التخزينية' : 'Seat Occupancy Legend'}
           </h4>
           
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs p-2 rounded bg-white shadow-sm border border-slate-100">
+            <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-white dark:bg-slate-800 shadow-xs border border-slate-200 dark:border-slate-700/80 transition-colors">
               <div className="flex items-center gap-2">
                 <span className="text-sm">🧪</span>
-                <span>{lang === 'ar' ? 'إجمالي المواد في هذا المختبر' : 'Total Chemicals in this Lab'}</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-200">{lang === 'ar' ? 'إجمالي المواد في هذا المختبر' : 'Total Chemicals in this Lab'}</span>
               </div>
-              <span className="font-bold text-blue-600">{activeLabChemicals.length}</span>
+              <span className="font-bold text-blue-600 dark:text-blue-400">{activeLabChemicals.length}</span>
             </div>
 
-            <div className="flex items-center justify-between text-xs p-2 rounded bg-white shadow-sm border border-slate-100">
+            <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-white dark:bg-slate-800 shadow-xs border border-slate-200 dark:border-slate-700/80 transition-colors">
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-[#E85D5D] border border-[#C94A4A]" />
-                <span>{lang === 'ar' ? 'مقعد غير متوفر (منتج)' : 'Occupied Spot'}</span>
+                <div className="w-4 h-4 rounded-md bg-[#E85D5D] border border-[#C94A4A] flex-shrink-0" />
+                <span className="font-semibold text-slate-700 dark:text-slate-200">{lang === 'ar' ? 'مقعد غير متوفر (منتج)' : 'Occupied Spot'}</span>
               </div>
-              <span className="font-bold text-slate-700">{occupiedCount}</span>
+              <span className="font-bold text-slate-800 dark:text-slate-100">{occupiedCount}</span>
             </div>
 
-            <div className="flex items-center justify-between text-xs p-2 rounded bg-white shadow-sm border border-slate-100">
+            <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-white dark:bg-slate-800 shadow-xs border border-slate-200 dark:border-slate-700/80 transition-colors">
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-[#FFF3E0] border border-[#FFE0B2]" />
-                <span>{lang === 'ar' ? 'مقعد متوفر (فارغ)' : 'Available Spot'}</span>
+                <div className="w-4 h-4 rounded-md bg-[#FFF3E0] border border-[#FFE0B2] flex-shrink-0" />
+                <span className="font-semibold text-slate-700 dark:text-slate-200">{lang === 'ar' ? 'مقعد متوفر (فارغ)' : 'Available Spot'}</span>
               </div>
-              <span className="font-bold text-slate-700">{availableCount}</span>
+              <span className="font-bold text-slate-800 dark:text-slate-100">{availableCount}</span>
             </div>
 
-            <div className="flex items-center justify-between text-xs p-2 rounded bg-white shadow-sm border border-slate-100">
+            <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-white dark:bg-slate-800 shadow-xs border border-slate-200 dark:border-slate-700/80 transition-colors">
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-[#10B981] border border-[#059669]" />
-                <span>{lang === 'ar' ? 'المقعد المحدد' : 'Selected Spot'}</span>
+                <div className="w-4 h-4 rounded-md bg-[#10B981] border border-[#059669] flex-shrink-0" />
+                <span className="font-semibold text-slate-700 dark:text-slate-200">{lang === 'ar' ? 'المقعد المحدد' : 'Selected Spot'}</span>
               </div>
             </div>
           </div>
 
           {/* Action details based on selected Seat */}
-          <div className="border-t pt-3 mt-1 text-left">
+          <div className="border-t border-slate-200 dark:border-slate-800 pt-3 mt-1 text-left">
             {selectedSeat ? (
               <div className="space-y-2">
-                <p className="text-xs font-bold text-slate-700">
-                  📍 {lang === 'ar' ? 'الموقع المحدد:' : 'Selected Location:'} <span className="font-mono text-blue-600">{activeLab} - Shelf {selectedSeat.shelf} ({selectedSeat.cabinet})</span>
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                  📍 {lang === 'ar' ? 'الموقع المحدد:' : 'Selected Location:'} <span className="font-mono text-blue-600 dark:text-blue-400">{activeLab} - Shelf {selectedSeat.shelf} ({selectedSeat.cabinet})</span>
                 </p>
                 {selectedChems.length > 0 ? (
                   <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                     {selectedChems.map((chem) => (
-                      <div key={chem.id} className="p-2.5 rounded-lg bg-red-50 border border-red-100 space-y-1.5">
-                        <p className="text-xs font-bold text-red-800">{chem.name}</p>
-                        <div className="flex justify-between text-[10px] text-slate-500 font-medium">
+                      <div key={chem.id} className="p-3 rounded-xl bg-red-50 dark:bg-slate-800 border border-red-200 dark:border-slate-700 space-y-1.5 text-left">
+                        <p className="text-xs font-bold text-red-800 dark:text-red-400">{chem.name}</p>
+                        <div className="flex justify-between text-[11px] text-slate-600 dark:text-slate-300 font-medium">
                           <span>{lang === 'ar' ? 'الصيغة:' : 'Formula:'} {chem.formula}</span>
                           <span>{lang === 'ar' ? 'الكمية:' : 'Qty:'} {chem.quantity} {chem.quantity_unit}</span>
                         </div>
                         <button
                           type="button"
                           onClick={() => navigate(`/chemicals/${chem.id}`)}
-                          className="w-full mt-2 py-1 text-[10px] font-bold text-white bg-red-600 hover:bg-red-700 rounded transition-colors text-center block cursor-pointer border-0"
+                          className="w-full mt-2 py-1.5 text-[11px] font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors text-center block cursor-pointer border-0 shadow-xs"
                         >
                           {lang === 'ar' ? 'عرض تفاصيل المركب 🧪' : 'View Chemical Details'}
                         </button>
@@ -487,14 +487,14 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                     ))}
                   </div>
                 ) : (
-                  <div className="p-2.5 rounded-lg bg-green-50 border border-green-100 space-y-2 text-center">
-                    <p className="text-[10px] text-green-700 font-bold leading-normal">
+                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-slate-800 border border-emerald-200 dark:border-slate-700 space-y-2 text-center">
+                    <p className="text-xs text-emerald-800 dark:text-emerald-400 font-bold leading-normal">
                       {lang === 'ar' ? 'هذا الموقع فارغ! يمكنك إضافة مركب جديد هنا مباشرة.' : 'This storage spot is empty! You can add a chemical here.'}
                     </p>
                     <button
                       type="button"
                       onClick={() => navigate(`/admin?prefillLocation=${encodeURIComponent(`${activeLab} - Shelf ${selectedSeat.shelf}`)}&prefillCabinet=${selectedSeat.cabinet}`)}
-                      className="w-full py-1.5 text-[10px] font-bold text-white bg-green-600 hover:bg-green-700 rounded transition-colors cursor-pointer border-0"
+                      className="w-full py-1.5 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors cursor-pointer border-0 shadow-xs"
                     >
                       {lang === 'ar' ? '➕ إضافة مركب في هذا الموقع' : '➕ Add Chemical Here'}
                     </button>
@@ -502,7 +502,7 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
                 )}
               </div>
             ) : (
-              <p className="text-xs text-slate-400 italic text-center py-4">
+              <p className="text-xs text-slate-400 dark:text-slate-400 italic text-center py-4 font-medium">
                 {lang === 'ar' ? 'انقر على أي مقعد تخزيني لعرض التفاصيل أو إضافة مركب' : 'Click any storage seat to view contents or add chemical'}
               </p>
             )}
