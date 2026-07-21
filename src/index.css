@@ -407,7 +407,7 @@ body {
 }
 
 .dark .sidebar-link {
-  color: #94A3B8 !important;
+  color: #CBD5E1 !important;
 }
 
 .dark .sidebar-link:hover {
@@ -426,4 +426,120 @@ body {
   background: rgba(30, 41, 59, 0.85) !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
+
+/* ── DARK MODE TEXT CONTRAST & READABILITY OVERRIDES ── */
+.dark .text-slate-800,
+.dark .text-slate-700,
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-neutral-800,
+.dark .text-neutral-700,
+.dark .text-neutral-600,
+.dark .text-neutral-500 {
+  color: #F8FAFC !important;
+}
+
+.dark .text-slate-400,
+.dark .text-slate-300,
+.dark .text-neutral-400,
+.dark .text-neutral-300 {
+  color: #CBD5E1 !important;
+}
+
+/* Overriding hardcoded inline text colors in Dark Mode */
+.dark [style*="color: #2C3E50"],
+.dark [style*="color: #2c3e50"],
+.dark [style*="color: #1E293B"],
+.dark [style*="color: #1B3A6B"],
+.dark [style*="color: #1E3A8A"],
+.dark [style*="color: #475569"],
+.dark [style*="color: #334155"] {
+  color: #F8FAFC !important;
+}
+
+.dark [style*="color: #64748B"],
+.dark [style*="color: #94A3B8"],
+.dark [style*="color: #94a3b8"] {
+  color: #CBD5E1 !important;
+}
+
+/* ── DARK MODE SUB-CONTAINER BACKGROUND OVERRIDES ── */
+.dark .bg-white,
+.dark .bg-slate-50,
+.dark .bg-slate-100,
+.dark .bg-neutral-50,
+.dark .bg-blue-50 {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+}
+
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-300,
+.dark .border-neutral-100,
+.dark .border-neutral-200 {
+  border-color: #334155 !important;
+}
+
+.dark [style*="background: white"],
+.dark [style*="background: #FFF"],
+.dark [style*="background: #fff"],
+.dark [style*="background: #ffffff"],
+.dark [style*="background: #FAFBFD"],
+.dark [style*="background: #F8FAFC"],
+.dark [style*="background: #F8F9FA"],
+.dark [style*="background: #F0F2F5"],
+.dark [style*="background: #EEF2FF"],
+.dark [style*="background: #EBF4FF"] {
+  background: #0F172A !important;
+  border-color: #334155 !important;
+}
+
+.dark [style*="border-color: #E2E8F0"],
+.dark [style*="border-color: #F0F2F5"],
+.dark [style*="borderColor: '#E2E8F0'"],
+.dark [style*="borderColor: '#F0F2F5'"] {
+  border-color: #334155 !important;
+}
+
+/* ── RECHARTS CHART & TOOLTIP DARK OVERRIDES ── */
+.dark .recharts-text {
+  fill: #CBD5E1 !important;
+}
+.dark .recharts-cartesian-axis-line,
+.dark .recharts-cartesian-axis-tick-line {
+  stroke: #334155 !important;
+}
+.dark .recharts-default-tooltip {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+}
+
+/* ── MIXING SIMULATOR RESULT CARD DARK OVERRIDES ── */
+.dark [style*="background: #FFF9E6"],
+.dark [style*="background: #ECFDF5"] {
+  background-color: #1E293B !important;
+}
+
+.dark [style*="color: #92400E"],
+.dark [style*="color: #B45309"] {
+  color: #FCD34D !important;
+}
+
+.dark [style*="color: #065F46"],
+.dark [style*="color: #047857"] {
+  color: #A7F3D0 !important;
+}
+
+/* ── ACCORDION & MODALS IN DARK MODE ── */
+.dark details summary {
+  color: #F8FAFC !important;
+  background-color: #1E293B !important;
+}
+
+.dark svg text {
+  fill: #CBD5E1 !important;
+}
+
 
