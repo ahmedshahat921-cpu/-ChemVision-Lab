@@ -224,6 +224,14 @@ body {
 }
 .input-field::placeholder { color: #94A3B8; }
 
+/* Hide browser textarea resize handle grips */
+textarea {
+  resize: none !important;
+}
+textarea::-webkit-resizer {
+  display: none !important;
+}
+
 /* ===== INPUT PADDING WITH ICONS (UNIVERSAL LTR & RTL SAFE) ===== */
 .input-field.pl-10,
 .input-field.pl-11,

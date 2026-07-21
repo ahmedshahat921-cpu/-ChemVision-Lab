@@ -37,7 +37,10 @@ export default function Chatbot() {
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 130)}px`
+      const scrollH = textareaRef.current.scrollHeight
+      const newH = Math.min(scrollH, 130)
+      textareaRef.current.style.height = `${newH}px`
+      textareaRef.current.style.overflowY = scrollH > 130 ? 'auto' : 'hidden'
     }
   }, [input])
 
@@ -49,6 +52,7 @@ export default function Chatbot() {
     setInput('')
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.overflowY = 'hidden'
     }
     
     // Add user message to state
@@ -234,7 +238,7 @@ export default function Chatbot() {
                 }}
                 disabled={loading}
                 placeholder={lang === 'ar' ? 'اكتب سؤالك الكيميائي هنا...' : 'Ask your chemistry question...'}
-                className="flex-1 px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/50 disabled:opacity-60 transition-all font-medium resize-none max-h-32 overflow-y-auto leading-relaxed"
+                className="flex-1 px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/50 disabled:opacity-60 transition-all font-medium resize-none leading-relaxed"
               />
               <button
                 type="submit"
