@@ -14,6 +14,7 @@ export default function Chatbot() {
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
   const messagesEndRef = useRef(null)
+  const textareaRef = useRef(null)
 
   // Initialize chat history with greeting
   useEffect(() => {
@@ -32,12 +33,23 @@ export default function Chatbot() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isOpen])
 
+  // Auto-expand textarea height dynamically like WhatsApp / ChatGPT
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 130)}px`
+    }
+  }, [input])
+
   const handleSend = async (e) => {
     e.preventDefault()
     if (!input.trim() || loading) return
 
     const userMessage = input.trim()
     setInput('')
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+    }
     
     // Add user message to state
     const updatedMessages = [...messages, { role: 'user', content: userMessage }]
@@ -210,6 +222,7 @@ export default function Chatbot() {
             {/* Input Form */}
             <form onSubmit={handleSend} className="p-3 border-t bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 flex gap-2 items-end">
               <textarea
+                ref={textareaRef}
                 rows={1}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -220,8 +233,8 @@ export default function Chatbot() {
                   }
                 }}
                 disabled={loading}
-                placeholder={lang === 'ar' ? 'اكتب سؤالك الكيميائي هنا... (Enter للإرسال)' : 'Ask your chemistry question... (Enter to send)'}
-                className="flex-1 px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/50 disabled:opacity-60 transition-all font-medium resize-none max-h-24 overflow-y-auto leading-normal"
+                placeholder={lang === 'ar' ? 'اكتب سؤالك الكيميائي هنا...' : 'Ask your chemistry question...'}
+                className="flex-1 px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/50 disabled:opacity-60 transition-all font-medium resize-none max-h-32 overflow-y-auto leading-relaxed"
               />
               <button
                 type="submit"
