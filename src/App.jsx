@@ -17,6 +17,7 @@ import QRScannerPage from './pages/QRScannerPage'
 import LabMapPage from './pages/LabMapPage'
 import AdminPage from './pages/AdminPage'
 import ProfilePage from './pages/ProfilePage'
+import LandingPage from './pages/LandingPage'
 
 // Layout
 import AppLayout from './components/layout/AppLayout'
@@ -35,6 +36,12 @@ const AdminRoute = ({ children }) => {
 }
 
 const PublicRoute = ({ children }) => {
+  const { user } = useAuthStore()
+  return user ? <Navigate to="/dashboard" replace /> : children
+}
+
+// Landing route: logged in → dashboard, else → landing page
+const LandingRoute = ({ children }) => {
   const { user } = useAuthStore()
   return user ? <Navigate to="/dashboard" replace /> : children
 }
@@ -95,6 +102,12 @@ export default function App() {
       />
       <AnimatePresence mode="wait">
         <Routes>
+          {/* Landing Page - shown to non-logged-in visitors */}
+          <Route path="/landing" element={<LandingRoute><LandingPage /></LandingRoute>} />
+
+          {/* Root redirect: logged-in → dashboard, guest → landing */}
+          <Route path="/" element={<LandingRoute><LandingPage /></LandingRoute>} />
+
           {/* Public Routes */}
           <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
@@ -102,7 +115,6 @@ export default function App() {
 
           {/* Protected Routes */}
           <Route path="/" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="chemicals" element={<ChemicalsPage />} />
             <Route path="chemicals/:id" element={<ChemicalDetailPage />} />
@@ -118,7 +130,7 @@ export default function App() {
           </Route>
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>
     </BrowserRouter>
