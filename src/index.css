@@ -447,19 +447,29 @@ body {
 }
 
 /* Overriding hardcoded inline text colors in Dark Mode */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: #F8FAFC;
+}
+
 .dark [style*="color: #2C3E50"],
 .dark [style*="color: #2c3e50"],
 .dark [style*="color: #1E293B"],
 .dark [style*="color: #1B3A6B"],
 .dark [style*="color: #1E3A8A"],
 .dark [style*="color: #475569"],
-.dark [style*="color: #334155"] {
+.dark [style*="color: #334155"],
+.dark [style*="color: rgb(44, 62, 80)"],
+.dark [style*="color: rgb(71, 85, 105)"],
+.dark [style*="color: rgb(51, 65, 85)"] {
   color: #F8FAFC !important;
 }
 
 .dark [style*="color: #64748B"],
+.dark [style*="color: #64748b"],
 .dark [style*="color: #94A3B8"],
-.dark [style*="color: #94a3b8"] {
+.dark [style*="color: #94a3b8"],
+.dark [style*="color: rgb(100, 116, 139)"],
+.dark [style*="color: rgb(148, 163, 184)"] {
   color: #CBD5E1 !important;
 }
 

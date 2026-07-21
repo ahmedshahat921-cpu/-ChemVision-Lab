@@ -83,8 +83,8 @@ function ChemicalCard({ chemical, index }) {
             {/* Clean Mini Conical Flask Icon instead of formula text */}
             <MiniFlask hazardLevel={chemical.hazard_level} />
             <div className="min-w-0 text-left">
-              <h3 className="font-semibold text-sm leading-tight truncate text-left" style={{ color: '#2C3E50', maxWidth: '140px' }}>{chemical.name}</h3>
-              <p className="text-xs mt-0.5 text-left" style={{ color: '#94A3B8' }}>{chemical.formula}</p>
+              <h3 className="font-semibold text-sm leading-tight truncate text-left text-slate-800 dark:text-slate-100" style={{ maxWidth: '140px' }}>{chemical.name}</h3>
+              <p className="text-xs mt-0.5 text-left text-slate-500 dark:text-slate-400">{chemical.formula}</p>
             </div>
           </div>
           {/* Hazard badge */}
@@ -108,26 +108,26 @@ function ChemicalCard({ chemical, index }) {
             {chemical.ghs_codes.slice(0, 4).map(code => (
               <span key={code} className="text-base" title={code}>{GHSIcons[code] || '⚗️'}</span>
             ))}
-            {chemical.ghs_codes.length > 4 && <span className="text-xs" style={{ color: '#64748B' }}>+{chemical.ghs_codes.length - 4}</span>}
+            {chemical.ghs_codes.length > 4 && <span className="text-xs text-slate-500 dark:text-slate-400">+{chemical.ghs_codes.length - 4}</span>}
           </div>
         )}
 
         {/* Details */}
         <div className="space-y-1.5 text-left">
           <div className="flex items-center justify-between text-xs">
-            <span style={{ color: '#64748B' }}>{lang === 'ar' ? 'الكمية' : 'Quantity'}</span>
-            <span className="font-medium" style={{ color: '#2C3E50' }}>{chemical.quantity} {chemical.quantity_unit}</span>
+            <span className="text-slate-500 dark:text-slate-400 font-medium">{lang === 'ar' ? 'الكمية' : 'Quantity'}</span>
+            <span className="font-bold text-slate-800 dark:text-slate-100">{chemical.quantity} {chemical.quantity_unit}</span>
           </div>
           <div className="flex items-center justify-between text-xs">
-            <span style={{ color: '#64748B' }}>{lang === 'ar' ? 'الموقع' : 'Location'}</span>
-            <span className="font-medium truncate ml-2" style={{ color: '#2C3E50', maxWidth: '160px' }} title={`${chemical.location}${chemical.cabinet ? ` (${chemical.cabinet})` : ''}`}>
+            <span className="text-slate-500 dark:text-slate-400 font-medium">{lang === 'ar' ? 'الموقع' : 'Location'}</span>
+            <span className="font-bold truncate ml-2 text-slate-800 dark:text-slate-100" style={{ maxWidth: '160px' }} title={`${chemical.location}${chemical.cabinet ? ` (${chemical.cabinet})` : ''}`}>
               {chemical.location}{chemical.cabinet ? ` (${chemical.cabinet})` : ''}
             </span>
           </div>
           {chemical.expiry_date && (
             <div className="flex items-center justify-between text-xs">
-              <span style={{ color: '#64748B' }}>{lang === 'ar' ? 'تاريخ الانتهاء' : 'Expires'}</span>
-              <span className="font-medium flex items-center gap-1" style={{ color: isExpired ? '#E85D5D' : isExpiringSoon ? '#F5A623' : '#5DB9A0' }}>
+              <span className="text-slate-500 dark:text-slate-400 font-medium">{lang === 'ar' ? 'تاريخ الانتهاء' : 'Expires'}</span>
+              <span className="font-bold flex items-center gap-1" style={{ color: isExpired ? '#E85D5D' : isExpiringSoon ? '#F5A623' : '#5DB9A0' }}>
                 {(isExpired || isExpiringSoon) && <Clock size={10} />}
                 {new Date(chemical.expiry_date).toLocaleDateString()}
               </span>
@@ -136,7 +136,7 @@ function ChemicalCard({ chemical, index }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-2 mt-4 pt-3 border-t" style={{ borderColor: '#F0F2F5' }}>
+        <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
           <motion.button
             className="btn-primary py-1.5 px-3 text-xs flex-1 justify-center"
             onClick={(e) => { e.stopPropagation(); navigate(`/chemicals/${chemical.id}`) }}
@@ -145,13 +145,12 @@ function ChemicalCard({ chemical, index }) {
             {t('view_details')}
           </motion.button>
           <motion.button
-            className="p-1.5 rounded-lg"
-            style={{ background: '#F0F2F5' }}
+            className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
             onClick={(e) => { e.stopPropagation() }}
             whileTap={{ scale: 0.95 }}
             title="Show QR"
           >
-            <QrCode size={14} style={{ color: '#7C3AED' }} />
+            <QrCode size={14} className="text-purple-600 dark:text-purple-400" />
           </motion.button>
         </div>
       </div>
@@ -271,30 +270,33 @@ export default function ChemicalsPage() {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="flex flex-wrap gap-3 p-4 rounded-xl text-left" style={{ background: '#F8F9FA', border: '1px solid #E2E8F0' }}>
+              <div className="flex flex-wrap gap-3 p-4 rounded-xl text-left bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                 {filterOptions.map(({ key, label, options }) => (
                   <div key={key} className="flex flex-col gap-1.5 text-left">
-                    <label className="text-xs font-medium text-left" style={{ color: '#64748B' }}>{label}</label>
+                    <label className="text-xs font-medium text-left text-slate-500 dark:text-slate-400">{label}</label>
                     <div className="flex gap-1.5 flex-wrap">
-                      {options.map(opt => (
-                        <motion.button
-                          key={opt}
-                          onClick={() => setFilter(key, opt)}
-                          className="text-xs px-3 py-1 rounded-full font-medium transition-all"
-                          style={{
-                            background: filters[key] === opt ? '#4A90E2' : '#FFFFFF',
-                            color: filters[key] === opt ? 'white' : '#64748B',
-                            border: `1px solid ${filters[key] === opt ? '#4A90E2' : '#E2E8F0'}`,
-                          }}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          {opt === 'all'
-                            ? (lang === 'ar' ? 'الكل' : 'All')
-                            : opt.charAt(0).toUpperCase() + opt.slice(1)
-                          }
-                        </motion.button>
-                      ))}
+                      {options.map(opt => {
+                        const isSelected = filters[key] === opt
+                        return (
+                          <motion.button
+                            key={opt}
+                            onClick={() => setFilter(key, opt)}
+                            className="text-xs px-3 py-1 rounded-full font-medium transition-all"
+                            style={{
+                              background: isSelected ? '#4A90E2' : 'var(--filter-bg, transparent)',
+                              color: isSelected ? 'white' : 'var(--filter-color, inherit)',
+                              border: `1px solid ${isSelected ? '#4A90E2' : 'rgba(148, 163, 184, 0.3)'}`,
+                            }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            {opt === 'all'
+                              ? (lang === 'ar' ? 'الكل' : 'All')
+                              : opt.charAt(0).toUpperCase() + opt.slice(1)
+                            }
+                          </motion.button>
+                        )
+                      })}
                     </div>
                   </div>
                 ))}
