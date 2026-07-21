@@ -102,10 +102,10 @@ export default function App() {
       />
       <AnimatePresence mode="wait">
         <Routes>
-          {/* Landing Page - shown to non-logged-in visitors */}
-          <Route path="/landing" element={<LandingRoute><LandingPage /></LandingRoute>} />
+          {/* Landing Page - always accessible (logged-in or not) */}
+          <Route path="/landing" element={<LandingPage />} />
 
-          {/* Root redirect: logged-in → dashboard, guest → landing */}
+          {/* Root: logged-in → dashboard, guest → landing page */}
           <Route path="/" element={<LandingRoute><LandingPage /></LandingRoute>} />
 
           {/* Public Routes */}

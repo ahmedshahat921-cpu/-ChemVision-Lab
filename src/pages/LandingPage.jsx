@@ -4,9 +4,10 @@ import { useNavigate } from 'react-router-dom'
 import {
   FlaskConical, Shield, Zap, QrCode, Map, Beaker,
   MessageSquare, ChevronRight, ArrowRight, Star,
-  CheckCircle, Atom, BarChart3, AlertTriangle
+  CheckCircle, Atom, BarChart3, AlertTriangle, LayoutDashboard
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { useAuthStore } from '../store'
 import ParticlesBackground, { FloatingMolecule } from '../components/animations/ParticlesBackground'
 
 const FORMULAS = ['H₂SO₄', 'NaOH', 'C₆H₁₂O₆', 'HCl', 'NH₃', 'H₂O₂', 'CH₄', 'CO₂', 'NaCl', 'KMnO₄']
@@ -73,6 +74,7 @@ function FeatureCard({ icon: Icon, title, description, color, bg, delay }) {
 
 export default function LandingPage() {
   const navigate = useNavigate()
+  const { user } = useAuthStore()
   const [chemCount, setChemCount] = useState(null)
   const featuresRef = useRef(null)
 
@@ -151,23 +153,40 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <motion.button
-              onClick={() => navigate('/login')}
-              className="px-3 sm:px-5 py-2 text-sm font-bold text-white rounded-xl border border-white/20 hover:bg-white/10 transition-all"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              تسجيل الدخول
-            </motion.button>
-            <motion.button
-              onClick={() => navigate('/register')}
-              className="px-3 sm:px-5 py-2 text-sm font-black text-slate-900 rounded-xl transition-all"
-              style={{ background: 'linear-gradient(135deg, #7AB8F5, #4A90E2)' }}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              ابدأ مجاناً
-            </motion.button>
+            {user ? (
+              // Logged-in: show Dashboard button
+              <motion.button
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center gap-2 px-4 sm:px-5 py-2 text-sm font-black text-slate-900 rounded-xl transition-all"
+                style={{ background: 'linear-gradient(135deg, #7AB8F5, #4A90E2)' }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <LayoutDashboard size={15} />
+                الداشبورد
+              </motion.button>
+            ) : (
+              // Guest: show login/register buttons
+              <>
+                <motion.button
+                  onClick={() => navigate('/login')}
+                  className="px-3 sm:px-5 py-2 text-sm font-bold text-white rounded-xl border border-white/20 hover:bg-white/10 transition-all"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  تسجيل الدخول
+                </motion.button>
+                <motion.button
+                  onClick={() => navigate('/register')}
+                  className="px-3 sm:px-5 py-2 text-sm font-black text-slate-900 rounded-xl transition-all"
+                  style={{ background: 'linear-gradient(135deg, #7AB8F5, #4A90E2)' }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  ابدأ مجاناً
+                </motion.button>
+              </>
+            )}
           </div>
         </nav>
 
