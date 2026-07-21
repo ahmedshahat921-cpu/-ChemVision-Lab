@@ -206,43 +206,54 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
 
         {/* AI Wizard Overlay */}
         {aiPromptOpen && (
-          <div className="absolute inset-0 bg-white z-50 p-6 rounded-2xl flex flex-col justify-between" style={{ minHeight: '400px' }}>
+          <div 
+            className="absolute inset-0 bg-white dark:bg-slate-900 z-50 p-6 rounded-2xl flex flex-col justify-between border border-slate-200 dark:border-slate-800 shadow-2xl transition-colors"
+            style={{ minHeight: '400px', direction: lang === 'ar' ? 'rtl' : 'ltr' }}
+          >
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-heading font-bold text-lg text-violet-700 flex items-center gap-2">
-                  <Sparkles className="text-violet-500 animate-pulse" size={18} /> AI Chemical Autocomplete Wizard
+                <h3 className="font-heading font-bold text-lg text-violet-600 dark:text-violet-400 flex items-center gap-2">
+                  <Sparkles className="text-violet-500 animate-pulse" size={20} />
+                  {lang === 'ar' ? 'معالج الإكمال التلقائي بالذكاء الاصطناعي 🪄' : 'AI Chemical Autocomplete Wizard'}
                 </h3>
-                <button type="button" onClick={() => setAiPromptOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <button type="button" onClick={() => setAiPromptOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-lg">
                   <X size={18} />
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mb-4">
-                Enter the name, location, and cabinet. Our AI engine will automatically research and fill formulas, safety codes, descriptions, and storage conditions.
+              <p className="text-xs text-slate-600 dark:text-slate-300 mb-5 leading-relaxed font-medium">
+                {lang === 'ar'
+                  ? 'أدخل اسم المادة والموقع والرف. وسيقوم محرك الذكاء الاصطناعي تلقائياً بالبحث وتعبئة الصيغ الكيميائية، أكواد الأمان، الوصف، وشروط التخزين الدقيقة.'
+                  : 'Enter the name, location, and cabinet. Our AI engine will automatically research and fill formulas, safety codes, descriptions, and storage conditions.'}
               </p>
 
-              <div className="space-y-4">
+              <div className="space-y-4 text-left">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Chemical Name *</label>
+                  <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-primary)' }}>
+                    {lang === 'ar' ? 'اسم المادة الكيميائية *' : 'Chemical Name *'}
+                  </label>
                   <input
                     type="text"
                     value={aiName}
                     onChange={(e) => setAiName(e.target.value)}
-                    placeholder="e.g. Nitrobenzene"
-                    className="input-field py-2 text-sm w-full"
+                    placeholder={lang === 'ar' ? 'مثال: نتروبنزين Nitrobenzene' : 'e.g. Nitrobenzene'}
+                    className="input-field py-2.5 text-sm w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Location *</label>
+                  <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-primary)' }}>
+                    {lang === 'ar' ? 'الموقع / المختبر *' : 'Location *'}
+                  </label>
                   <select
                     value={aiLocation}
                     onChange={(e) => {
                       setAiLocation(e.target.value)
                       setAiCabinet('')
                     }}
-                    className="input-field py-2.5 text-sm bg-white w-full border border-gray-300 rounded-lg"
+                    className="input-field py-2.5 text-sm w-full font-medium"
+                    style={{ cursor: 'pointer' }}
                   >
-                    <option value="">Select Location</option>
+                    <option value="">{lang === 'ar' ? 'اختر الموقع' : 'Select Location'}</option>
                     {getAvailableLocations().map(loc => (
                       <option key={loc} value={loc}>{loc}</option>
                     ))}
@@ -250,52 +261,62 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Cabinet *</label>
+                  <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-primary)' }}>
+                    {lang === 'ar' ? 'الرف / الخزانة *' : 'Cabinet *'}
+                  </label>
                   <select
                     value={aiCabinet}
                     onChange={(e) => setAiCabinet(e.target.value)}
-                    className="input-field py-2.5 text-sm bg-white w-full border border-gray-300 rounded-lg"
+                    className="input-field py-2.5 text-sm w-full font-medium"
+                    style={{ cursor: 'pointer' }}
                   >
-                    <option value="">Select Cabinet</option>
+                    <option value="">{lang === 'ar' ? 'اختر الخزانة' : 'Select Cabinet'}</option>
                     {getAvailableCabinets(aiLocation).map(cab => (
-                      <option key={cab} value={cab}>Cabinet {cab}</option>
+                      <option key={cab} value={cab}>{lang === 'ar' ? `خزانة ${cab}` : `Cabinet ${cab}`}</option>
                     ))}
                   </select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Quantity *</label>
+                    <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-primary)' }}>
+                      {lang === 'ar' ? 'الكمية *' : 'Quantity *'}
+                    </label>
                     <input
                       type="number"
                       value={aiQuantity}
                       onChange={(e) => setAiQuantity(e.target.value)}
                       placeholder="e.g. 500"
-                      className="input-field py-2 text-sm w-full"
+                      className="input-field py-2.5 text-sm w-full"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Unit *</label>
+                    <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-primary)' }}>
+                      {lang === 'ar' ? 'الوحدة *' : 'Unit *'}
+                    </label>
                     <select
                       value={aiQuantityUnit}
                       onChange={(e) => setAiQuantityUnit(e.target.value)}
-                      className="input-field py-2.5 text-sm bg-white w-full border border-gray-300 rounded-lg"
+                      className="input-field py-2.5 text-sm w-full font-medium"
+                      style={{ cursor: 'pointer' }}
                     >
-                      <option value="g">Grams (g)</option>
-                      <option value="kg">Kilograms (kg)</option>
-                      <option value="mL">Milliliters (mL)</option>
-                      <option value="L">Liters (L)</option>
+                      <option value="g">{lang === 'ar' ? 'جرام (g)' : 'Grams (g)'}</option>
+                      <option value="kg">{lang === 'ar' ? 'كيلوجرام (kg)' : 'Kilograms (kg)'}</option>
+                      <option value="mL">{lang === 'ar' ? 'مليلتر (mL)' : 'Milliliters (mL)'}</option>
+                      <option value="L">{lang === 'ar' ? 'لتر (L)' : 'Liters (L)'}</option>
                     </select>
                   </div>
                 </div>
 
                 {/* AI Validation Errors & Suggestions */}
                 {aiError && (
-                  <div className="p-3 rounded-lg bg-rose-50 border border-rose-100 text-rose-600 text-xs mt-2">
-                    <p className="font-semibold mb-1">⚠️ {aiError}</p>
+                  <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs mt-2">
+                    <p className="font-bold mb-1">⚠️ {aiError}</p>
                     {aiSuggestions.length > 0 && (
                       <div className="mt-2">
-                        <p className="text-slate-500 font-medium mb-1.5">Did you mean (هل تقصد):</p>
+                        <p className="font-semibold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                          {lang === 'ar' ? 'هل تقصد:' : 'Did you mean:'}
+                        </p>
                         <div className="flex flex-wrap gap-1.5">
                           {aiSuggestions.map((sug) => (
                             <button
@@ -306,7 +327,7 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                                 setAiError('')
                                 setAiSuggestions([])
                               }}
-                              className="px-2 py-1 rounded bg-white hover:bg-violet-50 hover:text-violet-600 border border-slate-200 text-slate-700 font-mono transition-colors text-[10px]"
+                              className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 hover:bg-violet-50 dark:hover:bg-violet-900/40 hover:text-violet-600 dark:hover:text-violet-300 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-mono transition-colors text-xs font-medium"
                             >
                               {sug}
                             </button>
@@ -319,41 +340,45 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4 border-t border-gray-100">
+            <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-800 mt-4">
               <button
                 type="button"
                 onClick={() => setAiPromptOpen(false)}
-                className="btn-secondary flex-1 justify-center py-2.5 text-xs font-medium"
+                className="btn-secondary flex-1 justify-center py-2.5 text-xs font-bold"
               >
-                Cancel
+                {lang === 'ar' ? 'إلغاء' : 'Cancel'}
               </button>
               <button
                 type="button"
                 disabled={aiLoading}
                 onClick={handleAiFill}
-                className="btn-primary flex-1 justify-center py-2.5 text-xs bg-gradient-to-r from-violet-600 to-indigo-600 border-0 flex items-center gap-1 shadow-md text-white font-medium hover:from-violet-700 hover:to-indigo-700 transition-all"
+                className="btn-primary flex-1 justify-center py-2.5 text-xs bg-gradient-to-r from-violet-600 to-indigo-600 border-0 flex items-center gap-1.5 shadow-md text-white font-bold hover:from-violet-700 hover:to-indigo-700 transition-all cursor-pointer"
               >
-                {aiLoading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                Generate with AI
+                {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                {lang === 'ar' ? 'توليد بالذكاء الاصطناعي ✨' : 'Generate with AI ✨'}
               </button>
             </div>
           </div>
         )}
 
         <div className="flex justify-between items-center mb-5">
-          <h2 className="font-heading font-bold text-xl" style={{ color: '#2C3E50' }}>{initial ? 'Edit Chemical' : 'Add Chemical'}</h2>
-          <button onClick={onClose}><X size={20} style={{ color: '#94A3B8' }} /></button>
+          <h2 className="font-heading font-bold text-xl" style={{ color: 'var(--text-primary)' }}>
+            {initial ? (lang === 'ar' ? 'تعديل مركب كيميائي' : 'Edit Chemical') : (lang === 'ar' ? 'إضافة مركب كيميائي جديد' : 'Add Chemical')}
+          </h2>
+          <button onClick={onClose}><X size={20} style={{ color: 'var(--text-subtle)' }} /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
           {/* Auto-fill & AI Autocomplete */}
           <div className="flex gap-2 items-end">
             <div className="flex-1">
-              <label className="block text-xs font-medium mb-1" style={{ color: '#64748B' }}>Chemical Name *</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Sulfuric Acid" className="input-field" required />
+              <label className="block text-xs font-bold mb-1" style={{ color: 'var(--text-secondary)' }}>
+                {lang === 'ar' ? 'اسم المادة الكيميائية *' : 'Chemical Name *'}
+              </label>
+              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={lang === 'ar' ? 'مثال: Sulfuric Acid' : 'e.g. Sulfuric Acid'} className="input-field" required />
             </div>
             <div className="flex gap-2">
-              <button type="button" onClick={autoFill} disabled={fetching} className="btn-secondary py-2.5 px-3 text-xs whitespace-nowrap flex items-center gap-1 shadow-sm">
+              <button type="button" onClick={autoFill} disabled={fetching} className="btn-secondary py-2.5 px-3 text-xs whitespace-nowrap flex items-center gap-1 shadow-sm font-semibold">
                 {fetching ? <Loader2 size={12} className="animate-spin" /> : '🔍'} PubChem
               </button>
               <button
@@ -368,36 +393,36 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                   setAiSuggestions([])
                   setAiPromptOpen(true)
                 }}
-                className="btn-primary py-2.5 px-3 text-xs whitespace-nowrap bg-gradient-to-r from-violet-600 to-indigo-600 border-0 flex items-center gap-1 shadow-sm"
+                className="btn-primary py-2.5 px-3 text-xs whitespace-nowrap bg-gradient-to-r from-violet-600 to-indigo-600 border-0 flex items-center gap-1 shadow-sm font-semibold"
               >
-                <Sparkles size={12} /> AI Autocomplete
+                <Sparkles size={12} /> {lang === 'ar' ? 'توليد AI' : 'AI Autocomplete'}
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             {[
-              { label: 'Formula *', key: 'formula', placeholder: 'H2SO4' },
-              { label: 'MW (g/mol)', key: 'molecular_weight', placeholder: '98.079', type: 'number' },
-              { label: 'Quantity *', key: 'quantity', placeholder: '500', type: 'number' },
-              { label: 'Unit', key: 'quantity_unit', placeholder: 'g' },
+              { label: lang === 'ar' ? 'الصيغة الكيميائية *' : 'Formula *', key: 'formula', placeholder: 'H2SO4' },
+              { label: lang === 'ar' ? 'الوزن الجزيئي (g/mol)' : 'MW (g/mol)', key: 'molecular_weight', placeholder: '98.079', type: 'number' },
+              { label: lang === 'ar' ? 'الكمية *' : 'Quantity *', key: 'quantity', placeholder: '500', type: 'number' },
+              { label: lang === 'ar' ? 'الوحدة' : 'Unit', key: 'quantity_unit', placeholder: 'g' },
               {
-                label: 'Location *', key: 'location', type: 'select', options: [
-                  { value: '', label: 'Select Location' },
+                label: lang === 'ar' ? 'الموقع / المختبر *' : 'Location *', key: 'location', type: 'select', options: [
+                  { value: '', label: lang === 'ar' ? 'اختر الموقع' : 'Select Location' },
                   ...getAvailableLocations().map(loc => ({ value: loc, label: loc }))
                 ]
               },
               {
-                label: 'Cabinet *', key: 'cabinet', type: 'select', options: [
-                  { value: '', label: 'Select Cabinet' },
-                  ...getAvailableCabinets(form.location).map(cab => ({ value: cab, label: `Cabinet ${cab}` }))
+                label: lang === 'ar' ? 'الرف / الخزانة *' : 'Cabinet *', key: 'cabinet', type: 'select', options: [
+                  { value: '', label: lang === 'ar' ? 'اختر الخزانة' : 'Select Cabinet' },
+                  ...getAvailableCabinets(form.location).map(cab => ({ value: cab, label: lang === 'ar' ? `خزانة ${cab}` : `Cabinet ${cab}` }))
                 ]
               },
-              { label: 'CAS Number', key: 'cas_number', placeholder: '7664-93-9' },
-              { label: 'Expiry Date', key: 'expiry_date', type: 'date' },
+              { label: lang === 'ar' ? 'رقم CAS' : 'CAS Number', key: 'cas_number', placeholder: '7664-93-9' },
+              { label: lang === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date', key: 'expiry_date', type: 'date' },
             ].map(({ label, key, placeholder, type = 'text', options }) => (
               <div key={key}>
-                <label className="block text-xs font-medium mb-1" style={{ color: '#64748B' }}>{label}</label>
+                <label className="block text-xs font-bold mb-1" style={{ color: 'var(--text-secondary)' }}>{label}</label>
                 {type === 'select' ? (
                   <select
                     value={form[key] || ''}
@@ -408,7 +433,8 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
                         setForm({ ...form, [key]: e.target.value })
                       }
                     }}
-                    className="input-field py-2 text-sm bg-white"
+                    className="input-field py-2 text-sm font-medium"
+                    style={{ cursor: 'pointer' }}
                   >
                     {options.map(opt => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -423,12 +449,14 @@ function ChemicalForm({ initial, onSave, onClose, loading }) {
 
           {/* Hazard level */}
           <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: '#64748B' }}>Hazard Level</label>
+            <label className="block text-xs font-bold mb-1" style={{ color: 'var(--text-secondary)' }}>
+              {lang === 'ar' ? 'مستوى الخطورة' : 'Hazard Level'}
+            </label>
             <div className="flex gap-2">
               {['low', 'medium', 'high', 'critical'].map(level => (
                 <button key={level} type="button" onClick={() => setForm({ ...form, hazard_level: level })}
-                  className={`flex-1 py-2 rounded-lg text-xs font-medium capitalize transition-all`}
-                  style={{ background: form.hazard_level === level ? '#4A90E2' : '#F0F2F5', color: form.hazard_level === level ? 'white' : '#64748B' }}>
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold capitalize transition-all`}
+                  style={{ background: form.hazard_level === level ? '#4A90E2' : 'var(--chip-bg, #F0F2F5)', color: form.hazard_level === level ? 'white' : 'var(--text-secondary)' }}>
                   {level}
                 </button>
               ))}
