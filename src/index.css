@@ -67,12 +67,22 @@
   --text-primary: #0F172A;
   --text-secondary: #334155;
   --text-subtle: #475569;
+  --filter-box-bg: #F1F5F9;
+  --filter-box-border: #CBD5E1;
+  --chip-bg: #FFFFFF;
+  --chip-text: #1E293B;
+  --chip-border: #CBD5E1;
 }
 
 .dark {
   --text-primary: #F8FAFC;
   --text-secondary: #E2E8F0;
   --text-subtle: #CBD5E1;
+  --filter-box-bg: #0F172A;
+  --filter-box-border: #334155;
+  --chip-bg: #1E293B;
+  --chip-text: #F8FAFC;
+  --chip-border: #475569;
 }
 
 /* ===== GLOBAL RESET ===== */
@@ -486,12 +496,10 @@ body {
 }
 
 /* ── DARK MODE SUB-CONTAINER BACKGROUND OVERRIDES ── */
-.dark .bg-white,
-.dark .bg-slate-50,
-.dark .bg-slate-100,
-.dark .bg-neutral-50,
-.dark .bg-blue-50 {
-  background-color: #0F172A !important;
+.dark .card,
+.dark .stat-card {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
   color: #F8FAFC !important;
 }
 

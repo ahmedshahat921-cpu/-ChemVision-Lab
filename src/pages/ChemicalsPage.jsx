@@ -270,24 +270,33 @@ export default function ChemicalsPage() {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="flex flex-wrap gap-3 p-4 rounded-xl text-left bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <div 
+                className="flex flex-wrap gap-4 p-4.5 rounded-2xl text-left transition-colors"
+                style={{
+                  background: 'var(--filter-box-bg, #F1F5F9)',
+                  border: '1px solid var(--filter-box-border, #CBD5E1)'
+                }}
+              >
                 {filterOptions.map(({ key, label, options }) => (
-                  <div key={key} className="flex flex-col gap-1.5 text-left">
-                    <label className="text-xs font-medium text-left text-slate-500 dark:text-slate-400">{label}</label>
+                  <div key={key} className="flex flex-col gap-2 text-left">
+                    <label className="text-xs font-bold uppercase tracking-wider text-left" style={{ color: 'var(--text-primary)' }}>
+                      {label}
+                    </label>
                     <div className="flex gap-1.5 flex-wrap">
                       {options.map(opt => {
                         const isSelected = filters[key] === opt
                         return (
                           <motion.button
                             key={opt}
+                            type="button"
                             onClick={() => setFilter(key, opt)}
-                            className="text-xs px-3 py-1 rounded-full font-medium transition-all"
+                            className="text-xs px-3.5 py-1.5 rounded-full font-bold transition-all shadow-xs"
                             style={{
-                              background: isSelected ? '#4A90E2' : 'var(--filter-bg, transparent)',
-                              color: isSelected ? 'white' : 'var(--filter-color, inherit)',
-                              border: `1px solid ${isSelected ? '#4A90E2' : 'rgba(148, 163, 184, 0.3)'}`,
+                              background: isSelected ? '#4A90E2' : 'var(--chip-bg, #FFFFFF)',
+                              color: isSelected ? '#FFFFFF' : 'var(--chip-text, #334155)',
+                              border: `1px solid ${isSelected ? '#4A90E2' : 'var(--chip-border, #CBD5E1)'}`,
                             }}
-                            whileHover={{ scale: 1.05 }}
+                            whileHover={{ scale: 1.06 }}
                             whileTap={{ scale: 0.95 }}
                           >
                             {opt === 'all'
