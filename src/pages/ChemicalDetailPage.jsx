@@ -840,25 +840,25 @@ export default function ChemicalDetailPage() {
 
             {/* Basic Info Horizontal Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-              <div className="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80">
+              <div className="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 dark:bg-slate-800/90">
                 <FlaskConical size={16} className="text-blue-500 mt-0.5 flex-shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                     {lang === 'ar' ? 'الوزن الجزيئي' : 'Molecular Weight'}
                   </p>
-                  <p className="text-xs font-bold mt-0.5 break-words" style={{ color: 'var(--text-primary)' }}>
+                  <p className="text-xs font-extrabold mt-0.5 break-words text-slate-900 dark:text-slate-100">
                     {chemical.molecular_weight ? `${chemical.molecular_weight} g/mol` : (lang === 'ar' ? 'غير متوفر' : 'N/A')}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80">
+              <div className="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 dark:bg-slate-800/90">
                 <Package size={16} className="text-blue-500 mt-0.5 flex-shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                     {lang === 'ar' ? 'الكمية المتوفرة' : 'Quantity'}
                   </p>
-                  <p className="text-xs font-bold mt-0.5 break-words" style={{ color: 'var(--text-primary)' }}>
+                  <p className="text-xs font-extrabold mt-0.5 break-words text-slate-900 dark:text-slate-100">
                     {chemical.quantity} {chemical.quantity_unit}
                   </p>
                 </div>
@@ -867,26 +867,26 @@ export default function ChemicalDetailPage() {
               <motion.div 
                 whileHover={{ scale: 1.03 }}
                 onClick={() => navigate(`/dashboard?selectChemicalId=${chemical.id}`)}
-                className="flex items-start gap-2 p-2.5 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/60 dark:bg-blue-950/40 cursor-pointer transition-all duration-200" 
+                className="flex items-start gap-2 p-2.5 rounded-xl border border-blue-300 dark:border-blue-800 bg-blue-100/80 dark:bg-blue-950/60 cursor-pointer transition-all duration-200" 
               >
-                <MapPin size={16} className="text-blue-500 mt-0.5 flex-shrink-0" />
+                <MapPin size={16} className="text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                  <p className="text-[10px] text-blue-700 dark:text-blue-300 font-extrabold uppercase tracking-wider flex items-center gap-1">
                     {lang === 'ar' ? 'موقع التخزين 🗺️' : 'Location 🗺️'}
                   </p>
-                  <p className="text-xs font-bold mt-0.5 break-words text-blue-700 dark:text-blue-300 underline" style={{ textDecorationStyle: 'dashed' }}>
+                  <p className="text-xs font-extrabold mt-0.5 break-words text-blue-800 dark:text-blue-200 underline" style={{ textDecorationStyle: 'dashed' }}>
                     {translatedLocation} {chemical.cabinet ? `(${chemical.cabinet})` : ''}
                   </p>
                 </div>
               </motion.div>
 
-              <div className="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80">
+              <div className="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 dark:bg-slate-800/90">
                 <Calendar size={16} className="text-blue-500 mt-0.5 flex-shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                     {lang === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date'}
                   </p>
-                  <p className="text-xs font-bold mt-0.5 break-words" style={{ color: 'var(--text-primary)' }}>
+                  <p className="text-xs font-extrabold mt-0.5 break-words text-slate-900 dark:text-slate-100">
                     {chemical.expiry_date ? new Date(chemical.expiry_date).toLocaleDateString() : (lang === 'ar' ? 'غير محدد' : 'N/A')}
                   </p>
                 </div>
@@ -918,9 +918,9 @@ export default function ChemicalDetailPage() {
           {/* Physical & Chemical Properties Card (Compact 2-Column Grid) */}
           {detailedData && (
             <motion.div className="card p-4" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
                 <FlaskConical size={16} className="text-blue-500" />
-                <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
                   {lang === 'ar' ? 'الخصائص الفيزيائية والكيميائية' : 'Physical & Chemical Properties'}
                 </h3>
               </div>
@@ -937,9 +937,9 @@ export default function ChemicalDetailPage() {
                   { label: lang === 'ar' ? 'الأس الهيدروجيني pH' : 'pH Level', value: detailedData.physical.ph[lang] || detailedData.physical.ph.en },
                   { label: lang === 'ar' ? 'التصنيف الكيميائي' : 'Chemical Class', value: detailedData.chemical.class[lang] || detailedData.chemical.class.en },
                 ].map(({ label, value }) => (
-                  <div key={label} className="flex flex-col p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80">
-                    <span className="font-bold" style={{ color: 'var(--text-secondary)', fontSize: '0.62rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
-                    <span className="font-bold text-xs mt-0.5 leading-snug" style={{ color: 'var(--text-primary)' }}>{value}</span>
+                  <div key={label} className="flex flex-col p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 dark:bg-slate-800/90">
+                    <span className="font-extrabold text-slate-600 dark:text-slate-400 text-[10px] uppercase tracking-wider">{label}</span>
+                    <span className="font-extrabold text-xs mt-0.5 leading-snug text-slate-900 dark:text-slate-100">{value}</span>
                   </div>
                 ))}
               </div>
@@ -949,17 +949,17 @@ export default function ChemicalDetailPage() {
           {/* Uses & Applications Card */}
           {detailedData && (
             <motion.div className="card p-4" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
                 <Activity size={16} className="text-emerald-500" />
-                <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
                   {lang === 'ar' ? 'الاستخدامات والتطبيقات' : 'Uses & Applications'}
                 </h3>
               </div>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {(detailedData.uses[lang] || detailedData.uses.en).map((use, i) => (
-                  <li key={i} className="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80">
+                  <li key={i} className="flex items-start gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 dark:bg-slate-800/90">
                     <span className="text-emerald-500 font-bold text-xs select-none">•</span>
-                    <span className="font-bold text-xs leading-normal" style={{ color: 'var(--text-primary)' }}>{use}</span>
+                    <span className="font-extrabold text-xs leading-normal text-slate-900 dark:text-slate-100">{use}</span>
                   </li>
                 ))}
               </ul>
@@ -971,7 +971,7 @@ export default function ChemicalDetailPage() {
             <motion.a
               href={`https://pubchem.ncbi.nlm.nih.gov/compound/${chemical.pubchem_cid}`}
               target="_blank" rel="noopener noreferrer"
-              className="flex items-center justify-between p-3.5 rounded-xl border text-xs font-bold transition-all shadow-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 hover:border-blue-500"
+              className="flex items-center justify-between p-3.5 rounded-xl border text-xs font-bold transition-all shadow-xs bg-slate-100/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:border-blue-500"
               whileHover={{ scale: 1.01 }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.22 }}
             >
@@ -990,41 +990,41 @@ export default function ChemicalDetailPage() {
           {/* Safety & PPE Card */}
           {detailedData && (
             <motion.div className="card p-4" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
-              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
                 <Shield size={16} className="text-rose-500" />
-                <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
                   {lang === 'ar' ? 'السلامة ومعدات الحماية' : 'Safety & PPE'}
                 </h3>
               </div>
               <div className="flex gap-1.5 flex-wrap mb-3.5">
                 {(detailedData.safety.ppe[lang] || detailedData.safety.ppe.en).map((item, i) => (
-                  <span key={i} className="text-[10px] font-bold px-2.5 py-1 rounded-full border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200 shadow-xs">
+                  <span key={i} className="text-[10px] font-extrabold px-2.5 py-1 rounded-full border border-rose-300 dark:border-rose-800 bg-rose-100/90 dark:bg-rose-950/80 text-rose-900 dark:text-rose-200 shadow-xs">
                     🛡️ {item}
                   </span>
                 ))}
               </div>
               <div className="space-y-2.5 text-xs">
-                <div className="p-2.5 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40">
-                  <p className="font-bold mb-0.5 text-amber-700 dark:text-amber-300 text-[10px] uppercase">
+                <div className="p-2.5 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-100/90 dark:bg-amber-950/70">
+                  <p className="font-extrabold mb-0.5 text-amber-800 dark:text-amber-300 text-[10px] uppercase">
                     {lang === 'ar' ? 'حدود التعرض الآمنة' : 'Exposure Limits'}
                   </p>
-                  <p className="font-bold leading-snug text-amber-950 dark:text-amber-100 text-xs">
+                  <p className="font-extrabold leading-snug text-amber-950 dark:text-amber-100 text-xs">
                     {detailedData.safety.exposureLimits[lang] || detailedData.safety.exposureLimits.en}
                   </p>
                 </div>
-                <div className="p-2.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40">
-                  <p className="font-bold mb-0.5 text-rose-700 dark:text-rose-300 text-[10px] uppercase">
+                <div className="p-2.5 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-100/90 dark:bg-rose-950/70">
+                  <p className="font-extrabold mb-0.5 text-rose-800 dark:text-rose-300 text-[10px] uppercase">
                     {lang === 'ar' ? 'السمية الحادة (LD₅₀)' : 'Acute Toxicity (LD₅₀)'}
                   </p>
-                  <p className="font-bold leading-snug text-rose-950 dark:text-rose-100 text-xs">
+                  <p className="font-extrabold leading-snug text-rose-950 dark:text-rose-100 text-xs">
                     {detailedData.safety.ldValue[lang] || detailedData.safety.ldValue.en}
                   </p>
                 </div>
-                <div className="p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40">
-                  <p className="font-bold mb-0.5 text-emerald-700 dark:text-emerald-300 text-[10px] uppercase">
+                <div className="p-2.5 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-100/90 dark:bg-emerald-950/70">
+                  <p className="font-extrabold mb-0.5 text-emerald-800 dark:text-emerald-300 text-[10px] uppercase">
                     {lang === 'ar' ? 'إطفاء الحريق' : 'Fire Extinguishing'}
                   </p>
-                  <p className="font-bold leading-snug text-emerald-950 dark:text-emerald-100 text-xs">
+                  <p className="font-extrabold leading-snug text-emerald-950 dark:text-emerald-100 text-xs">
                     {detailedData.safety.fireExtinguishing[lang] || detailedData.safety.fireExtinguishing.en}
                   </p>
                 </div>
