@@ -196,22 +196,20 @@ export default function NotificationsPanel() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.97 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="absolute top-12 z-[100] flex flex-col rounded-2xl shadow-2xl overflow-hidden"
+            className="absolute top-12 z-[100] flex flex-col rounded-2xl shadow-2xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition-colors"
             style={{
               right: lang === 'ar' ? 'auto' : 0,
               left: lang === 'ar' ? 0 : 'auto',
               width: '380px',
               maxWidth: 'calc(100vw - 24px)',
-              background: 'white',
-              border: '1px solid #E2E8F0',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
             }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: '#F0F2F5' }}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <Bell size={16} style={{ color: '#4A90E2' }} />
-                <h3 className="font-bold text-sm" style={{ color: '#2C3E50' }}>
+                <Bell size={16} className="text-blue-500" />
+                <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
                   {lang === 'ar' ? 'الإشعارات' : 'Notifications'}
                 </h3>
                 {unreadCount > 0 && (
@@ -226,29 +224,28 @@ export default function NotificationsPanel() {
                     whileHover={{ scale: 1.05 }}
                     onClick={markAllAsRead}
                     title={lang === 'ar' ? 'قراءة الكل' : 'Mark all read'}
-                    className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-medium transition-colors"
-                    style={{ background: '#EBF4FF', color: '#4A90E2' }}
+                    className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400"
                   >
                     <CheckCheck size={12} />
                     {lang === 'ar' ? 'قراءة الكل' : 'All read'}
                   </motion.button>
                 )}
-                <button onClick={() => setOpen(false)} className="p-1 rounded-lg hover:bg-slate-100">
-                  <X size={14} style={{ color: '#94A3B8' }} />
+                <button onClick={() => setOpen(false)} className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                  <X size={14} className="text-slate-400" />
                 </button>
               </div>
             </div>
 
             {/* Filter tabs */}
-            <div className="flex gap-1 px-4 pt-3 pb-2">
+            <div className="flex gap-1.5 px-4 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800/60">
               {['all', 'unread'].map(f => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className="px-3 py-1 rounded-lg text-xs font-semibold transition-all"
+                  className="px-3 py-1 rounded-lg text-xs font-bold transition-all"
                   style={{
-                    background: filter === f ? '#4A90E2' : '#F0F2F5',
-                    color: filter === f ? 'white' : '#64748B',
+                    background: filter === f ? '#4A90E2' : 'var(--chip-bg, #F0F2F5)',
+                    color: filter === f ? 'white' : 'var(--text-secondary)',
                   }}
                 >
                   {f === 'all'
@@ -271,10 +268,10 @@ export default function NotificationsPanel() {
                 </div>
               ) : displayed.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 gap-3">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: '#F0F2F5' }}>
-                    <Bell size={24} style={{ color: '#CBD5E1' }} />
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800">
+                    <Bell size={24} className="text-slate-400" />
                   </div>
-                  <p className="text-sm font-medium" style={{ color: '#94A3B8' }}>
+                  <p className="text-sm font-semibold text-slate-400">
                     {lang === 'ar' ? 'لا توجد إشعارات' : 'No notifications'}
                   </p>
                 </div>
@@ -292,11 +289,7 @@ export default function NotificationsPanel() {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 10 }}
                         transition={{ delay: i * 0.03 }}
-                        className="group flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors border-b"
-                        style={{
-                          background: notif.is_read ? 'white' : '#FAFCFF',
-                          borderColor: '#F8FAFC',
-                        }}
+                        className="group flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors border-b border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800/60"
                         onClick={() => handleNotifClick(notif)}
                       >
                         {/* Icon */}
@@ -308,30 +301,30 @@ export default function NotificationsPanel() {
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 text-left">
                           <div className="flex items-center justify-between gap-2 mb-0.5">
-                            <p className="text-xs font-bold truncate" style={{ color: notif.is_read ? '#64748B' : '#1E293B' }}>
+                            <p className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>
                               {title}
                             </p>
                             {!notif.is_read && (
-                              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#4A90E2' }} />
+                              <span className="w-2 h-2 rounded-full flex-shrink-0 bg-blue-500" />
                             )}
                           </div>
-                          <p className="text-xs leading-relaxed" style={{ color: '#64748B', fontSize: '0.7rem' }}>
+                          <p className="text-xs leading-relaxed" style={{ color: 'var(--text-subtle)', fontSize: '0.7rem' }}>
                             {message}
                           </p>
                           {notif.chemical_name && (
                             <div className="flex items-center gap-1 mt-1">
-                              <FlaskConical size={10} style={{ color: '#94A3B8' }} />
-                              <span className="text-xs font-mono" style={{ color: '#94A3B8', fontSize: '0.65rem' }}>
+                              <FlaskConical size={10} className="text-slate-400" />
+                              <span className="text-xs font-mono font-semibold" style={{ color: 'var(--text-subtle)', fontSize: '0.65rem' }}>
                                 {notif.chemical_name}
                               </span>
                               {notif.chemical_id && (
-                                <ChevronRight size={10} style={{ color: '#CBD5E1' }} />
+                                <ChevronRight size={10} className="text-slate-400" />
                               )}
                             </div>
                           )}
-                          <p className="text-xs mt-1" style={{ color: '#CBD5E1', fontSize: '0.62rem' }}>
+                          <p className="text-xs mt-1 font-semibold" style={{ color: 'var(--text-subtle)', fontSize: '0.62rem' }}>
                             {timeAgo(notif.created_at, lang)}
                           </p>
                         </div>
@@ -341,18 +334,18 @@ export default function NotificationsPanel() {
                           {!notif.is_read && (
                             <button
                               onClick={e => { e.stopPropagation(); markAsRead(notif.id) }}
-                              className="p-1 rounded-lg hover:bg-blue-50"
+                              className="p-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/40"
                               title={lang === 'ar' ? 'تحديد كمقروء' : 'Mark as read'}
                             >
-                              <Check size={12} style={{ color: '#4A90E2' }} />
+                              <Check size={12} className="text-blue-500" />
                             </button>
                           )}
                           <button
                             onClick={e => { e.stopPropagation(); deleteNotification(notif.id) }}
-                            className="p-1 rounded-lg hover:bg-red-50"
+                            className="p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/40"
                             title={lang === 'ar' ? 'حذف' : 'Dismiss'}
                           >
-                            <X size={12} style={{ color: '#E85D5D' }} />
+                            <X size={12} className="text-red-500" />
                           </button>
                         </div>
                       </motion.div>
@@ -364,8 +357,8 @@ export default function NotificationsPanel() {
 
             {/* Footer */}
             {displayed.length > 0 && (
-              <div className="px-4 py-2.5 border-t flex items-center justify-between" style={{ borderColor: '#F0F2F5' }}>
-                <p className="text-xs" style={{ color: '#CBD5E1' }}>
+              <div className="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <p className="text-xs font-semibold" style={{ color: 'var(--text-subtle)' }}>
                   {lang === 'ar'
                     ? `${displayed.length} إشعار`
                     : `${displayed.length} notification${displayed.length !== 1 ? 's' : ''}`}
@@ -373,8 +366,7 @@ export default function NotificationsPanel() {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   onClick={fetchNotifications}
-                  className="text-xs font-semibold px-2 py-1 rounded-lg"
-                  style={{ color: '#4A90E2', background: '#EBF4FF' }}
+                  className="text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400"
                 >
                   {lang === 'ar' ? 'تحديث' : 'Refresh'}
                 </motion.button>
