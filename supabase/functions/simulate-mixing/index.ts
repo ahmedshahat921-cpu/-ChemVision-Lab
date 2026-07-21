@@ -20,7 +20,11 @@ serve(async (req) => {
     }
 
     const body = await req.json()
-    const { action, chemA, chemB, chemicalName, messages, inventoryContext, email, security_answer, new_password } = body
+    const { action, chemA, chemB, varsA, varsB, chemA_vars, chemB_vars, chemicalName, messages, inventoryContext, email, security_answer, new_password } = body
+
+    // Normalize variable names: accept both varsA (new) and chemA_vars (legacy)
+    const resolvedVarsA = varsA || chemA_vars
+    const resolvedVarsB = varsB || chemB_vars
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -341,13 +345,23 @@ Do not return any markdown code block wrappers (like \`\`\`json). Return ONLY th
       )
     }
 
-    // Prompt engineering for Gemini
+    // Prompt engineering for Gemini incorporating reaction variables
     const prompt = `You are an advanced chemical safety simulator.
-Analyze what happens when mixing Chemical A and Chemical B in a laboratory setting.
-Chemical A: ${chemA.name} (${chemA.formula})
-Chemical B: ${chemB.name} (${chemB.formula})
+Analyze what happens when mixing Chemical A and Chemical B in a laboratory setting under the specified conditions.
 
-Analyze their reactivity, safety, potential products, and hazard severity.
+Chemical A: ${chemA.name} (${chemA.formula})
+- Physical State: ${resolvedVarsA?.state || 'liquid'}
+- Quantity: ${resolvedVarsA?.quantity || 50} mL
+- Molar Concentration: ${resolvedVarsA?.concentration || 1.0} mol/L
+- Reactant Temperature: ${resolvedVarsA?.temperature || 25} °C
+
+Chemical B: ${chemB.name} (${chemB.formula})
+- Physical State: ${resolvedVarsB?.state || 'liquid'}
+- Quantity: ${resolvedVarsB?.quantity || 50} mL
+- Molar Concentration: ${resolvedVarsB?.concentration || 1.0} mol/L
+- Reactant Temperature: ${resolvedVarsB?.temperature || 25} °C
+
+Analyze their reactivity, safety, potential products, and hazard severity. Take the states, quantity, molar concentration, and reactant temperatures into account. Higher concentration/molarity of strong acids/bases increases safety severity. Higher reactant temperatures may increase kinetics or trigger thermal runaways.
 You MUST respond with a valid JSON object matching this schema:
 {
   "is_safe": boolean,
@@ -355,11 +369,11 @@ You MUST respond with a valid JSON object matching this schema:
   "severity_score": number (1 to 10 scale of danger),
   "product_name": "Name of the resulting product if any (leave empty if none)",
   "product_formula": "Formula of the resulting product if any (leave empty if none)",
-  "result_description_en": "A detailed, professional, easy-to-understand explanation of the reaction in English.",
-  "result_description_ar": "A detailed, professional, easy-to-understand explanation of the reaction in Arabic (شرح مفصل للتفاعل باللغة العربية).",
-  "physical_properties_en": "Detailed physical and thermal properties of the mixture (e.g. density/solubility shifts) in English.",
+  "result_description_en": "A detailed, professional, easy-to-understand explanation of the reaction in English, referencing the specific quantities, concentrations, and temperature used.",
+  "result_description_ar": "A detailed, professional, easy-to-understand explanation of the reaction in Arabic (شرح مفصل للتفاعل باللغة العربية مع الإشارة للكميات والتركيز والحرارة).",
+  "physical_properties_en": "Detailed physical and thermal properties of the mixture (e.g. density/solubility shifts, temperature changes) in English.",
   "physical_properties_ar": "Detailed physical and thermal properties of the mixture in Arabic (الخصائص الفيزيائية والحرارية باللغة العربية).",
-  "safety_measures_en": "Precise lab safety measures and hazard controls (e.g. required PPE types) in English.",
+  "safety_measures_en": "Precise lab safety measures and hazard controls (e.g. required PPE types, ventilation) in English.",
   "safety_measures_ar": "Precise lab safety measures and hazard controls in Arabic (آلية الأمان والسلامة المخبرية باللغة العربية).",
   "chemical_properties_en": "Chemical properties and stability of the resulting mixture in English.",
   "chemical_properties_ar": "Chemical properties and stability of the resulting mixture in Arabic (الخواص الكيميائية باللغة العربية)."

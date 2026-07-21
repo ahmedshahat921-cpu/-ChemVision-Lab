@@ -159,7 +159,7 @@ function ReactionAnimation({ type }) {
 }
 
 // Local smart chemical prediction engine ( C.P.E. )
-const predictReactionLocally = (chemA, chemB) => {
+const predictReactionLocally = (chemA, chemB, varsA, varsB) => {
   const nameA = chemA.name.toLowerCase()
   const nameB = chemB.name.toLowerCase()
   const formulaA = chemA.formula
@@ -173,26 +173,38 @@ const predictReactionLocally = (chemA, chemB) => {
   const baseA = isBase(nameA)
   const baseB = isBase(nameB)
 
+  const isConcA = varsA?.state === 'aq' && (varsA?.concentration || 1) > 6.0
+  const isConcB = varsB?.state === 'aq' && (varsB?.concentration || 1) > 6.0
+  const isConcentrated = isConcA || isConcB
+  const maxTempInput = Math.max(varsA?.temperature || 25, varsB?.temperature || 25)
+  const isHotInput = maxTempInput > 50
+
   // -- CHEMICAL REACTIONS --
 
   // 1. Acid + Carbonate (e.g. HCl + CaCO3) -> produces CO2 gas
   if ((acidA && nameB.includes('carbonate')) || (acidB && nameA.includes('carbonate'))) {
     const acid = acidA ? chemA : chemB
     const carbonate = acidA ? chemB : chemA
+    const acidVars = acidA ? varsA : varsB
+    const carbVars = acidA ? varsB : varsA
+    const isHighAcidConc = acidVars?.state === 'aq' && acidVars?.concentration > 6.0
+    const effervescenceSpeed = isHighAcidConc ? 'extremely rapid' : 'moderate'
+    const gasVolume = Math.round((acidVars?.quantity || 50) * (acidVars?.concentration || 1) * 0.22)
+
     return {
-      is_safe: true,
+      is_safe: !isHighAcidConc && !isHotInput,
       reaction_type: 'produces_gas',
-      severity_score: 3,
-      result_description_en: `Reaction between ${acid.name} (${acid.formula}) and ${carbonate.name} (${carbonate.formula}) generates Carbon Dioxide (CO2) gas bubbles. Neutralization is successful.`,
-      result_description_ar: `التفاعل بين ${acid.name} و ${carbonate.name} ينتج فقاعات غاز ثاني أكسيد الكربون (CO2). عملية التعادل ناجحة.`,
+      severity_score: isHighAcidConc ? 6 : isHotInput ? 5 : 3,
+      result_description_en: `Reaction between ${acid.name} (${acidVars?.concentration || 1.0}M, ${acidVars?.quantity || 50}${acidVars?.state === 's' ? 'g' : 'ml'} as ${acidVars?.state}) and ${carbonate.name} (${carbVars?.quantity || 50}g as ${carbVars?.state}) at ${maxTempInput}°C generates Carbon Dioxide (CO2) gas. Bubbling speed is ${effervescenceSpeed}.`,
+      result_description_ar: `التفاعل بين ${acid.name} (بتركيز ${acidVars?.concentration || 1.0}M، وكمية ${acidVars?.quantity || 50}مل بحالة ${acidVars?.state}) مع ${carbonate.name} (بكمية ${carbVars?.quantity || 50}جرام بحالة ${carbVars?.state}) في درجة حرارة ${maxTempInput} درجة مئوية ينتج غاز ثاني أكسيد الكربون (CO2) بفوران ${isHighAcidConc ? 'سريع وعنيف للغاية' : 'معتدل'}.`,
       product_name: 'Carbon Dioxide & Salt Solution',
       product_formula: 'CO2 (g) + H2O (l) + Salt (aq)',
-      physical_properties_en: `Exothermic neutralization (ΔH < 0). Active gas evolution causes effervescence (bubbling). Solution temperature rises moderately. High solubility of the formed calcium salt in water.`,
-      physical_properties_ar: `تفاعل طارد للحرارة مع فوران نشط وانطلاق فقاعات الغاز. ترتفع درجة حرارة المحلول بشكل معتدل مع ذوبانية عالية للملح المتشكل.`,
-      safety_measures_en: `Wear splash goggles, protective laboratory coat, and nitrile gloves. Perform in a fume hood to vent CO2. Ensure closed vessels are vented to avoid pressure explosion.`,
-      safety_measures_ar: `ارتدِ نظارات الحماية، معطف المختبر، وقفازات النيتريل. يُجرى تحت الشفاط لتفريغ الغاز، وتجنب إغلاق الأوعية بإحكام منعاً للانفجار بسبب الضغط.`,
-      chemical_properties_en: `pH shifts from strong acid (pH < 1) towards weakly acidic/neutral (pH 5-6) depending on ratio. Carbonate ions convert to gaseous CO2 and H2O, leaving chloride/sulfate salts in solution.`,
-      chemical_properties_ar: `يتغير الرقم الهيدروجيني pH من حمضي قوي (أقل من 1) نحو حموضة خفيفة أو تعادل (5-6) حسب النسب. تتحول أيونات الكربونات إلى غاز وثاني أكسيد كربون وماء.`
+      physical_properties_en: `Exothermic neutralization (ΔH < 0). Active gas evolution (~${gasVolume}L of CO2). Mixture temperature rises to approximately ${Math.round(maxTempInput + (isHighAcidConc ? 25 : 8))}°C.`,
+      physical_properties_ar: `تفاعل طارد للحرارة مع انطلاق حوالي ${gasVolume} لتر من الغاز. ترتفع درجة حرارة المحلول لتصل إلى حوالي ${Math.round(maxTempInput + (isHighAcidConc ? 25 : 8))} درجة مئوية.`,
+      safety_measures_en: `Wear splash goggles, lab coat, and nitrile gloves. Ensure closed vessels are vented to avoid pressure explosion. Perform in a fume hood due to gas release.`,
+      safety_measures_ar: `ارتدِ نظارات الحماية، معطف المختبر، وقفازات النيتريل. تجنب إغلاق الأوعية بإحكام منعاً للانفجار بسبب ضغط الغاز المتصاعد.`,
+      chemical_properties_en: `pH shifts towards weakly acidic/neutral (pH 5-6). High acid concentrations can lead to incomplete reaction due to carbonate saturation.`,
+      chemical_properties_ar: `يتغير الرقم الهيدروجيني pH نحو حموضة خفيفة أو تعادل (5-6). قد تؤدي التراكيز المرتفعة من الحمض لعدم اكتمال التفاعل بسبب تشبع الكربونات.`
     }
   }
 
@@ -200,20 +212,25 @@ const predictReactionLocally = (chemA, chemB) => {
   if ((acidA && baseB) || (acidB && baseA)) {
     const acid = acidA ? chemA : chemB
     const base = acidA ? chemB : chemA
+    const acidVars = acidA ? varsA : varsB
+    const baseVars = acidA ? varsB : varsA
+    const isDangerouslyHot = isHotInput || (acidVars?.concentration > 8.0 && baseVars?.concentration > 8.0)
+    const finalTempEstimate = Math.round(maxTempInput + ((acidVars?.concentration || 1) * (baseVars?.concentration || 1) * 3))
+
     return {
-      is_safe: true,
-      reaction_type: 'safe',
-      severity_score: 2,
-      result_description_en: `Acid-base neutralization reaction between ${acid.name} and ${base.name}. Heat is released (exothermic), forming water and stable salt.`,
-      result_description_ar: `تفاعل تعادل بين الحمض (${acid.name}) والقاعدة (${base.name}). ينطلق تفاعل طارد للحرارة لإنتاج الملح والماء المستقر.`,
+      is_safe: !isDangerouslyHot && (acidVars?.concentration || 1) < 10 && (baseVars?.concentration || 1) < 10,
+      reaction_type: isDangerouslyHot ? 'hazardous' : 'safe',
+      severity_score: isDangerouslyHot ? 6 : 2,
+      result_description_en: `Acid-base neutralization between ${acid.name} (${acidVars?.concentration || 1.0}M, ${acidVars?.quantity || 50}ml) and ${base.name} (${baseVars?.concentration || 1.0}M, ${baseVars?.quantity || 50}ml). Exothermic reaction yields water and stable salt.`,
+      result_description_ar: `تفاعل تعادل حمضي-قاعدي بين ${acid.name} (بتركيز ${acidVars?.concentration || 1.0}M، وكمية ${acidVars?.quantity || 50}مل) مع ${base.name} (بتركيز ${baseVars?.concentration || 1.0}M، وكمية ${baseVars?.quantity || 50}مل). التفاعل طارد للحرارة وينتج ماء وملح مستقر.`,
       product_name: 'Water & Salt Solution',
       product_formula: 'H2O (l) + Salt (aq)',
-      physical_properties_en: `Highly exothermic heat of neutralization (~57 kJ/mol). Rapid increase in mixture temperature. Transparent homogeneous liquid phase.`,
-      physical_properties_ar: `حرارة تعادل طاردة للحرارة بشكل كبير (~57 كيلو جول/مول). ارتفاع سريع في درجة الحرارة وينتج محلول سائل متجانس رائق.`,
-      safety_measures_en: `Wear chemical splash goggles, heavy nitrile gloves, and protective apron. Always add acid to base slowly with stirring. Cool container if needed to prevent boiling splash.`,
-      safety_measures_ar: `ارتدِ نظارات واقية للمواد الكيميائية، قفازات نيتريل سميكة، ومريلة واقية. أضف الحمض دائماً إلى القاعدة ببطء مع التحريك. برّد الوعاء إذا لزم الأمر.`,
-      chemical_properties_en: `Rapid neutralization reaction resulting in pH shift to ~7. Electrolytes dissociate completely into active spectator ions (e.g., Na+, Cl-, SO4^2-).`,
-      chemical_properties_ar: `تفاعل تعادل سريع يؤدي إلى تغير الرقم الهيدروجيني pH إلى حوالي 7. تتفكك الإلكتروليتات بالكامل إلى أيونات ذائبة مستقرة.`
+      physical_properties_en: `Exothermic heat release. Mixture temperature rises to approximately ${Math.min(100, finalTempEstimate)}°C. High concentration increases volatility and splash hazard.`,
+      physical_properties_ar: `انطلاق حرارة تعادل. ترتفع درجة حرارة الخليط لتصل إلى حوالي ${Math.min(100, finalTempEstimate)} درجة مئوية. التركيز العالي يزيد من خطر تناثر السوائل.`,
+      safety_measures_en: `Wear chemical splash goggles and heavy nitrile gloves. Always add acid to base slowly with stirring. Cool container if needed to prevent boiling splash.`,
+      safety_measures_ar: `ارتدِ نظارات واقية للمواد الكيميائية، وقفازات نيتريل سميكة. أضف الحمض دائماً إلى القاعدة ببطء مع التحريك المستمر لتفادي الغليان المفاجئ.`,
+      chemical_properties_en: `Neutralization shifts pH towards ~7. Spectator ions remain completely dissociated in aqueous solution.`,
+      chemical_properties_ar: `يؤدي تفاعل التعادل لتغير الرقم الهيدروجيني pH إلى حوالي 7. تتفكك الأيونات المرافقة بالكامل في المحلول المائي.`
     }
   }
 
@@ -224,39 +241,49 @@ const predictReactionLocally = (chemA, chemB) => {
   if ((isOxidizer(nameA) && isFlammable(nameB)) || (isOxidizer(nameB) && isFlammable(nameA))) {
     const ox = isOxidizer(nameA) ? chemA : chemB
     const flam = isOxidizer(nameA) ? chemB : chemA
+    const oxVars = isOxidizer(nameA) ? varsA : varsB
+    const flamVars = isOxidizer(nameA) ? varsB : varsA
+    const isCritical = (oxVars?.quantity || 50) > 100 || (flamVars?.quantity || 50) > 100 || isHotInput || isConcentrated
+
     return {
       is_safe: false,
       reaction_type: 'explosive',
-      severity_score: 9,
-      result_description_en: `CRITICAL DANGER: Mixing strong oxidizer ${ox.name} with flammable ${flam.name} results in violent oxidation, high heat release, and explosive combustion risk!`,
-      result_description_ar: `خطر حرج للغاية: خلط المؤكسد القوي (${ox.name}) مع المادة القابلة للاشتعال (${flam.name}) يسبب أكسدة عنيفة وانطلاق حرارة عالية وخطر انفجار واشتعال!`,
-      product_name: 'Combustion Gases',
-      product_formula: 'CO2 (g) + H2O (g)',
-      physical_properties_en: `Extremely high exothermic heat release (ΔH << 0). Instantaneous boiling and vaporization of organic solvents. Immediate expansion of combustion gases.`,
+      severity_score: isCritical ? 10 : 8,
+      result_description_en: `CRITICAL DANGER: Mixing oxidizer ${ox.name} (${oxVars?.quantity || 50}${oxVars?.state === 's' ? 'g' : 'ml'}) with flammable organic solvent ${flam.name} (${flamVars?.quantity || 50}${flamVars?.state === 's' ? 'g' : 'ml'}) causes immediate redox oxidation, high heat release, and explosion hazard.`,
+      result_description_ar: `خطر حرج للغاية: خلط المؤكسد القوي (${ox.name}) (بكمية ${oxVars?.quantity || 50}${oxVars?.state === 's' ? 'جرام' : 'مل'}) مع المادة القابلة للاشتعال (${flam.name}) (بكمية ${flamVars?.quantity || 50}${flamVars?.state === 's' ? 'جرام' : 'مل'}) يسبب أكسدة واختزالاً فورية عنيفة وانفجاراً.`,
+      product_name: 'Combustion Gases & Carbon Residues',
+      product_formula: 'CO2 (g) + H2O (g) + Carbonaceous residues',
+      physical_properties_en: `Extremely high exothermic heat release. Localized boiling and immediate vaporization of organic solvents. Combustion pressure expands rapidly.`,
       physical_properties_ar: `انطلاق حرارة هائل طارد للحرارة بشدة. غليان وتبخر فوري للمذيبات العضوية مع تمدد سريع لغازات الاحتراق.`,
       safety_measures_en: `DO NOT MIX. Requires blast shield, self-contained breathing apparatus (SCBA), chemical suit, and Class B fire extinguisher ready.`,
       safety_measures_ar: `يمنع الخلط نهائياً. يتطلب درع واقي من الانفجار، جهاز تنفس مستقل، بدلة حماية كيميائية، ووجود طفاية حريق من الفئة B جاهزة للاستخدام.`,
-      chemical_properties_en: `Rapid destructive redox oxidation-reduction reaction. Complete cleavage of carbon-carbon bonds, yielding gaseous carbon dioxide, toxic nitrogen/sulfur oxides, and steam.`,
-      chemical_properties_ar: `تفاعل أكسدة واختزال تدميري سريع. تفكك الروابط الكيميائية بالكامل لينتج غاز ثاني أكسيد الكربون، وأكاسيد النيتروجين/الكبريت السامة وبخار الماء.`
+      chemical_properties_en: `Rapid destructive redox reaction. Carbon-carbon bonds break down, yielding gaseous carbon dioxide, toxic nitrogen/sulfur oxides, and steam.`,
+      chemical_properties_ar: `تفاعل أكسدة واختزال تدميري سريع. تفكك الروابط الكيميائية بالكامل لينتج غاز ثاني أكسيد الكربون، وأكاسيد النيتروجين/الكبريت وبخار الماء.`
     }
   }
 
   // 4. Concentrated Acid + Water -> Exothermic hazard
   if ((acidA && nameB === 'water') || (acidB && nameA === 'water')) {
     const acid = acidA ? chemA : chemB
+    const acidVars = acidA ? varsA : varsB
+    const waterVars = acidA ? varsB : varsA
+    const isAcidHighConc = acidVars?.state === 'aq' && (acidVars?.concentration || 1) > 6.0
+    const riskFactor = isAcidHighConc ? 'extremely high' : 'moderate'
+    const finalTemp = Math.round(maxTempInput + ((acidVars?.concentration || 1) * 3.5))
+
     return {
-      is_safe: false,
+      is_safe: !isAcidHighConc && !isHotInput,
       reaction_type: 'hazardous',
-      severity_score: 5,
-      result_description_en: `Exothermic acid dilution. Mixing water with concentrated ${acid.name} releases high heat. Always add acid to water slowly, never the reverse to prevent acid splash.`,
-      result_description_ar: `تخفيف الحمض طارد للحرارة. خلط الماء مع الحمض المركز (${acid.name}) يطلق حرارة عالية. أضف الحمض دائماً إلى الماء ببطء لمنع تناثر الحمض.`,
-      product_name: 'Hydronium Ions',
+      severity_score: isAcidHighConc ? 6 : 4,
+      result_description_en: `Exothermic acid dilution. Mixing water with concentrated ${acid.name} (${acidVars?.concentration || 1.0}M, ${acidVars?.quantity || 50}ml) releases high hydration energy. Risk of localized boiling and acid splash is ${riskFactor}.`,
+      result_description_ar: `تخفيف الحمض طارد للحرارة. خلط الماء مع الحمض المركز (${acid.name}) (بتركيز ${acidVars?.concentration || 1.0}M، وكمية ${acidVars?.quantity || 50}مل) يطلق طاقة هيدرة عالية. خطر الغليان وتناثر الحمض ${isAcidHighConc ? 'مرتفع للغاية وجسيم' : 'معتدل'}.`,
+      product_name: 'Hydronium Ions Solution',
       product_formula: 'H3O+ (aq)',
-      physical_properties_en: `Exothermic hydration energy release. Viscosity changes, and temperature rises. Risk of localized boiling and acid splattering.`,
-      physical_properties_ar: `انطلاق طاقة هيدرة طاردة للحرارة. تغير اللزوجة وارتفاع درجة الحرارة مع خطر غليان موضعي وتناثر الحمض الحارق.`,
-      safety_measures_en: `Follow standard laboratory rule: Always add Acid to Water (A&W - never add water to acid!). Wear full face shield and acid-resistant gloves. Work inside a fume hood.`,
+      physical_properties_en: `Exothermic hydration energy release. Solution temperature rises to ~${Math.min(100, finalTemp)}°C. Localized steam bubbles form at the interface.`,
+      physical_properties_ar: `انطلاق طاقة هيدرة طاردة للحرارة. ترتفع درجة حرارة المحلول لتصل إلى حوالي ${Math.min(100, finalTemp)} درجة مئوية مع تشكل فقاعات بخار موضعية.`,
+      safety_measures_en: `Follow strict rule: Always add Acid to Water (A&W - never add water to acid!). Wear full face shield and acid-resistant gloves. Work inside a fume hood.`,
       safety_measures_ar: `اتبع القاعدة المخبرية الصارمة: أضف الحمض دائماً إلى الماء (A&W - لا تضف الماء للحمض مطلقاً!). ارتدِ واقي الوجه بالكامل وقفازات مقاومة للأحماض.`,
-      chemical_properties_en: `Strong ionization. The acid dissociates completely, increasing hydronium ion concentration (pH drops to < 1).`,
+      chemical_properties_en: `Strong ionization. Acid dissociates completely, shifting mixture pH to < 1.`,
       chemical_properties_ar: `تأين قوي. يتفكك الحمض كلياً مما يرفع تركيز أيونات الهيدرونيوم ويهبط بالرقم الهيدروجيني pH لأقل من 1.`
     }
   }
@@ -265,20 +292,25 @@ const predictReactionLocally = (chemA, chemB) => {
 
   // 5. Ethanol + Water -> Fully Miscible
   if ((nameA.includes('ethanol') && nameB.includes('water')) || (nameB.includes('ethanol') && nameA.includes('water'))) {
+    const etVars = nameA.includes('ethanol') ? varsA : varsB
+    const wtVars = nameA.includes('ethanol') ? varsB : varsA
+    const totalVolume = (etVars?.quantity || 50) + (wtVars?.quantity || 50)
+    const contractedVol = Math.round(totalVolume * 0.96)
+
     return {
       is_safe: true,
       reaction_type: 'safe',
       severity_score: 1,
-      result_description_en: `Ethanol and Water are fully miscible in all proportions. They form a homogeneous solution due to strong hydrogen bonding. A slight volume contraction occurs.`,
-      result_description_ar: `الإيثانول والماء ممتزجان تماماً في جميع النسب. يشكلان محلولاً متجانسًا نتيجة الروابط الهيدروجينية القوية، مع انكماش طفيف في الحجم.`,
+      result_description_en: `Ethanol and Water mix fully. Total initial volume of ${totalVolume}ml contracts to ~${contractedVol}ml due to strong hydrogen bonding.`,
+      result_description_ar: `الإيثانول والماء ممتزجان تماماً. الحجم الكلي البالغ ${totalVolume}مل ينكمش إلى حوالي ${contractedVol}مل نتيجة الروابط الهيدروجينية القوية.`,
       product_name: 'Aqueous Ethanol Solution',
       product_formula: 'C2H5OH (aq)',
-      physical_properties_en: `Slight exothermic heat of mixing. Density decreases, and volume contracts (e.g., 50ml + 50ml yields ~96ml of solution).`,
-      physical_properties_ar: `انطلاق حرارة خلط طفيفة. تنخفض الكثافة وينكمش الحجم الكلي قليلاً (مثلاً 50 مل + 50 مل ينتج حوالي 96 مل من المحلول).`,
+      physical_properties_en: `Slight exothermic heat of mixing. Density decreases, and volume contracts. Homegeneous phase stable at ${maxTempInput}°C.`,
+      physical_properties_ar: `انطلاق حرارة خلط طفيفة. تنخفض الكثافة وينكمش الحجم الكلي. طور متجانس مستقر عند درجة حرارة ${maxTempInput} درجة مئوية.`,
       safety_measures_en: `Keep away from heat, open sparks, and hot surfaces. Wear standard eye protection and lab gloves.`,
       safety_measures_ar: `يُحفظ بعيداً عن الحرارة والشرر والأسطح الساخنة. ارتدِ واقي العينين المعياري وقفازات المختبر.`,
-      chemical_properties_en: `Highly stable, non-reactive mixture. The solution is flammable depending on ethanol concentration (flash point decreases as ethanol percentage rises).`,
-      chemical_properties_ar: `مزيج فيزيائي مستقر وغير تفاعلي تماماً. المحلول قابل للاشتعال حسب تركيز الإيثانول (تنخفض نقطة الوميض مع ارتفاع نسبة الكحول).`
+      chemical_properties_en: `Highly stable, non-reactive mixture. The solution is flammable depending on ethanol concentration.`,
+      chemical_properties_ar: `مزيج فيزيائي مستقر وغير تفاعلي تماماً. المحلول قابل للاشتعال حسب تركيز الإيثانول.`
     }
   }
 
@@ -288,8 +320,8 @@ const predictReactionLocally = (chemA, chemB) => {
       is_safe: true,
       reaction_type: 'safe',
       severity_score: 1,
-      result_description_en: `Acetone and Water are completely miscible. They form a single-phase polar organic solution. Commonly used as a laboratory cleaning and drying solvent.`,
-      result_description_ar: `الأسيتون والماء ممتزجان تماماً، ويشكلان محلولاً متجانساً قطبياً أحادي الطور. يُستخدم عادة كمذيب للتنظيف والتجفيف في المختبر.`,
+      result_description_en: `Acetone and Water are completely miscible. They form a single-phase polar organic solution. Commonly used as a laboratory cleaning solvent.`,
+      result_description_ar: `الأسيتون والماء ممتزجان تماماً، ويشكلان محلولاً متجانساً قطبياً أحادي الطور. يُسخدم عادة كمذيب للتنظيف والتجفيف في المختبر.`,
       product_name: 'Aqueous Acetone Solution',
       product_formula: 'C3H6O (aq)',
       physical_properties_en: `Negligible heat of mixing. Highly volatile; vapors are heavier than air. Clear, homogeneous solution.`,
@@ -307,8 +339,8 @@ const predictReactionLocally = (chemA, chemB) => {
       is_safe: false,
       reaction_type: 'hazardous',
       severity_score: 4,
-      result_description_en: `IMMISCIBLE MIXTURE: Benzene is non-polar and hydrophobic, so it does not dissolve in polar water. It forms a distinct two-phase liquid system where Benzene (density 0.87 g/cm³) floats on top of the water layer. Flammability hazard remains.`,
-      result_description_ar: `مزيج غير قابل للامتزاج: البنزين غير قطبي كاره للماء فلا يذوب في الماء القطبي. يشكل طبقتين سائلتين منفصلتين حيث يطفو البنزين (كثافة 0.87) في الأعلى.`,
+      result_description_en: `IMMISCIBLE MIXTURE: Benzene is non-polar and hydrophobic, so it does not dissolve in polar water. It forms a distinct two-phase liquid system where Benzene floats on top of the water layer.`,
+      result_description_ar: `مزيج غير قابل للامتزاج: البنزين غير قطبي كاره للماء فلا يذوب في الماء القطبي. يشكل طبقتين سائلتين منفصلتين حيث يطفو البنزين في الأعلى.`,
       product_name: 'Two-Phase Immiscible System',
       product_formula: 'C6H6 (l) + H2O (l)',
       physical_properties_en: `Zero miscibility. Forms two distinct liquid phases. Benzene (density 0.87 g/cm³) floats on top of water (density 1.0 g/cm³).`,
@@ -326,8 +358,8 @@ const predictReactionLocally = (chemA, chemB) => {
       is_safe: true,
       reaction_type: 'safe',
       severity_score: 2,
-      result_description_en: `Acetone and Benzene are fully miscible organic solvents. They mix to form a homogeneous organic solvent mixture. Note: Both solvents are highly flammable and volatile; handle under a fume hood.`,
-      result_description_ar: `الأسيتون والبنزين مذيبات عضوية ممتزجة تماماً. يختلطان لتكوين محلول عضوي متجانس. كلا المذيبين شديدا الاشتعال والتطاير.`,
+      result_description_en: `Acetone and Benzene are fully miscible organic solvents. They mix to form a homogeneous organic solvent mixture.`,
+      result_description_ar: `الأسيتون والبنزين مذيبات عضوية ممتزجة تماماً. يختلطان لتكوين محلول عضوي متجانس.`,
       product_name: 'Acetone-Benzene Organic Solution',
       product_formula: 'C3H6O (l) + C6H6 (l)',
       physical_properties_en: `Homogeneous organic phase. Very low boiling point and high vapor pressure. Volatile organic smell.`,
@@ -339,23 +371,24 @@ const predictReactionLocally = (chemA, chemB) => {
     }
   }
 
-  // 9. Default response based on Hazard levels
-  const dangerLevel = Math.max(
+  // 9. Default response based on Hazard levels and Concentration
+  const baseDanger = Math.max(
     chemA.hazard_level === 'danger' ? 7 : chemA.hazard_level === 'warning' ? 4 : 1,
     chemB.hazard_level === 'danger' ? 7 : chemB.hazard_level === 'warning' ? 4 : 1
   )
+  const dangerLevel = isConcentrated ? Math.min(10, baseDanger + 2) : baseDanger
 
   if (dangerLevel >= 7) {
     return {
       is_safe: false,
       reaction_type: 'hazardous',
       severity_score: dangerLevel,
-      result_description_en: `Potential hazard detected. Mixing ${chemA.name} and ${chemB.name} is restricted. Proceed with certified personal protective equipment under ventilation.`,
-      result_description_ar: `خطر محتمل. خلط ${chemA.name} مع ${chemB.name} خاضع للقيود. يرجى المتابعة فقط باستخدام أدوات الوقاية الشخصية المعتمدة وتحت التهوية.`,
-      product_name: 'Unstable Complex',
+      result_description_en: `Potential hazard detected under these variables. Mixing ${chemA.name} (${varsA?.quantity || 50}${varsA?.state === 's' ? 'g' : 'ml'}) with ${chemB.name} (${varsB?.quantity || 50}${varsB?.state === 's' ? 'g' : 'ml'}) at ${maxTempInput}°C has a high severity score due to concentrations or temperatures.`,
+      result_description_ar: `خطر محتمل تحت هذه المتغيرات. خلط ${chemA.name} (بكمية ${varsA?.quantity || 50}${varsA?.state === 's' ? 'جرام' : 'مل'}) مع ${chemB.name} (بكمية ${varsB?.quantity || 50}${varsB?.state === 's' ? 'جرام' : 'مل'}) في درجة حرارة ${maxTempInput} درجة مئوية يخضع للقيود نظراً للتركيز أو الحرارة.`,
+      product_name: 'Unstable Mixture Complex',
       product_formula: 'Complex',
-      physical_properties_en: `Reaction enthalpy and temperature rise vary based on actual concentration levels. Vapor pressure may increase.`,
-      physical_properties_ar: `تتفاوت درجة الحرارة والحرارة المنطلقة بناءً على التركيز الفعلي. قد يرتفع الضغط البخاري للمزيج.`,
+      physical_properties_en: `Reaction enthalpy and temperature rise vary based on concentration. Volatile vapors or pressure may build up.`,
+      physical_properties_ar: `تتفاوت درجة الحرارة والحرارة المنطلقة بناءً على التركيز الفعلي والكميات. قد يرتفع الضغط البخاري.`,
       safety_measures_en: `Handle with extreme care. Wear standard personal protective equipment (PPE) including safety goggles, lab coat, and chemical-resistant gloves under hood.`,
       safety_measures_ar: `تعامل مع المزيج بحذر شديد. ارتدِ معدات الوقاية الشخصية (PPE) الكاملة ونظارات الأمان وتحت شفاط الغاز حصراً.`,
       chemical_properties_en: `Avoid contact with heat, incompatibles, and open atmosphere. Mixture properties are unknown; assume reactive.`,
@@ -740,6 +773,9 @@ const playLabSound = (type) => {
   }
 }
 
+const DEFAULT_VARS = { quantity: 50, concentration: 1.0, temperature: 25, state: 'liquid' }
+const PHYSICAL_STATES = ['solid', 'liquid', 'gas', 'aqueous']
+
 export default function MixingSimulatorPage() {
   const { chemicals, fetchChemicals } = useChemicalStore()
   const [chemA, setChemA] = useState(null)
@@ -748,6 +784,10 @@ export default function MixingSimulatorPage() {
   const [loading, setLoading] = useState(false)
   const [screenShake, setScreenShake] = useState(false)
   const { lang, t } = useLanguage()
+
+  // Reaction Variable States for each chemical
+  const [varsA, setVarsA] = useState({ ...DEFAULT_VARS })
+  const [varsB, setVarsB] = useState({ ...DEFAULT_VARS })
 
   // Animation Stage States
   const [animPhase, setAnimPhase] = useState('idle') // 'idle', 'pouring', 'reacting', 'finished'
@@ -805,15 +845,22 @@ export default function MixingSimulatorPage() {
           <strong style="color: #1E3A8A; display: block; font-size: 14px; margin-bottom: 6px;">${lang === 'ar' ? 'المادة الكيميائية أ' : 'Chemical A'}</strong>
           ${lang === 'ar' ? 'الاسم' : 'Name'}: ${chemA.name || 'N/A'}<br>
           ${lang === 'ar' ? 'الصيغة' : 'Formula'}: ${chemA.formula || 'N/A'}<br>
-          ${lang === 'ar' ? 'مستوى الخطورة' : 'Hazard Level'}: ${(chemA.hazard_level || 'N/A').toUpperCase()}
+          ${lang === 'ar' ? 'مستوى الخطورة' : 'Hazard Level'}: ${(chemA.hazard_level || 'N/A').toUpperCase()}<br>
+          <span style="display:inline-block;margin-top:6px;padding:4px 8px;border-radius:4px;background:#EEF2FF;font-size:10px;color:#4338CA;">
+            ${varsA.quantity} mL &nbsp;·&nbsp; ${varsA.concentration.toFixed(1)} mol/L &nbsp;·&nbsp; ${varsA.temperature}°C &nbsp;·&nbsp; ${varsA.state}
+          </span>
         </div>
         <div style="flex: 1; padding: 12px; border: 1px solid #E2E8F0; border-radius: 8px; background: #F8FAFC;">
           <strong style="color: #1E3A8A; display: block; font-size: 14px; margin-bottom: 6px;">${lang === 'ar' ? 'المادة الكيميائية ب' : 'Chemical B'}</strong>
           ${lang === 'ar' ? 'الاسم' : 'Name'}: ${chemB.name || 'N/A'}<br>
           ${lang === 'ar' ? 'الصيغة' : 'Formula'}: ${chemB.formula || 'N/A'}<br>
-          ${lang === 'ar' ? 'مستوى الخطورة' : 'Hazard Level'}: ${(chemB.hazard_level || 'N/A').toUpperCase()}
+          ${lang === 'ar' ? 'مستوى الخطورة' : 'Hazard Level'}: ${(chemB.hazard_level || 'N/A').toUpperCase()}<br>
+          <span style="display:inline-block;margin-top:6px;padding:4px 8px;border-radius:4px;background:#F5F3FF;font-size:10px;color:#7C3AED;">
+            ${varsB.quantity} mL &nbsp;·&nbsp; ${varsB.concentration.toFixed(1)} mol/L &nbsp;·&nbsp; ${varsB.temperature}°C &nbsp;·&nbsp; ${varsB.state}
+          </span>
         </div>
       </div>
+
 
       <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid #E2E8F0; background: #FFF; direction: ${lang === 'ar' ? 'rtl' : 'ltr'};">
         <div style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: #3B82F6; margin-bottom: 8px; border-bottom: 1px solid #F1F5F9; padding-bottom: 4px;">
@@ -932,7 +979,7 @@ export default function MixingSimulatorPage() {
             // 2. No database rule -> Invoke AI Edge Function using Gemini API
             try {
               const { data: aiResult, error: aiError } = await supabase.functions.invoke('simulate-mixing', {
-                body: { chemA, chemB }
+                body: { chemA, chemB, varsA, varsB }
               })
 
               if (aiError) throw new Error(aiError.message || "Failed to contact AI model.")
@@ -958,9 +1005,17 @@ export default function MixingSimulatorPage() {
               const prompt = `You are an advanced chemical safety simulator.
 Analyze what happens when mixing Chemical A and Chemical B in a laboratory setting.
 Chemical A: ${chemA.name} (${chemA.formula})
+  - Quantity: ${varsA.quantity} mL
+  - Molar Concentration: ${varsA.concentration} mol/L
+  - Temperature: ${varsA.temperature}°C
+  - Physical State: ${varsA.state}
 Chemical B: ${chemB.name} (${chemB.formula})
+  - Quantity: ${varsB.quantity} mL
+  - Molar Concentration: ${varsB.concentration} mol/L
+  - Temperature: ${varsB.temperature}°C
+  - Physical State: ${varsB.state}
 
-Analyze their reactivity, safety, potential products, and hazard severity.
+Analyze their reactivity accounting for the given quantities, concentrations, temperatures, and physical states. Consider whether elevated temperatures or mismatched states alter the outcome. Describe the precise expected results, safety, potential products, and hazard severity.
 You MUST respond with a valid JSON object matching this schema:
 {
   "is_safe": boolean,
@@ -1075,6 +1130,114 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                   <div className="text-5xl mb-2">⚗️</div>
                   <p className="text-xs font-semibold" style={{ color: '#7C3AED' }}>{chemB?.formula || '?'}</p>
                 </motion.div>
+              </motion.div>
+            )}
+
+            {/* ── Reaction Variables Panel ── */}
+            {(chemA || chemB) && (
+              <motion.div
+                className="mt-5 rounded-2xl border overflow-hidden"
+                style={{ borderColor: '#E2E8F0', background: '#F8FAFC' }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+              >
+                {/* Panel header */}
+                <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: '#E2E8F0', background: '#EEF2FF' }}>
+                  <span className="text-base">⚗️</span>
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#4338CA' }}>Reaction Variables</span>
+                  <span className="ml-auto text-xs" style={{ color: '#94A3B8' }}>Tune conditions for a more precise simulation</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x" style={{ divideColor: '#E2E8F0' }}>
+                  {/* Chemical A Variables */}
+                  {[
+                    { label: chemA ? `${chemA.formula} (A)` : 'Chemical A', vars: varsA, setVars: setVarsA, accent: '#4A90E2', disabled: !chemA },
+                    { label: chemB ? `${chemB.formula} (B)` : 'Chemical B', vars: varsB, setVars: setVarsB, accent: '#7C3AED', disabled: !chemB },
+                  ].map(({ label, vars, setVars, accent, disabled }, idx) => (
+                    <div key={idx} className="p-4 space-y-3" style={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto' }}>
+                      <p className="text-xs font-bold mb-2" style={{ color: accent }}>{label}</p>
+
+                      {/* Quantity */}
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <label className="text-xs font-semibold" style={{ color: '#475569' }}>Quantity (mL)</label>
+                          <span className="text-xs font-bold" style={{ color: accent }}>{vars.quantity} mL</span>
+                        </div>
+                        <input
+                          type="range" min={1} max={500} step={1}
+                          value={vars.quantity}
+                          onChange={(e) => setVars(v => ({ ...v, quantity: Number(e.target.value) }))}
+                          className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                          style={{ accentColor: accent }}
+                        />
+                        <div className="flex justify-between text-xs mt-0.5" style={{ color: '#CBD5E1' }}>
+                          <span>1</span><span>500</span>
+                        </div>
+                      </div>
+
+                      {/* Concentration */}
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <label className="text-xs font-semibold" style={{ color: '#475569' }}>Concentration (mol/L)</label>
+                          <span className="text-xs font-bold" style={{ color: accent }}>{vars.concentration.toFixed(1)} M</span>
+                        </div>
+                        <input
+                          type="range" min={0.1} max={12} step={0.1}
+                          value={vars.concentration}
+                          onChange={(e) => setVars(v => ({ ...v, concentration: Number(e.target.value) }))}
+                          className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                          style={{ accentColor: accent }}
+                        />
+                        <div className="flex justify-between text-xs mt-0.5" style={{ color: '#CBD5E1' }}>
+                          <span>0.1 M</span><span>12 M</span>
+                        </div>
+                      </div>
+
+                      {/* Temperature */}
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <label className="text-xs font-semibold" style={{ color: '#475569' }}>Temperature (°C)</label>
+                          <span className="text-xs font-bold" style={{ color: vars.temperature > 60 ? '#EF4444' : vars.temperature < 5 ? '#3B82F6' : accent }}>
+                            {vars.temperature}°C {vars.temperature > 60 ? '🔥' : vars.temperature < 5 ? '❄️' : '🌡️'}
+                          </span>
+                        </div>
+                        <input
+                          type="range" min={-20} max={200} step={1}
+                          value={vars.temperature}
+                          onChange={(e) => setVars(v => ({ ...v, temperature: Number(e.target.value) }))}
+                          className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                          style={{ accentColor: vars.temperature > 60 ? '#EF4444' : vars.temperature < 5 ? '#3B82F6' : accent }}
+                        />
+                        <div className="flex justify-between text-xs mt-0.5" style={{ color: '#CBD5E1' }}>
+                          <span>−20°C</span><span>200°C</span>
+                        </div>
+                      </div>
+
+                      {/* Physical State */}
+                      <div>
+                        <label className="text-xs font-semibold block mb-1.5" style={{ color: '#475569' }}>Physical State</label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {PHYSICAL_STATES.map(s => (
+                            <button
+                              key={s}
+                              onClick={() => setVars(v => ({ ...v, state: s }))}
+                              className="px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all"
+                              style={{
+                                background: vars.state === s ? accent : '#fff',
+                                color: vars.state === s ? '#fff' : '#64748B',
+                                borderColor: vars.state === s ? accent : '#E2E8F0',
+                                transform: vars.state === s ? 'scale(1.05)' : 'scale(1)',
+                              }}
+                            >
+                              {s === 'solid' ? '🧱' : s === 'liquid' ? '💧' : s === 'gas' ? '💨' : '🫧'} {s}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </motion.div>
             )}
 
