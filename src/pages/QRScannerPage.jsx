@@ -122,8 +122,8 @@ export default function QRScannerPage() {
           transition={{ delay: 0.1 }}
         >
           <div
-            className="relative flex items-center justify-center"
-            style={{ background: '#0F2D52', minHeight: '340px' }}
+            className="relative flex items-center justify-center p-2 sm:p-4 rounded-t-2xl overflow-hidden"
+            style={{ background: '#0F2D52', minHeight: '280px' }}
           >
             {/* QR Reader element */}
             <div id="qr-reader" className={`w-full ${scanning ? 'block' : 'hidden'}`} />

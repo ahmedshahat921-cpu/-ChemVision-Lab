@@ -67,22 +67,26 @@ export default function AppLayout() {
         transition={{ duration: 0.3, ease: 'easeInOut' }}
         className={`
           flex flex-col h-screen z-50 flex-shrink-0
-          fixed lg:relative
-          ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          transition-transform lg:transition-none
+          fixed lg:relative top-0 bottom-0
+          ${lang === 'ar' ? 'right-0 border-l' : 'left-0 border-r'}
+          ${mobileOpen 
+            ? 'translate-x-0' 
+            : (lang === 'ar' ? 'translate-x-full lg:translate-x-0' : '-translate-x-full lg:translate-x-0')
+          }
+          transition-transform duration-300 lg:transition-none
+          bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xl lg:shadow-none
         `}
-        style={{ background: 'white', borderRight: '1px solid #E2E8F0', boxShadow: '2px 0 12px rgba(74,144,226,0.06)' }}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 p-4 border-b" style={{ borderColor: '#E2E8F0', minHeight: '64px' }}>
+        <div className="flex items-center gap-3 p-4 border-b border-slate-200 dark:border-slate-800" style={{ minHeight: '64px' }}>
           <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #4A90E2, #1B3A6B)' }}>
             <Atom size={20} color="white" />
           </div>
           <AnimatePresence>
             {!collapsed && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="overflow-hidden">
-                <h1 className="font-heading font-bold text-sm leading-tight" style={{ color: '#1B3A6B' }}>ChemVision</h1>
-                <p className="text-xs" style={{ color: '#64748B' }}>{t('lab_hub')}</p>
+                <h1 className="font-heading font-bold text-sm leading-tight text-blue-900 dark:text-blue-400">ChemVision</h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t('lab_hub')}</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -96,6 +100,7 @@ export default function AppLayout() {
               to={path}
               className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
               title={collapsed ? t(label) : ''}
+              onClick={() => setMobileOpen(false)}
             >
               <Icon size={20} className="flex-shrink-0" />
               <AnimatePresence>
@@ -110,7 +115,12 @@ export default function AppLayout() {
 
           {/* Admin link */}
           {profile?.role === 'admin' && (
-            <NavLink to="/admin" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} title={collapsed ? t('admin_panel') : ''}>
+            <NavLink 
+              to="/admin" 
+              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} 
+              title={collapsed ? t('admin_panel') : ''}
+              onClick={() => setMobileOpen(false)}
+            >
               <Shield size={20} className="flex-shrink-0" />
               <AnimatePresence>
                 {!collapsed && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>{t('admin_panel')}</motion.span>}
@@ -120,24 +130,29 @@ export default function AppLayout() {
         </nav>
 
         {/* User section */}
-        <div className="border-t p-3 space-y-1" style={{ borderColor: '#E2E8F0' }}>
-          <NavLink to="/profile" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} title={collapsed ? t('profile') : ''}>
+        <div className="border-t p-3 space-y-1 border-slate-200 dark:border-slate-800">
+          <NavLink 
+            to="/profile" 
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} 
+            title={collapsed ? t('profile') : ''}
+            onClick={() => setMobileOpen(false)}
+          >
             <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-white" style={{ background: '#4A90E2' }}>
               {profile?.name?.[0]?.toUpperCase() || 'U'}
             </div>
             <AnimatePresence>
               {!collapsed && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-w-0">
-                  <p className="text-sm font-medium truncate" style={{ color: '#2C3E50' }}>{profile?.name || 'User'}</p>
-                  <p className="text-xs truncate" style={{ color: '#94A3B8' }}>{profile?.role}</p>
+                  <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{profile?.name || 'User'}</p>
+                  <p className="text-xs truncate text-slate-500 dark:text-slate-400">{profile?.role}</p>
                 </motion.div>
               )}
             </AnimatePresence>
           </NavLink>
           <button onClick={handleLogout} className="sidebar-link w-full text-left" title={collapsed ? t('logout') : ''}>
-            <LogOut size={18} className="flex-shrink-0" style={{ color: '#E85D5D' }} />
+            <LogOut size={18} className="flex-shrink-0 text-rose-500" />
             <AnimatePresence>
-              {!collapsed && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ color: '#E85D5D' }}>{t('logout')}</motion.span>}
+              {!collapsed && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-rose-500">{t('logout')}</motion.span>}
             </AnimatePresence>
           </button>
         </div>
@@ -145,14 +160,13 @@ export default function AppLayout() {
         {/* Collapse toggle */}
         <motion.button
           onClick={() => setCollapsed(!collapsed)}
-          className={`absolute ${lang === 'ar' ? '-left-3' : '-right-3'} top-20 w-6 h-6 rounded-full flex items-center justify-center lg:flex hidden`}
-          style={{ background: 'white', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+          className={`absolute ${lang === 'ar' ? '-left-3' : '-right-3'} top-20 w-6 h-6 rounded-full flex items-center justify-center lg:flex hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-md`}
           whileHover={{ scale: 1.1 }}
         >
           {collapsed ? (
-            lang === 'ar' ? <ChevronLeft size={12} color="#64748B" /> : <ChevronRight size={12} color="#64748B" />
+            lang === 'ar' ? <ChevronLeft size={12} className="text-slate-600 dark:text-slate-300" /> : <ChevronRight size={12} className="text-slate-600 dark:text-slate-300" />
           ) : (
-            lang === 'ar' ? <ChevronRight size={12} color="#64748B" /> : <ChevronLeft size={12} color="#64748B" />
+            lang === 'ar' ? <ChevronRight size={12} className="text-slate-600 dark:text-slate-300" /> : <ChevronLeft size={12} className="text-slate-600 dark:text-slate-300" />
           )}
         </motion.button>
       </motion.aside>
@@ -160,15 +174,15 @@ export default function AppLayout() {
       {/* MAIN */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
-        <header className="h-16 flex items-center justify-between px-4 lg:px-6 flex-shrink-0" style={{ background: 'white', borderBottom: '1px solid #E2E8F0' }}>
+        <header className="h-16 flex items-center justify-between px-3 sm:px-6 flex-shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3">
             {/* Mobile menu */}
-            <button className="lg:hidden" onClick={() => setMobileOpen(true)}>
-              <Menu size={20} style={{ color: '#64748B' }} />
+            <button className="lg:hidden p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" onClick={() => setMobileOpen(true)}>
+              <Menu size={22} className="text-slate-600 dark:text-slate-300" />
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Theme Toggle Button */}
             <motion.button
               whileHover={{ scale: 1.08, rotate: 15 }}

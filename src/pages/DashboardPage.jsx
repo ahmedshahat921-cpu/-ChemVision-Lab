@@ -277,7 +277,7 @@ function LabStorageSeatMap({ chemicals, lang, navigate }) {
       {/* Bus Layout Simulator */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
         {/* The Bus Body */}
-        <div className="md:col-span-2 relative p-4 rounded-3xl border-4 border-slate-300 bg-white shadow-inner flex flex-col items-center">
+        <div className="md:col-span-2 relative p-4 rounded-3xl border-4 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-inner flex flex-col items-center w-full overflow-x-auto scrollbar-none">
           
           {/* Driver Seat & Windshield */}
           <div className="w-full flex items-center justify-between border-b pb-3 mb-4 text-slate-400">

@@ -256,7 +256,7 @@ export default function ChemicalsPage() {
             whileTap={{ scale: 0.98 }}
           >
             <Filter size={16} />
-            <span className="hidden sm:inline">{lang === 'ar' ? 'الفلاتر' : 'Filters'}</span>
+            <span>{lang === 'ar' ? 'الفلاتر' : 'Filters'}</span>
             <ChevronDown size={14} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
           </motion.button>
         </div>
