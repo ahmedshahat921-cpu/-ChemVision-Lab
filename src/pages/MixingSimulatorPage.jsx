@@ -1162,17 +1162,22 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                       <div>
                         <div className="flex justify-between mb-1">
                           <label className="text-xs font-semibold" style={{ color: '#475569' }}>Quantity (mL)</label>
-                          <span className="text-xs font-bold" style={{ color: accent }}>{vars.quantity} mL</span>
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-md" style={{ color: accent, background: `${accent}15` }}>
+                            {vars.quantity} mL
+                          </span>
                         </div>
                         <input
                           type="range" min={1} max={500} step={1}
                           value={vars.quantity}
                           onChange={(e) => setVars(v => ({ ...v, quantity: Number(e.target.value) }))}
-                          className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-                          style={{ accentColor: accent }}
+                          className="w-full h-2.5 rounded-full cursor-pointer transition-all accent-blue-600"
+                          style={{
+                            accentColor: accent,
+                            background: `linear-gradient(to right, ${accent} 0%, ${accent} ${((vars.quantity - 1) / 499) * 100}%, #E2E8F0 ${((vars.quantity - 1) / 499) * 100}%, #E2E8F0 100%)`
+                          }}
                         />
-                        <div className="flex justify-between text-xs mt-0.5" style={{ color: '#CBD5E1' }}>
-                          <span>1</span><span>500</span>
+                        <div className="flex justify-between text-xs font-medium mt-1" style={{ color: '#64748B' }}>
+                          <span>1 mL</span><span>500 mL</span>
                         </div>
                       </div>
 
@@ -1180,38 +1185,54 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                       <div>
                         <div className="flex justify-between mb-1">
                           <label className="text-xs font-semibold" style={{ color: '#475569' }}>Concentration (mol/L)</label>
-                          <span className="text-xs font-bold" style={{ color: accent }}>{vars.concentration.toFixed(1)} M</span>
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-md" style={{ color: accent, background: `${accent}15` }}>
+                            {vars.concentration.toFixed(1)} M
+                          </span>
                         </div>
                         <input
                           type="range" min={0.1} max={12} step={0.1}
                           value={vars.concentration}
                           onChange={(e) => setVars(v => ({ ...v, concentration: Number(e.target.value) }))}
-                          className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-                          style={{ accentColor: accent }}
+                          className="w-full h-2.5 rounded-full cursor-pointer transition-all"
+                          style={{
+                            accentColor: accent,
+                            background: `linear-gradient(to right, ${accent} 0%, ${accent} ${((vars.concentration - 0.1) / 11.9) * 100}%, #E2E8F0 ${((vars.concentration - 0.1) / 11.9) * 100}%, #E2E8F0 100%)`
+                          }}
                         />
-                        <div className="flex justify-between text-xs mt-0.5" style={{ color: '#CBD5E1' }}>
+                        <div className="flex justify-between text-xs font-medium mt-1" style={{ color: '#64748B' }}>
                           <span>0.1 M</span><span>12 M</span>
                         </div>
                       </div>
 
                       {/* Temperature */}
                       <div>
-                        <div className="flex justify-between mb-1">
-                          <label className="text-xs font-semibold" style={{ color: '#475569' }}>Temperature (°C)</label>
-                          <span className="text-xs font-bold" style={{ color: vars.temperature > 60 ? '#EF4444' : vars.temperature < 5 ? '#3B82F6' : accent }}>
-                            {vars.temperature}°C {vars.temperature > 60 ? '🔥' : vars.temperature < 5 ? '❄️' : '🌡️'}
-                          </span>
-                        </div>
-                        <input
-                          type="range" min={-20} max={200} step={1}
-                          value={vars.temperature}
-                          onChange={(e) => setVars(v => ({ ...v, temperature: Number(e.target.value) }))}
-                          className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-                          style={{ accentColor: vars.temperature > 60 ? '#EF4444' : vars.temperature < 5 ? '#3B82F6' : accent }}
-                        />
-                        <div className="flex justify-between text-xs mt-0.5" style={{ color: '#CBD5E1' }}>
-                          <span>−20°C</span><span>200°C</span>
-                        </div>
+                        {(() => {
+                          const tempColor = vars.temperature > 60 ? '#EF4444' : vars.temperature < 5 ? '#3B82F6' : accent
+                          const tempPct = ((vars.temperature - (-20)) / 220) * 100
+                          return (
+                            <>
+                              <div className="flex justify-between mb-1">
+                                <label className="text-xs font-semibold" style={{ color: '#475569' }}>Temperature (°C)</label>
+                                <span className="text-xs font-bold px-2 py-0.5 rounded-md" style={{ color: tempColor, background: `${tempColor}15` }}>
+                                  {vars.temperature}°C {vars.temperature > 60 ? '🔥' : vars.temperature < 5 ? '❄️' : '🌡️'}
+                                </span>
+                              </div>
+                              <input
+                                type="range" min={-20} max={200} step={1}
+                                value={vars.temperature}
+                                onChange={(e) => setVars(v => ({ ...v, temperature: Number(e.target.value) }))}
+                                className="w-full h-2.5 rounded-full cursor-pointer transition-all"
+                                style={{
+                                  accentColor: tempColor,
+                                  background: `linear-gradient(to right, ${tempColor} 0%, ${tempColor} ${tempPct}%, #E2E8F0 ${tempPct}%, #E2E8F0 100%)`
+                                }}
+                              />
+                              <div className="flex justify-between text-xs font-medium mt-1" style={{ color: '#64748B' }}>
+                                <span>−20°C</span><span>200°C</span>
+                              </div>
+                            </>
+                          )
+                        })()}
                       </div>
 
                       {/* Physical State */}
