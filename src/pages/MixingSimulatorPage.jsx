@@ -819,6 +819,9 @@ export default function MixingSimulatorPage() {
     const physProps = lang === 'ar' ? (result.physical_properties_ar || result.physical_properties) : (result.physical_properties_en || result.physical_properties)
     const chemProps = lang === 'ar' ? (result.chemical_properties_ar || result.chemical_properties) : (result.chemical_properties_en || result.chemical_properties)
     const safetyMeasures = lang === 'ar' ? (result.safety_measures_ar || result.safety_measures) : (result.safety_measures_en || result.safety_measures)
+    const optimalConditions = lang === 'ar' 
+      ? (result.optimal_conditions_ar || `لضمان التفاعل الصحيح والآمن: يُوصى بضبط درجة الحرارة بين 15°C إلى 25°C، واستخدام حمّام ثلجي لتفاعل التبريد الخارجي، وتخفيف التركيز المولي أقل من 2.0M مع الإضافة التدريجية للحمض إلى الماء وليس العكس.`) 
+      : (result.optimal_conditions_en || `To ensure correct & safe reaction: Keep temperature between 15°C and 25°C using an ice bath for exotherms, keep molarity ≤ 2.0M, and add concentrated reagents slowly while stirring.`)
 
     const element = document.createElement('div')
     element.style.padding = '30px'
@@ -893,6 +896,13 @@ export default function MixingSimulatorPage() {
           ${lang === 'ar' ? 'آلية الأمان والسلامة المخبرية الدقيقة' : 'Precise Lab Safety & Hazard Controls'}
         </div>
         <div style="font-size: 12px; font-weight: 500; color: #92400E;">${safetyMeasures}</div>
+      </div>
+
+      <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; border: 1px solid #A7F3D0; background: #ECFDF5; border-right: ${lang === 'ar' ? '4px solid #059669' : 'none'}; border-left: ${lang === 'ar' ? 'none' : '4px solid #059669'}; direction: ${lang === 'ar' ? 'rtl' : 'ltr'};">
+        <div style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: #059669; margin-bottom: 8px; border-bottom: 1px solid #D1FAE5; padding-bottom: 4px;">
+          ${lang === 'ar' ? 'إرشادات التفاعل الصحيح والظروف المثالية' : 'Optimal Reaction Protocol & Recommended Conditions'}
+        </div>
+        <div style="font-size: 12px; font-weight: 500; color: #065F46;">${optimalConditions}</div>
       </div>
 
       ${result.product_name ? `
@@ -1436,6 +1446,24 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                         {lang === 'ar' 
                           ? (result.safety_measures_ar || result.safety_measures) 
                           : (result.safety_measures_en || result.safety_measures)
+                        }
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Optimal Reaction Protocol & Recommended Conditions */}
+                  <div className="p-4 rounded-xl flex gap-3 items-start mt-2" style={{ background: '#ECFDF5', border: '1px solid #6EE7B7' }}>
+                    <div className="p-2 rounded-lg flex-shrink-0" style={{ background: '#D1FAE5', color: '#059669' }}>
+                      <CheckCircle size={18} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-left" style={{ color: '#047857' }}>
+                        {lang === 'ar' ? 'إرشادات الظروف المثالية للتفاعل الصحيح والآمن' : 'Optimal Reaction Protocol & Recommended Conditions'}
+                      </h4>
+                      <p className="text-sm mt-1 leading-relaxed font-medium text-left" style={{ color: '#065F46' }}>
+                        {lang === 'ar' 
+                          ? (result.optimal_conditions_ar || `لضمان التفاعل الصحيح والآمن: يُوصى بضبط درجة الحرارة بين 15°C إلى 25°C، واستخدام حمّام ثلجي للتبريد، وتخفيف التركيز المولي أقل من 2.0M، والإضافة التدريجية للحمض للماء مع التقليب المستمر.`) 
+                          : (result.optimal_conditions_en || `To ensure correct & safe reaction: Keep temperature between 15°C and 25°C using an ice bath for exotherms, keep molarity ≤ 2.0M, and add concentrated reagents slowly while stirring.`)
                         }
                       </p>
                     </div>

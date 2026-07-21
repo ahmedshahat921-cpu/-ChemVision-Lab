@@ -375,6 +375,8 @@ You MUST respond with a valid JSON object matching this schema:
   "physical_properties_ar": "Detailed physical and thermal properties of the mixture in Arabic (الخصائص الفيزيائية والحرارية باللغة العربية).",
   "safety_measures_en": "Precise lab safety measures and hazard controls (e.g. required PPE types, ventilation) in English.",
   "safety_measures_ar": "Precise lab safety measures and hazard controls in Arabic (آلية الأمان والسلامة المخبرية باللغة العربية).",
+  "optimal_conditions_en": "Explicit instructions on what conditions should have been set for the mixing to be correct and safe (e.g. ideal temperature limit, recommended molarity, order of addition, cooling bath requirements) in English.",
+  "optimal_conditions_ar": "تعليمات وإرشادات تفصيلية للظروف المثالية والآمنة للتفاعل (مثل درجة الحرارة المثالية، التركيز الموصى به، وسيلة التبريد، وترتيب إضافة المواد) باللغة العربية.",
   "chemical_properties_en": "Chemical properties and stability of the resulting mixture in English.",
   "chemical_properties_ar": "Chemical properties and stability of the resulting mixture in Arabic (الخواص الكيميائية باللغة العربية)."
 }
