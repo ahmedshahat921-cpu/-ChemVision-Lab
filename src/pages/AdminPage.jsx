@@ -924,10 +924,10 @@ export default function AdminPage() {
     }
   }
 
-  // Download all batch QR codes as a clean printable PDF grid sheet
+  // Download all batch QR codes as a clean printable PDF grid sheet using native jsPDF
   const downloadBatchQRPDF = async () => {
-    const targetEl = document.getElementById('batch-qr-export-container')
-    if (!targetEl || !filtered || filtered.length === 0) {
+    const qrSvgElements = document.querySelectorAll('#batch-qr-export-container svg')
+    if (!qrSvgElements || qrSvgElements.length === 0 || !filtered || filtered.length === 0) {
       toast.error(lang === 'ar' ? 'لا توجد مواد لتحميلها' : 'No chemicals found to download')
       return
     }
@@ -935,47 +935,117 @@ export default function AdminPage() {
     const toastId = toast.loading(lang === 'ar' ? 'جاري إنشاء وتجهيز ملف الـ PDF...' : 'Generating PDF file...')
 
     try {
-      const wrapper = document.createElement('div')
-      wrapper.style.padding = '15px'
-      wrapper.style.background = '#FFFFFF'
-      wrapper.style.color = '#0F2D52'
-      wrapper.style.fontFamily = 'Arial, sans-serif'
+      const pdf = new jsPDF('p', 'mm', 'a4')
       
-      const header = document.createElement('div')
-      header.style.textAlign = 'center'
-      header.style.marginBottom = '15px'
-      header.style.paddingBottom = '10px'
-      header.style.borderBottom = '2px solid #0F2D52'
-      header.innerHTML = `
-        <h2 style="margin:0; font-size:18px; font-weight:bold; color:#0F2D52;">ChemVision Lab Hub — Chemical QR Labels</h2>
-        <p style="margin:4px 0 0 0; font-size:11px; color:#64748B;">Total Printed Labels: ${filtered.length} | Generated: ${new Date().toLocaleDateString()}</p>
-      `
-      wrapper.appendChild(header)
-      
-      const clone = targetEl.cloneNode(true)
-      clone.style.background = '#FFFFFF'
-      
-      // Fix text colors in cloned node so PDF export is crisp white paper
-      const allTexts = clone.querySelectorAll('*')
-      allTexts.forEach(el => {
-        if (el.tagName === 'P' || el.tagName === 'SPAN' || el.tagName === 'DIV') {
-          if (!el.classList.contains('text-blue-600') && !el.classList.contains('text-blue-400')) {
-            el.style.color = '#0F2D52'
-          }
-        }
-      })
-
-      wrapper.appendChild(clone)
-
-      const opt = {
-        margin:       [8, 8, 8, 8],
-        filename:     `ChemVision_Batch_QR_Labels_${new Date().toISOString().slice(0, 10)}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      const drawHeader = (pageNumber) => {
+        pdf.setFillColor(15, 45, 82)
+        pdf.rect(0, 0, 210, 16, 'F')
+        pdf.setTextColor(255, 255, 255)
+        pdf.setFontSize(11)
+        pdf.setFont('helvetica', 'bold')
+        pdf.text('ChemVision Lab Hub — Batch Chemical QR Labels', 10, 11)
+        pdf.setFontSize(8)
+        pdf.setFont('helvetica', 'normal')
+        pdf.text(`Total: ${filtered.length} | Page ${pageNumber}`, 160, 11)
       }
 
-      await html2pdf().set(opt).from(wrapper).save()
+      // Convert SVG element to PNG Data URL via offscreen canvas
+      const convertSvgToPng = (svgElement) => {
+        return new Promise((resolve) => {
+          try {
+            const svgString = new XMLSerializer().serializeToString(svgElement)
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')
+            const size = 300
+            canvas.width = size
+            canvas.height = size
+            ctx.fillStyle = '#FFFFFF'
+            ctx.fillRect(0, 0, size, size)
+
+            const img = new Image()
+            const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
+            const url = URL.createObjectURL(svgBlob)
+
+            img.onload = () => {
+              ctx.drawImage(img, 0, 0, size, size)
+              URL.revokeObjectURL(url)
+              resolve(canvas.toDataURL('image/png'))
+            }
+            img.onerror = () => {
+              URL.revokeObjectURL(url)
+              resolve(null)
+            }
+            img.src = url
+          } catch {
+            resolve(null)
+          }
+        })
+      }
+
+      // Grid dimensions (A4 = 210mm x 297mm)
+      // 3 cols x 4 rows = 12 stickers per page
+      const colX = [10, 76, 142] // 3 columns
+      const rowY = [22, 88, 154, 220] // 4 rows
+      const cardW = 58
+      const cardH = 62
+
+      let pageNum = 1
+      drawHeader(pageNum)
+
+      for (let i = 0; i < filtered.length; i++) {
+        const c = filtered[i]
+        const itemIdx = i % 12
+
+        // Add page if needed
+        if (i > 0 && itemIdx === 0) {
+          pdf.addPage()
+          pageNum++
+          drawHeader(pageNum)
+        }
+
+        const colIndex = itemIdx % 3
+        const rowIndex = Math.floor(itemIdx / 3)
+        const x = colX[colIndex]
+        const y = rowY[rowIndex]
+
+        // 1. Draw rounded card border
+        pdf.setFillColor(250, 250, 250)
+        pdf.setDrawColor(226, 232, 240)
+        pdf.roundedRect(x, y, cardW, cardH, 3, 3, 'FD')
+
+        // 2. Render QR PNG
+        const svgEl = qrSvgElements[i]
+        if (svgEl) {
+          const pngUrl = await convertSvgToPng(svgEl)
+          if (pngUrl) {
+            pdf.addImage(pngUrl, 'PNG', x + 11, y + 4, 36, 36)
+          }
+        }
+
+        // 3. Draw Chemical Name
+        pdf.setFontSize(9)
+        pdf.setFont('helvetica', 'bold')
+        pdf.setTextColor(15, 45, 82)
+        const nameText = c.name.length > 22 ? c.name.slice(0, 20) + '...' : c.name
+        pdf.text(nameText, x + (cardW / 2), y + 45, { align: 'center' })
+
+        // 4. Draw Formula
+        pdf.setFontSize(8)
+        pdf.setFont('helvetica', 'bold')
+        pdf.setTextColor(74, 144, 226)
+        pdf.text(c.formula || '', x + (cardW / 2), y + 50, { align: 'center' })
+
+        // 5. Draw Location
+        if (c.location) {
+          pdf.setFontSize(7)
+          pdf.setFont('helvetica', 'normal')
+          pdf.setTextColor(100, 116, 139)
+          const locText = c.location.length > 25 ? c.location.slice(0, 23) + '...' : c.location
+          pdf.text(locText, x + (cardW / 2), y + 55, { align: 'center' })
+        }
+      }
+
+      pdf.save(`ChemVision_Batch_QR_Labels_${new Date().toISOString().slice(0, 10)}.pdf`)
       toast.success(lang === 'ar' ? 'تم تحميل ملف PDF بنجاح! 📄' : 'PDF file downloaded successfully! 📄', { id: toastId })
     } catch (err) {
       console.error('PDF export error:', err)
