@@ -962,7 +962,14 @@ export default function AdminPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
               {filtered.slice(0, 12).map(c => (
                 <div key={c.id} className="flex flex-col items-center gap-1 p-2 rounded-xl" style={{ background: '#F8F9FA' }}>
-                  <QRCode value={`${window.location.origin}/chemicals/${c.id}`} size={70} fgColor="#0F2D52" />
+                  <QRCode
+                    value={`${window.location.origin}/chemicals/${c.id}`}
+                    size={96}
+                    fgColor="#0F2D52"
+                    bgColor="#FFFFFF"
+                    level="H"
+                    includeMargin={true}
+                  />
                   <p className="text-xs text-center font-medium" style={{ color: '#2C3E50', fontSize: '0.65rem' }}>{c.name.slice(0, 12)}</p>
                 </div>
               ))}

@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, QrCode, AlertTriangle, Package, MapPin, Calendar, FlaskConical, Download, Loader2, CheckCircle, Shield, Info, ExternalLink, Eye, Flame, User, FileText, Activity } from 'lucide-react'
 import { useChemicalStore, useAuthStore } from '../store'
 import { supabase } from '../lib/supabase'
-import { QRCodeCanvas as QRCode } from 'qrcode.react'
+import { QRCodeSVG as QRCode } from 'qrcode.react'
 import toast from 'react-hot-toast'
 import { useLanguage } from '../hooks/useLanguage'
 import { getChemicalData } from '../data/chemicalData'
@@ -1064,19 +1064,49 @@ export default function ChemicalDetailPage() {
                     transition={{ type: 'spring', stiffness: 200 }}
                     className="flex flex-col items-center gap-3"
                   >
-                    <div className="p-3 rounded-xl bg-white border border-neutral-200 shadow-sm">
-                      <QRCode value={qrUrl} size={120} fgColor="#0F2D52" bgColor="#FFFFFF" level="H" />
+                    {/* SVG QR — crisp at any size, no pixelation */}
+                    <div
+                      id="qr-svg-wrapper"
+                      className="p-4 rounded-2xl bg-white border-2 border-neutral-100 shadow-md"
+                    >
+                      <QRCode
+                        value={qrUrl}
+                        size={220}
+                        fgColor="#0F2D52"
+                        bgColor="#FFFFFF"
+                        level="H"
+                        includeMargin={true}
+                      />
                     </div>
+                    <p className="text-[11px] text-center" style={{ color: '#94A3B8' }}>
+                      Scan with any QR scanner app
+                    </p>
                     <button
                       className="btn-secondary w-full justify-center py-2 text-xs"
                       onClick={() => {
-                        const canvas = document.querySelector('canvas')
-                        if (canvas) {
+                        // Export a high-resolution 600×600 PNG from the SVG
+                        const svgEl = document.querySelector('#qr-svg-wrapper svg')
+                        if (!svgEl) return
+                        const svgData = new XMLSerializer().serializeToString(svgEl)
+                        const canvas = document.createElement('canvas')
+                        const EXPORT_SIZE = 600
+                        canvas.width = EXPORT_SIZE
+                        canvas.height = EXPORT_SIZE
+                        const ctx = canvas.getContext('2d')
+                        ctx.fillStyle = '#FFFFFF'
+                        ctx.fillRect(0, 0, EXPORT_SIZE, EXPORT_SIZE)
+                        const img = new Image()
+                        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+                        const url = URL.createObjectURL(svgBlob)
+                        img.onload = () => {
+                          ctx.drawImage(img, 0, 0, EXPORT_SIZE, EXPORT_SIZE)
+                          URL.revokeObjectURL(url)
                           const link = document.createElement('a')
-                          link.download = `${chemical.name}-QR.png`
-                          link.href = canvas.toDataURL()
+                          link.download = `${chemical.name}-QR-600px.png`
+                          link.href = canvas.toDataURL('image/png', 1.0)
                           link.click()
                         }
+                        img.src = url
                       }}
                     >
                       <Download size={13} /> {lang === 'ar' ? 'تحميل الرمز للأدمن' : 'Download QR Code'}
