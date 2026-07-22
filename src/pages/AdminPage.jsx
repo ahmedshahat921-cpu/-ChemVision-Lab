@@ -925,25 +925,48 @@ export default function AdminPage() {
 
   return (
     <div className="p-4 lg:p-6">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-6">
+      {/* Top Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6"
+      >
         <div>
-          <h1 className="font-heading font-bold text-2xl" style={{ color: '#2C3E50' }}>⚙️ Admin Panel</h1>
-          <p className="text-sm mt-1" style={{ color: '#64748B' }}>Manage chemical inventory</p>
+          <h1 className="font-heading font-bold text-xl sm:text-2xl whitespace-nowrap" style={{ color: 'var(--text-primary, #2C3E50)' }}>
+            ⚙️ {lang === 'ar' ? 'لوحة التحكم' : 'Admin Panel'}
+          </h1>
+          <p className="text-xs sm:text-sm mt-0.5" style={{ color: '#64748B' }}>
+            {lang === 'ar' ? 'إدارة مخزون المواد الكيميائية' : 'Manage chemical inventory'}
+          </p>
         </div>
-        <div className="flex gap-3 flex-wrap">
-          <button className="btn-secondary" onClick={() => setShowQRBatch(!showQRBatch)}>
-            <QrCode size={16} /> Batch QR
-          </button>
+
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2.5 w-full sm:w-auto">
           <motion.button
-            className="btn-secondary"
+            className="btn-secondary justify-center py-2.5 text-xs sm:text-sm"
+            onClick={() => setShowQRBatch(!showQRBatch)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <QrCode size={15} /> Batch QR
+          </motion.button>
+
+          <motion.button
+            className="btn-secondary justify-center py-2.5 text-xs sm:text-sm"
             onClick={() => setShowTransactionLog(true)}
             whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             style={{ borderColor: '#A855F7', color: '#7C3AED', background: '#F5F3FF' }}
           >
-            <ClipboardList size={16} /> {lang === 'ar' ? 'سجل المعاملات' : 'Transaction Log'}
+            <ClipboardList size={15} /> {lang === 'ar' ? 'سجل المعاملات' : 'Transaction Log'}
           </motion.button>
-          <motion.button className="btn-primary" onClick={() => { setEditingChemical(null); setShowForm(true) }} whileHover={{ scale: 1.02 }}>
-            <Plus size={16} /> Add Chemical
+
+          <motion.button
+            className="btn-primary col-span-2 sm:col-span-1 justify-center py-2.5 text-xs sm:text-sm font-bold shadow-md"
+            onClick={() => { setEditingChemical(null); setShowForm(true) }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Plus size={16} /> {lang === 'ar' ? 'إضافة مادة' : 'Add Chemical'}
           </motion.button>
         </div>
       </motion.div>
