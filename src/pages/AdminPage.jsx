@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import { QRCodeSVG as QRCode } from 'qrcode.react'
 import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
+import html2pdf from 'html2pdf.js'
 
 const PUBCHEM_BASE = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound'
 
@@ -927,55 +928,58 @@ export default function AdminPage() {
   const downloadBatchQRPDF = async () => {
     const targetEl = document.getElementById('batch-qr-export-container')
     if (!targetEl || !filtered || filtered.length === 0) {
-      toast.error(lang === 'ar' ? 'لا توجد مواد لطباعتها' : 'No chemicals found to print')
+      toast.error(lang === 'ar' ? 'لا توجد مواد لتحميلها' : 'No chemicals found to download')
       return
     }
 
-    const toastId = toast.loading(lang === 'ar' ? 'جاري تجهيز وثيقة ملصقات الـ QR للطباعة...' : 'Preparing QR Code print sheet PDF...')
+    const toastId = toast.loading(lang === 'ar' ? 'جاري إنشاء وتجهيز ملف الـ PDF...' : 'Generating PDF file...')
 
     try {
-      const canvas = await html2canvas(targetEl, {
-        scale: 2,
-        backgroundColor: '#FFFFFF',
-        useCORS: true,
-        logging: false,
+      const wrapper = document.createElement('div')
+      wrapper.style.padding = '15px'
+      wrapper.style.background = '#FFFFFF'
+      wrapper.style.color = '#0F2D52'
+      wrapper.style.fontFamily = 'Arial, sans-serif'
+      
+      const header = document.createElement('div')
+      header.style.textAlign = 'center'
+      header.style.marginBottom = '15px'
+      header.style.paddingBottom = '10px'
+      header.style.borderBottom = '2px solid #0F2D52'
+      header.innerHTML = `
+        <h2 style="margin:0; font-size:18px; font-weight:bold; color:#0F2D52;">ChemVision Lab Hub — Chemical QR Labels</h2>
+        <p style="margin:4px 0 0 0; font-size:11px; color:#64748B;">Total Printed Labels: ${filtered.length} | Generated: ${new Date().toLocaleDateString()}</p>
+      `
+      wrapper.appendChild(header)
+      
+      const clone = targetEl.cloneNode(true)
+      clone.style.background = '#FFFFFF'
+      
+      // Fix text colors in cloned node so PDF export is crisp white paper
+      const allTexts = clone.querySelectorAll('*')
+      allTexts.forEach(el => {
+        if (el.tagName === 'P' || el.tagName === 'SPAN' || el.tagName === 'DIV') {
+          if (!el.classList.contains('text-blue-600') && !el.classList.contains('text-blue-400')) {
+            el.style.color = '#0F2D52'
+          }
+        }
       })
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.98)
-      const pdf = new jsPDF('p', 'mm', 'a4')
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = pdf.internal.pageSize.getHeight()
+      wrapper.appendChild(clone)
 
-      const imgWidth = pdfWidth - 20
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
-
-      // Header on PDF
-      pdf.setFontSize(15)
-      pdf.setTextColor(15, 45, 82)
-      pdf.text('ChemVision Lab Hub — Chemical QR Labels Sheet', 10, 12)
-      
-      pdf.setFontSize(9)
-      pdf.setTextColor(100, 116, 139)
-      pdf.text(`Total Printed Labels: ${filtered.length}  |  Generated on: ${new Date().toLocaleDateString()}`, 10, 17)
-
-      let heightLeft = imgHeight
-      let position = 22
-
-      pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight)
-      heightLeft -= (pdfHeight - position - 10)
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight
-        pdf.addPage()
-        pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight)
-        heightLeft -= pdfHeight
+      const opt = {
+        margin:       [8, 8, 8, 8],
+        filename:     `ChemVision_Batch_QR_Labels_${new Date().toISOString().slice(0, 10)}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       }
 
-      pdf.save(`ChemVision_Batch_QR_Labels_${new Date().toISOString().slice(0, 10)}.pdf`)
-      toast.success(lang === 'ar' ? 'تم تحميل ملف ملصقات الـ QR بنجاح! 📄' : 'QR Code print sheet downloaded successfully! 📄', { id: toastId })
+      await html2pdf().set(opt).from(wrapper).save()
+      toast.success(lang === 'ar' ? 'تم تحميل ملف PDF بنجاح! 📄' : 'PDF file downloaded successfully! 📄', { id: toastId })
     } catch (err) {
       console.error('PDF export error:', err)
-      toast.error(lang === 'ar' ? 'حدث خطأ أثناء إنشاء ملف PDF' : 'Failed to generate PDF sheet', { id: toastId })
+      toast.error(lang === 'ar' ? 'حدث خطأ أثناء تحميل ملف الـ PDF' : 'Failed to generate PDF file', { id: toastId })
     }
   }
 
@@ -1061,8 +1065,8 @@ export default function AdminPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Printer size={15} />
-                  {lang === 'ar' ? 'طباعة / تحميل ملصقات الـ QR (PDF)' : 'Print / Download QR Labels (PDF)'}
+                  <Download size={15} />
+                  {lang === 'ar' ? 'تحميل ملف الـ PDF (ملصقات الـ QR)' : 'Download QR Labels (PDF)'}
                 </motion.button>
               </div>
             </div>
