@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Edit, Trash2, Search, Download, X, Loader2, QrCode, FlaskConical, Sparkles, AlertTriangle, ClipboardList, Calendar, TrendingUp, Package, Beaker } from 'lucide-react'
+import { Plus, Edit, Trash2, Search, Download, X, Loader2, QrCode, FlaskConical, Sparkles, AlertTriangle, ClipboardList, Calendar, TrendingUp, Package, Beaker, Printer } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../hooks/useLanguage'
 import { useChemicalStore } from '../store'
@@ -923,6 +923,62 @@ export default function AdminPage() {
     }
   }
 
+  // Download all batch QR codes as a clean printable PDF grid sheet
+  const downloadBatchQRPDF = async () => {
+    const targetEl = document.getElementById('batch-qr-export-container')
+    if (!targetEl || !filtered || filtered.length === 0) {
+      toast.error(lang === 'ar' ? 'لا توجد مواد لطباعتها' : 'No chemicals found to print')
+      return
+    }
+
+    const toastId = toast.loading(lang === 'ar' ? 'جاري تجهيز وثيقة ملصقات الـ QR للطباعة...' : 'Preparing QR Code print sheet PDF...')
+
+    try {
+      const canvas = await html2canvas(targetEl, {
+        scale: 2,
+        backgroundColor: '#FFFFFF',
+        useCORS: true,
+        logging: false,
+      })
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.98)
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = pdf.internal.pageSize.getHeight()
+
+      const imgWidth = pdfWidth - 20
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+
+      // Header on PDF
+      pdf.setFontSize(15)
+      pdf.setTextColor(15, 45, 82)
+      pdf.text('ChemVision Lab Hub — Chemical QR Labels Sheet', 10, 12)
+      
+      pdf.setFontSize(9)
+      pdf.setTextColor(100, 116, 139)
+      pdf.text(`Total Printed Labels: ${filtered.length}  |  Generated on: ${new Date().toLocaleDateString()}`, 10, 17)
+
+      let heightLeft = imgHeight
+      let position = 22
+
+      pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight)
+      heightLeft -= (pdfHeight - position - 10)
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight
+        pdf.addPage()
+        pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight)
+        heightLeft -= pdfHeight
+      }
+
+      pdf.save(`ChemVision_Batch_QR_Labels_${new Date().toISOString().slice(0, 10)}.pdf`)
+      toast.success(lang === 'ar' ? 'تم تحميل ملف ملصقات الـ QR بنجاح! 📄' : 'QR Code print sheet downloaded successfully! 📄', { id: toastId })
+    } catch (err) {
+      console.error('PDF export error:', err)
+      toast.error(lang === 'ar' ? 'حدث خطأ أثناء إنشاء ملف PDF' : 'Failed to generate PDF sheet', { id: toastId })
+    }
+  }
+
   return (
     <div className="p-4 lg:p-6">
       {/* Top Header */}
@@ -977,25 +1033,82 @@ export default function AdminPage() {
         <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search chemicals..." className="input-field pl-10" />
       </div>
 
-      {/* Batch QR */}
+      {/* Batch QR Panel */}
       <AnimatePresence>
         {showQRBatch && (
-          <motion.div className="card p-5 mb-5" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-            <h3 className="font-semibold text-sm mb-4" style={{ color: '#2C3E50' }}>Batch QR Codes</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-              {filtered.slice(0, 12).map(c => (
-                <div key={c.id} className="flex flex-col items-center gap-1 p-2 rounded-xl" style={{ background: '#F8F9FA' }}>
-                  <QRCode
-                    value={`${window.location.origin}/chemicals/${c.id}`}
-                    size={96}
-                    fgColor="#0F2D52"
-                    bgColor="#FFFFFF"
-                    level="H"
-                    includeMargin={true}
-                  />
-                  <p className="text-xs text-center font-medium" style={{ color: '#2C3E50', fontSize: '0.65rem' }}>{c.name.slice(0, 12)}</p>
+          <motion.div
+            className="card p-5 mb-5 border-2 border-blue-200 dark:border-blue-900 bg-white dark:bg-slate-900"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+              <div>
+                <h3 className="font-heading font-bold text-base text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <QrCode size={18} className="text-blue-500" />
+                  {lang === 'ar' ? 'رموز الاستجابة السريعة للمواد (Batch QR Codes)' : 'Batch Chemical QR Codes'}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  {lang === 'ar' ? `إجمالي المواد المتاحة للطباعة: ${filtered.length} مادة` : `Total printable chemical QR labels: ${filtered.length}`}
+                </p>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <motion.button
+                  className="btn-primary flex-1 sm:flex-initial justify-center py-2 px-4 text-xs font-bold shadow-md"
+                  onClick={downloadBatchQRPDF}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Printer size={15} />
+                  {lang === 'ar' ? 'طباعة / تحميل ملصقات الـ QR (PDF)' : 'Print / Download QR Labels (PDF)'}
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Grid container to be exported or viewed */}
+            <div
+              id="batch-qr-export-container"
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-950/60"
+            >
+              {filtered.map(c => (
+                <div
+                  key={c.id}
+                  className="flex flex-col items-center justify-between gap-2 p-3 rounded-2xl border transition-all
+                             bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700/80 shadow-sm"
+                >
+                  <div className="p-1.5 rounded-xl bg-white border border-slate-100 shadow-inner">
+                    <QRCode
+                      value={`${window.location.origin}/chemicals/${c.id}`}
+                      size={96}
+                      fgColor="#0F2D52"
+                      bgColor="#FFFFFF"
+                      level="H"
+                      includeMargin={true}
+                    />
+                  </div>
+                  <div className="text-center w-full min-w-0">
+                    <p className="text-xs font-black truncate text-slate-900 dark:text-slate-100 leading-tight">
+                      {c.name}
+                    </p>
+                    <p className="text-[10px] font-mono font-bold text-blue-600 dark:text-blue-400 mt-0.5 truncate">
+                      {c.formula}
+                    </p>
+                    {c.location && (
+                      <p className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                        📍 {c.location}
+                      </p>
+                    )}
+                  </div>
                 </div>
               ))}
+
+              {filtered.length === 0 && (
+                <div className="col-span-full py-8 text-center text-xs text-slate-400">
+                  {lang === 'ar' ? 'لا توجد مواد كيميائية مطابقة للبحث' : 'No chemicals found matching your search'}
+                </div>
+              )}
             </div>
           </motion.div>
         )}
