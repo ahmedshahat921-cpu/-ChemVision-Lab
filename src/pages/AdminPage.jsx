@@ -1040,7 +1040,8 @@ export default function AdminPage() {
           pdf.setFontSize(7)
           pdf.setFont('helvetica', 'normal')
           pdf.setTextColor(100, 116, 139)
-          const locText = c.location.length > 25 ? c.location.slice(0, 23) + '...' : c.location
+          const fullLoc = `${c.cabinet ? `(${c.cabinet}) ` : ''}${c.location}`
+          const locText = fullLoc.length > 27 ? fullLoc.slice(0, 25) + '...' : fullLoc
           pdf.text(locText, x + (cardW / 2), y + 55, { align: 'center' })
         }
       }
@@ -1170,8 +1171,8 @@ export default function AdminPage() {
                       {c.formula}
                     </p>
                     {c.location && (
-                      <p className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                        📍 {c.location}
+                      <p className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5 truncate" title={`${c.cabinet ? `(${c.cabinet}) ` : ''}${c.location}`}>
+                        📍 {c.cabinet ? `(${c.cabinet}) ` : ''}{c.location}
                       </p>
                     )}
                   </div>
@@ -1228,7 +1229,7 @@ export default function AdminPage() {
                   </td>
                   <td className="px-4 py-3"><span className={`badge badge-${c.hazard_level}`}>{c.hazard_level}</span></td>
                   <td className="px-4 py-3 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{c.quantity} {c.quantity_unit}</td>
-                  <td className="px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{c.location}</td>
+                  <td className="px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{c.cabinet ? `(${c.cabinet}) ` : ''}{c.location}</td>
                   <td className="px-4 py-3 text-xs font-semibold" style={{ color: c.expiry_date && new Date(c.expiry_date) < new Date() ? '#E85D5D' : 'var(--text-subtle)' }}>
                     {c.expiry_date ? new Date(c.expiry_date).toLocaleDateString() : '—'}
                   </td>
