@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Eye, EyeOff, FlaskConical, Mail, Lock, User, ArrowRight, Loader2, Shield, CheckCircle, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, FlaskConical, Mail, Lock, User, ArrowRight, Loader2, Shield, CheckCircle, AlertCircle, Microscope, Settings } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store'
 import ParticlesBackground, { FloatingMolecule } from '../components/animations/ParticlesBackground'
@@ -198,15 +198,89 @@ export default function RegisterPage() {
               </div>
             </motion.div>
 
-            {/* Role */}
+            {/* Role — Custom Card Picker */}
             <motion.div variants={fieldVariants}>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Role</label>
-              <div className="relative">
-                <Shield size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
-                <select id="reg-role" name="role" value={form.role} onChange={handleChange} className="input-field pl-11 appearance-none" style={{ cursor: 'pointer' }}>
-                  <option value="user">Lab Technician / Student / Researcher</option>
-                  <option value="admin">Lab Administrator</option>
-                </select>
+              <label className="block text-sm font-semibold mb-3" style={{ color: '#2C3E50' }}>Select Your Role</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* User card */}
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setForm({ ...form, role: 'user' })}
+                  className="relative flex items-start gap-3.5 p-4 rounded-2xl border-2 text-left transition-all duration-200"
+                  style={{
+                    borderColor: form.role === 'user' ? '#4A90E2' : '#E2E8F0',
+                    background: form.role === 'user'
+                      ? 'linear-gradient(135deg, #EBF4FF, #DBEAFE)'
+                      : '#FAFBFD',
+                    boxShadow: form.role === 'user' ? '0 4px 20px rgba(74,144,226,0.18)' : 'none',
+                  }}
+                >
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{ background: form.role === 'user' ? '#4A90E2' : '#E2E8F0' }}
+                  >
+                    <Microscope size={19} color={form.role === 'user' ? 'white' : '#64748B'} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm" style={{ color: form.role === 'user' ? '#1E3A5F' : '#374151' }}>
+                      Lab Technician
+                    </p>
+                    <p className="text-xs mt-0.5 leading-relaxed" style={{ color: form.role === 'user' ? '#2D6A9F' : '#94A3B8' }}>
+                      Student / Researcher
+                    </p>
+                  </div>
+                  {form.role === 'user' && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute top-3 right-3"
+                    >
+                      <CheckCircle size={18} style={{ color: '#4A90E2' }} />
+                    </motion.div>
+                  )}
+                </motion.button>
+
+                {/* Admin card */}
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setForm({ ...form, role: 'admin' })}
+                  className="relative flex items-start gap-3.5 p-4 rounded-2xl border-2 text-left transition-all duration-200"
+                  style={{
+                    borderColor: form.role === 'admin' ? '#7C3AED' : '#E2E8F0',
+                    background: form.role === 'admin'
+                      ? 'linear-gradient(135deg, #F5F3FF, #EDE9FE)'
+                      : '#FAFBFD',
+                    boxShadow: form.role === 'admin' ? '0 4px 20px rgba(124,58,237,0.15)' : 'none',
+                  }}
+                >
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{ background: form.role === 'admin' ? '#7C3AED' : '#E2E8F0' }}
+                  >
+                    <Settings size={19} color={form.role === 'admin' ? 'white' : '#64748B'} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm" style={{ color: form.role === 'admin' ? '#4C1D95' : '#374151' }}>
+                      Lab Administrator
+                    </p>
+                    <p className="text-xs mt-0.5 leading-relaxed" style={{ color: form.role === 'admin' ? '#6D28D9' : '#94A3B8' }}>
+                      Full access & management
+                    </p>
+                  </div>
+                  {form.role === 'admin' && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute top-3 right-3"
+                    >
+                      <CheckCircle size={18} style={{ color: '#7C3AED' }} />
+                    </motion.div>
+                  )}
+                </motion.button>
               </div>
             </motion.div>
 
@@ -233,11 +307,26 @@ export default function RegisterPage() {
 
             {/* Security Question */}
             <motion.div variants={fieldVariants}>
-              <div className="p-3.5 rounded-xl text-xs font-semibold mb-2.5 leading-relaxed" style={{ background: '#FFF7ED', color: '#EA580C', border: '1px solid #FFEDD5' }}>
-                💡 Security Question will be used to recover your account if you forget your password without needing email. Please enter your favorite teacher's name as a single word (e.g. Ahmed).
+              {/* Info notice — premium styled */}
+              <div
+                className="flex gap-3 p-4 rounded-2xl mb-3"
+                style={{ background: 'linear-gradient(135deg, #FFF7ED, #FFEDD5)', border: '1px solid #FED7AA' }}
+              >
+                <div
+                  className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: '#F97316' }}
+                >
+                  <Shield size={15} color="white" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold mb-0.5" style={{ color: '#C2410C' }}>Account Recovery</p>
+                  <p className="text-xs leading-relaxed" style={{ color: '#9A3412' }}>
+                    This answer helps recover your account without email. Enter your favorite teacher's name as a <strong>single word</strong> (e.g. Ahmed).
+                  </p>
+                </div>
               </div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>
-                Security Question: Who is your favorite teacher?
+              <label className="block text-sm font-semibold mb-1.5" style={{ color: '#2C3E50' }}>
+                Who is your favorite teacher?
               </label>
               <div className="relative">
                 <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
@@ -251,8 +340,9 @@ export default function RegisterPage() {
                   className="input-field pl-11"
                 />
               </div>
-              <div className="text-xs mt-1" style={{ color: '#E11D48', fontWeight: 500 }}>
-                ⚠️ Warning: Please enter a single word only with no spaces.
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <AlertCircle size={12} style={{ color: '#E11D48' }} />
+                <p className="text-xs font-medium" style={{ color: '#E11D48' }}>Single word only — no spaces allowed.</p>
               </div>
             </motion.div>
 
