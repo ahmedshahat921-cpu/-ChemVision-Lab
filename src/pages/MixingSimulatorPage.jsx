@@ -24,30 +24,33 @@ function ChemicalSelector({ label, selected, onSelect, chemicals, exclude }) {
   const filtered = chemicals.filter(c => c.id !== exclude && (c.name.toLowerCase().includes(search.toLowerCase()) || c.formula.toLowerCase().includes(search.toLowerCase())))
 
   return (
-    <div className="relative flex-1 text-left">
-      <label className="block text-sm font-medium mb-2" style={{ color: '#2C3E50' }}>{label}</label>
+    <div className="relative flex-1 text-left min-w-0 w-full">
+      <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-primary, #2C3E50)' }}>{label}</label>
       <motion.button
         onClick={() => setOpen(!open)}
-        className="w-full p-3.5 rounded-xl text-left flex items-center justify-between"
-        style={{ background: selected ? '#EBF4FF' : '#F8F9FA', border: `2px solid ${selected ? '#4A90E2' : '#E2E8F0'}` }}
+        className="w-full p-3.5 rounded-xl text-left flex items-center justify-between transition-colors bg-slate-50 dark:bg-slate-800/80 border-2 border-slate-200 dark:border-slate-700"
+        style={{
+          background: selected ? (lang === 'ar' ? 'rgba(74, 144, 226, 0.1)' : '#EBF4FF') : undefined,
+          borderColor: selected ? '#4A90E2' : undefined
+        }}
         whileHover={{ borderColor: '#4A90E2' }}
       >
         {selected ? (
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold font-mono" style={{ background: '#4A90E2', color: 'white' }}>
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold font-mono flex-shrink-0" style={{ background: '#4A90E2', color: 'white' }}>
               {selected.formula.slice(0, 3)}
             </div>
-            <div>
-              <p className="font-medium text-sm text-left" style={{ color: '#2C3E50' }}>{selected.name}</p>
-              <p className="text-xs text-left" style={{ color: '#64748B' }}>{selected.formula}</p>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold text-sm text-left truncate" style={{ color: 'var(--text-primary, #2C3E50)' }}>{selected.name}</p>
+              <p className="text-xs text-left truncate" style={{ color: '#64748B' }}>{selected.formula}</p>
             </div>
           </div>
         ) : (
-          <span className="text-sm text-left" style={{ color: '#94A3B8' }}>
+          <span className="text-sm text-left truncate" style={{ color: '#94A3B8' }}>
             {lang === 'ar' ? 'اختر مادة كيميائية...' : 'Select a chemical...'}
           </span>
         )}
-        <motion.span animate={{ rotate: open ? 180 : 0 }}><ChevronDown size={16} style={{ color: '#64748B' }} /></motion.span>
+        <motion.span animate={{ rotate: open ? 180 : 0 }} className="ml-2 flex-shrink-0"><ChevronDown size={16} style={{ color: '#64748B' }} /></motion.span>
       </motion.button>
 
       <AnimatePresence>
@@ -56,48 +59,52 @@ function ChemicalSelector({ label, selected, onSelect, chemicals, exclude }) {
             initial={{ opacity: 0, y: -10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.98 }}
-            className="absolute z-30 w-full mt-2 rounded-xl overflow-hidden"
-            style={{ background: 'white', border: '1px solid #E2E8F0', boxShadow: '0 16px 40px rgba(0,0,0,0.12)' }}
+            className="absolute z-50 w-full min-w-full sm:min-w-[300px] left-0 mt-2 rounded-2xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl"
           >
-            <div className="p-2 border-b" style={{ borderColor: '#F0F2F5' }}>
+            <div className="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder={lang === 'ar' ? 'بحث...' : 'Search...'}
-                className="input-field py-2 text-sm"
+                placeholder={lang === 'ar' ? 'بحث باسم المادة أو الصيغة...' : 'Search...'}
+                className="input-field py-2 text-sm w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-700"
                 autoFocus
               />
             </div>
-            <div className="max-h-48 overflow-y-auto">
+            <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/50">
               {filtered.map(c => (
                 <button
                   key={c.id}
                   onClick={() => { onSelect(c); setOpen(false); setSearch('') }}
-                  className="w-full flex items-center gap-3 p-3 text-left transition-colors hover:bg-violet-50 dark:hover:bg-violet-950/60"
+                  className="w-full flex items-center gap-2.5 p-3 text-left transition-colors hover:bg-blue-50/70 dark:hover:bg-blue-950/40"
                 >
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-900/50">
                     {c.formula.slice(0, 3)}
                   </div>
-                  <div className="text-left">
-                    <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{c.name}</p>
-                    <p className="text-xs" style={{ color: 'var(--text-subtle)' }}>{c.formula}</p>
+                  <div className="text-left min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-bold truncate text-slate-900 dark:text-slate-100">{c.name}</p>
+                    <p className="text-[11px] truncate text-slate-500 dark:text-slate-400 font-mono">{c.formula}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1 ml-auto flex-shrink-0">
-                    <span className={`badge badge-${c.hazard_level}`}>
+                    <span className={`badge badge-${c.hazard_level} text-[10px] px-2 py-0.5 whitespace-nowrap`}>
                       {lang === 'ar' 
                         ? (c.hazard_level === 'safe' || c.hazard_level === 'low' ? 'آمن' : c.hazard_level === 'warning' || c.hazard_level === 'medium' ? 'تحذير' : 'خطر') 
                         : c.hazard_level
                       }
                     </span>
                     {c.expiry_date && new Date(c.expiry_date) < new Date() && (
-                      <span className="text-[9px] font-bold bg-red-100 text-red-700 px-1 py-0.5 rounded shadow-sm border border-red-200">
+                      <span className="text-[9px] font-bold bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 px-1.5 py-0.5 rounded shadow-sm border border-red-200 dark:border-red-800 whitespace-nowrap">
                         {lang === 'ar' ? 'منتهي' : 'Expired'}
                       </span>
                     )}
                   </div>
                 </button>
               ))}
+              {filtered.length === 0 && (
+                <div className="p-4 text-center text-xs text-slate-400">
+                  {lang === 'ar' ? 'لا توجد نتائج' : 'No chemicals found'}
+                </div>
+              )}
             </div>
           </motion.div>
         )}
