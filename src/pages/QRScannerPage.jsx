@@ -197,26 +197,28 @@ export default function QRScannerPage() {
           </div>
 
           {/* Controls */}
-          <div className="p-4 bg-white border-t space-y-3" style={{ borderColor: '#F0F2F5' }}>
-            <div className="flex gap-3">
+          <div className="p-3 sm:p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex gap-2 sm:gap-3">
               {!scanning ? (
                 <motion.button
-                  className="btn-primary flex-1 justify-center py-3 text-sm"
+                  className="btn-primary flex-1 inline-flex items-center justify-center gap-1.5 py-3 px-2 text-xs sm:text-sm font-bold whitespace-nowrap"
                   onClick={startScanner}
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Camera size={16} /> {lang === 'ar' ? 'بدء الكاميرا' : 'Start Camera'}
+                  <Camera size={16} className="flex-shrink-0" />
+                  <span>{lang === 'ar' ? 'بدء الكاميرا' : 'Start Camera'}</span>
                 </motion.button>
               ) : (
                 <motion.button
-                  className="btn-danger w-full justify-center py-3 text-sm"
+                  className="btn-danger w-full inline-flex items-center justify-center gap-1.5 py-3 px-2 text-xs sm:text-sm font-bold whitespace-nowrap"
                   onClick={stopScanner}
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.98 }}
-                  style={{ background: '#E85D5D', color: 'white', borderRadius: '0.625rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}
+                  style={{ background: '#E85D5D', color: 'white', borderRadius: '0.625rem', border: 'none', cursor: 'pointer' }}
                 >
-                  <XCircle size={16} /> {lang === 'ar' ? 'إيقاف الكاميرا' : 'Stop Camera'}
+                  <XCircle size={16} className="flex-shrink-0" />
+                  <span>{lang === 'ar' ? 'إيقاف الكاميرا' : 'Stop Camera'}</span>
                 </motion.button>
               )}
 
@@ -229,13 +231,14 @@ export default function QRScannerPage() {
                 className="hidden" 
               />
               <motion.button
-                className="btn-secondary flex-1 justify-center py-3 text-sm"
+                className="btn-secondary flex-1 inline-flex items-center justify-center gap-1.5 py-3 px-2 text-xs sm:text-sm font-bold whitespace-nowrap"
                 onClick={() => fileInputRef.current?.click()}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
                 disabled={scanning}
               >
-                <Upload size={16} /> {lang === 'ar' ? 'رفع صورة' : 'Upload Image'}
+                <Upload size={16} className="flex-shrink-0" />
+                <span>{lang === 'ar' ? 'رفع صورة' : 'Upload Image'}</span>
               </motion.button>
             </div>
           </div>

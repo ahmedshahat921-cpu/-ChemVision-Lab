@@ -785,10 +785,10 @@ export default function ChemicalDetailPage() {
             animate={{ opacity: 1, x: 0 }}
           >
             <div>
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div>
-                  <h1 className="font-heading font-bold text-2xl lg:text-3xl" style={{ color: 'var(--text-primary)' }}>{translatedName}</h1>
-                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5 sm:gap-4 mb-4">
+                <div className="flex-1 min-w-0">
+                  <h1 className="font-heading font-bold text-2xl lg:text-3xl text-slate-900 dark:text-slate-100 leading-tight" style={{ color: 'var(--text-primary)' }}>{translatedName}</h1>
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     <p className="text-lg font-mono font-bold text-blue-600 dark:text-blue-400">{chemical.formula}</p>
                     {chemical.cas_number && (
                       <span className="text-xs px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-slate-600 dark:text-slate-300 font-medium border border-slate-200 dark:border-slate-700">
@@ -807,7 +807,7 @@ export default function ChemicalDetailPage() {
                     </span>
                   </div>
                 </div>
-                <span className="badge flex-shrink-0" style={{ background: h.bg, color: h.color, padding: '0.4rem 0.85rem', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                <span className="badge self-start flex-shrink-0" style={{ background: h.bg, color: h.color, padding: '0.4rem 0.85rem', fontSize: '0.75rem', fontWeight: 'bold' }}>
                   ⚠️ {getHazardLabel(chemical.hazard_level, lang)}
                 </span>
               </div>
@@ -875,7 +875,7 @@ export default function ChemicalDetailPage() {
                     {lang === 'ar' ? 'موقع التخزين 🗺️' : 'Location 🗺️'}
                   </p>
                   <p className="text-xs font-extrabold mt-0.5 break-words text-blue-800 dark:text-blue-200 underline" style={{ textDecorationStyle: 'dashed' }}>
-                    {translatedLocation} {chemical.cabinet ? `(${chemical.cabinet})` : ''}
+                    {chemical.cabinet ? `(${chemical.cabinet}) ` : ''}{translatedLocation}
                   </p>
                 </div>
               </motion.div>

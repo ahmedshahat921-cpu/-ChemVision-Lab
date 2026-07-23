@@ -196,12 +196,8 @@ export default function NotificationsPanel() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.97 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="absolute top-12 z-[100] flex flex-col rounded-2xl shadow-2xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition-colors"
+            className="fixed sm:absolute top-14 sm:top-12 right-3 sm:right-0 z-[100] flex flex-col rounded-2xl shadow-2xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition-colors w-[calc(100vw-1.5rem)] sm:w-96"
             style={{
-              right: lang === 'ar' ? 'auto' : 0,
-              left: lang === 'ar' ? 0 : 'auto',
-              width: '380px',
-              maxWidth: 'calc(100vw - 24px)',
               boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
             }}
           >
