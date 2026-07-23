@@ -153,6 +153,60 @@ export default function Chatbot() {
 
   return (
     <>
+      {/* Full-screen Clear Confirmation Modal - fixed overlay works on mobile & desktop */}
+      <AnimatePresence>
+        {showConfirmClear && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[10002] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-5"
+            style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}
+            onClick={() => setShowConfirmClear(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-[320px] p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl text-center space-y-4"
+            >
+              <div className="w-14 h-14 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto border border-rose-200 dark:border-rose-800">
+                <Trash2 size={26} />
+              </div>
+
+              <div>
+                <h4 className="font-heading font-bold text-base text-slate-900 dark:text-slate-100">
+                  {lang === 'ar' ? 'مسح سجل المحادثة؟' : 'Clear Chat History?'}
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed font-medium">
+                  {lang === 'ar'
+                    ? 'هل أنت تأكد من رغبتك في مسح كافة المحادثات السابقة؟ لا يمكن التراجع عن هذه الخطوة.'
+                    : 'Are you sure you want to delete all previous messages? This action cannot be undone.'}
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmClear(false)}
+                  className="flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-sm transition-colors cursor-pointer"
+                >
+                  {lang === 'ar' ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmClearChat}
+                  className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white font-bold text-sm shadow-md transition-all cursor-pointer"
+                >
+                  {lang === 'ar' ? 'مسح الآن' : 'Clear Now'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Floating Toggle Button - always on top */}
       <div
         className={`fixed bottom-4 sm:bottom-6 ${lang === 'ar' ? 'left-4 sm:left-6' : 'right-4 sm:right-6'} z-[10000]`}
@@ -195,58 +249,6 @@ export default function Chatbot() {
             className={`fixed bottom-20 sm:bottom-24 ${lang === 'ar' ? 'left-4 sm:left-6' : 'right-4 sm:right-6'} w-[calc(100vw-2rem)] sm:w-[380px] max-w-[420px] h-[70vh] sm:h-[520px] rounded-2xl border flex flex-col overflow-hidden shadow-2xl bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 transition-colors backdrop-blur-xl z-[9999]`}
             style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}
           >
-            {/* Custom Clear Confirmation Modal Overlay */}
-            <AnimatePresence>
-              {showConfirmClear && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4"
-                  onClick={() => setShowConfirmClear(false)}
-                >
-                  <motion.div
-                    initial={{ scale: 0.9, opacity: 0, y: 10 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.9, opacity: 0, y: 10 }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-full max-w-[320px] p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl text-center space-y-4"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto border border-rose-200 dark:border-rose-800">
-                      <Trash2 size={24} />
-                    </div>
-
-                    <div>
-                      <h4 className="font-heading font-bold text-base text-slate-900 dark:text-slate-100">
-                        {lang === 'ar' ? 'مسح سجل المحادثة؟' : 'Clear Chat History?'}
-                      </h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed font-medium">
-                        {lang === 'ar'
-                          ? 'هل أنت تأكد من رغبتك في مسح كافة المحادثات السابقة؟ لا يمكن التراجع عن هذه الخطوة.'
-                          : 'Are you sure you want to delete all previous messages? This action cannot be undone.'}
-                      </p>
-                    </div>
-
-                    <div className="flex gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmClear(false)}
-                        className="flex-1 py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs transition-colors cursor-pointer"
-                      >
-                        {lang === 'ar' ? 'إلغاء' : 'Cancel'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={confirmClearChat}
-                        className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
-                      >
-                        {lang === 'ar' ? 'مسح الآن' : 'Clear Now'}
-                      </button>
-                    </div>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
 
             {/* Header */}
             <div className="px-5 py-4 border-b flex items-center justify-between text-white" style={{ background: 'linear-gradient(135deg, #0F2D52, #1E3A8A)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
