@@ -206,7 +206,7 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Full name</label>
               <div className="relative">
                 <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
-                <input id="reg-name" name="name" type="text" value={form.name} onChange={handleChange} placeholder="Dr. Ahmed Shahat" className="input-field pl-11" />
+                <input id="reg-name" name="name" type="text" value={form.name} onChange={handleChange} className="input-field pl-11" />
               </div>
             </motion.div>
 
@@ -215,7 +215,7 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C3E50' }}>Email address</label>
               <div className="relative">
                 <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ color: '#94A3B8' }} />
-                <input id="reg-email" name="email" type="email" value={form.email} onChange={handleChange} placeholder="you@example.com" className="input-field pl-11" />
+                <input id="reg-email" name="email" type="email" value={form.email} onChange={handleChange} className="input-field pl-11" />
               </div>
             </motion.div>
 
