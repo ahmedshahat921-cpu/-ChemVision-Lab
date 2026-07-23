@@ -6,27 +6,58 @@ import { useChemicalStore } from '../../store'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
 
+const CHAT_STORAGE_KEY = 'chemvision_chat_history'
+const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
+
 export default function Chatbot() {
   const { lang } = useLanguage()
   const { chemicals } = useChemicalStore()
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
 
-  // Initialize chat history with greeting
-  useEffect(() => {
-    setMessages([
-      {
-        role: 'model',
-        content: lang === 'ar'
-          ? 'مرحباً! أنا مساعد ChemVision الذكي للسلامة والمختبرات. كيف يمكنني مساعدتك اليوم في فحص المواد أو التفاعلات الكيميائية؟'
-          : 'Hello! I am your ChemVision AI Safety & Laboratory Companion. How can I assist you with inventory, safety precautions, or chemical questions today?'
+  // Initialize chat history with 24-hour persistence from localStorage
+  const [messages, setMessages] = useState(() => {
+    const defaultGreeting = {
+      role: 'model',
+      content: lang === 'ar'
+        ? 'مرحباً! أنا مساعد ChemVision الذكي للسلامة والمختبرات. كيف يمكنني مساعدتك اليوم في فحص المواد أو التفاعلات الكيميائية؟'
+        : 'Hello! I am your ChemVision AI Safety & Laboratory Companion. How can I assist you with inventory, safety precautions, or chemical questions today?'
+    }
+
+    try {
+      const stored = localStorage.getItem(CHAT_STORAGE_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (parsed && parsed.timestamp && Array.isArray(parsed.messages) && parsed.messages.length > 0) {
+          const isValid = (Date.now() - parsed.timestamp) < TWENTY_FOUR_HOURS
+          if (isValid) {
+            return parsed.messages
+          }
+        }
       }
-    ])
-  }, [lang])
+    } catch (err) {
+      console.error('Failed to load chat history:', err)
+    }
+
+    return [defaultGreeting]
+  })
+
+  // Persist messages to localStorage whenever updated
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      try {
+        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify({
+          timestamp: Date.now(),
+          messages: messages
+        }))
+      } catch (err) {
+        console.error('Failed to save chat history:', err)
+      }
+    }
+  }, [messages])
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -107,14 +138,14 @@ export default function Chatbot() {
 
   const handleClear = () => {
     if (window.confirm(lang === 'ar' ? 'هل تريد مسح سجل المحادثة الحالي؟' : 'Are you sure you want to clear the conversation history?')) {
-      setMessages([
-        {
-          role: 'model',
-          content: lang === 'ar'
-            ? 'تم مسح المحادثة. كيف يمكنني مساعدتك الآن؟'
-            : 'Chat cleared. How can I help you now?'
-        }
-      ])
+      localStorage.removeItem(CHAT_STORAGE_KEY)
+      const freshGreeting = {
+        role: 'model',
+        content: lang === 'ar'
+          ? 'تم مسح المحادثة. كيف يمكنني مساعدتك الآن؟'
+          : 'Chat cleared. How can I help you now?'
+      }
+      setMessages([freshGreeting])
     }
   }
 
