@@ -25,32 +25,32 @@ function ChemicalSelector({ label, selected, onSelect, chemicals, exclude }) {
 
   return (
     <div className="relative flex-1 text-left min-w-0 w-full">
-      <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-primary, #2C3E50)' }}>{label}</label>
+      <label className="block text-sm font-bold mb-2 text-slate-800 dark:text-slate-100">{label}</label>
       <motion.button
         onClick={() => setOpen(!open)}
-        className="w-full p-3.5 rounded-xl text-left flex items-center justify-between transition-colors bg-slate-50 dark:bg-slate-800/80 border-2 border-slate-200 dark:border-slate-700"
-        style={{
-          background: selected ? (lang === 'ar' ? 'rgba(74, 144, 226, 0.1)' : '#EBF4FF') : undefined,
-          borderColor: selected ? '#4A90E2' : undefined
-        }}
+        className={`w-full p-3.5 rounded-xl text-left flex items-center justify-between transition-colors border-2 ${
+          selected
+            ? 'bg-blue-50/90 dark:bg-slate-800 border-blue-500 dark:border-blue-500 shadow-sm'
+            : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700'
+        }`}
         whileHover={{ borderColor: '#4A90E2' }}
       >
         {selected ? (
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold font-mono flex-shrink-0" style={{ background: '#4A90E2', color: 'white' }}>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 bg-blue-600 text-white shadow-sm">
               {selected.formula.slice(0, 3)}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-bold text-sm text-left truncate" style={{ color: 'var(--text-primary, #2C3E50)' }}>{selected.name}</p>
-              <p className="text-xs text-left truncate" style={{ color: '#64748B' }}>{selected.formula}</p>
+              <p className="font-black text-sm text-left truncate text-slate-900 dark:text-slate-100">{selected.name}</p>
+              <p className="text-xs text-left truncate text-blue-600 dark:text-blue-400 font-mono font-bold">{selected.formula}</p>
             </div>
           </div>
         ) : (
-          <span className="text-sm text-left truncate" style={{ color: '#94A3B8' }}>
+          <span className="text-sm text-left truncate text-slate-400 dark:text-slate-400 font-medium">
             {lang === 'ar' ? 'اختر مادة كيميائية...' : 'Select a chemical...'}
           </span>
         )}
-        <motion.span animate={{ rotate: open ? 180 : 0 }} className="ml-2 flex-shrink-0"><ChevronDown size={16} style={{ color: '#64748B' }} /></motion.span>
+        <motion.span animate={{ rotate: open ? 180 : 0 }} className="ml-2 flex-shrink-0"><ChevronDown size={16} className="text-slate-400 dark:text-slate-400" /></motion.span>
       </motion.button>
 
       <AnimatePresence>
@@ -1152,31 +1152,30 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
             {/* ── Reaction Variables Panel ── */}
             {(chemA || chemB) && (
               <motion.div
-                className="mt-5 rounded-2xl border overflow-hidden"
-                style={{ borderColor: '#E2E8F0', background: '#F8FAFC' }}
+                className="mt-5 rounded-2xl border overflow-hidden bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
               >
                 {/* Panel header */}
-                <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: '#E2E8F0', background: '#EEF2FF' }}>
+                <div className="flex items-center gap-2 px-4 py-3 border-b bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-800">
                   <span className="text-base">⚗️</span>
-                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#4338CA' }}>Reaction Variables</span>
-                  <span className="ml-auto text-xs" style={{ color: '#94A3B8' }}>Tune conditions for a more precise simulation</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Reaction Variables</span>
+                  <span className="ml-auto text-xs text-slate-500 dark:text-slate-400">Tune conditions for a more precise simulation</span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x" style={{ divideColor: '#E2E8F0' }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 dark:divide-slate-800">
                   {/* Chemical A Variables */}
                   {[
                     { label: chemA ? `${chemA.formula} (A)` : 'Chemical A', vars: varsA, setVars: setVarsA, accent: '#4A90E2', disabled: !chemA },
                     { label: chemB ? `${chemB.formula} (B)` : 'Chemical B', vars: varsB, setVars: setVarsB, accent: '#7C3AED', disabled: !chemB },
                   ].map(({ label, vars, setVars, accent, disabled }, idx) => (
-                    <div key={idx} className="p-4 space-y-3" style={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto' }}>
-                      <p className="text-xs font-bold mb-2" style={{ color: accent }}>{label}</p>
+                    <div key={idx} className="p-4 space-y-4" style={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto' }}>
+                      <p className="text-xs font-black uppercase tracking-wider mb-2 text-blue-600 dark:text-blue-400">{label}</p>
 
                       {/* Quantity */}
                       <div>
-                        <label className="block text-xs font-semibold mb-1 text-slate-700 dark:text-slate-200">
+                        <label className="block text-xs font-bold mb-1.5 text-slate-800 dark:text-slate-200">
                           {lang === 'ar' ? 'الكمية (مليلتر)' : 'Quantity (mL)'}
                         </label>
                         <div className="relative flex items-center">
@@ -1195,11 +1194,11 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                               const val = Math.max(1, Math.min(500, Number(e.target.value) || 1))
                               setVars(v => ({ ...v, quantity: val }))
                             }}
-                            className="w-full px-3 py-2 text-sm font-bold rounded-xl border transition-colors
-                                       bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                                       border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none pr-12"
+                            className="w-full px-3.5 py-2.5 text-sm font-black rounded-xl border transition-colors
+                                       bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 
+                                       border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none pr-12 shadow-sm"
                           />
-                          <span className="absolute right-3 text-xs font-bold text-slate-400 pointer-events-none">
+                          <span className="absolute right-3.5 text-xs font-black text-slate-500 dark:text-slate-400 pointer-events-none">
                             mL
                           </span>
                         </div>
@@ -1207,7 +1206,7 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
 
                       {/* Concentration */}
                       <div>
-                        <label className="block text-xs font-semibold mb-1 text-slate-700 dark:text-slate-200">
+                        <label className="block text-xs font-bold mb-1.5 text-slate-800 dark:text-slate-200">
                           {lang === 'ar' ? 'التركيز (مول/لتر)' : 'Concentration (mol/L)'}
                         </label>
                         <div className="relative flex items-center">
@@ -1226,11 +1225,11 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                               const val = Math.max(0.1, Math.min(12, Number(e.target.value) || 0.1))
                               setVars(v => ({ ...v, concentration: Number(val.toFixed(1)) }))
                             }}
-                            className="w-full px-3 py-2 text-sm font-bold rounded-xl border transition-colors
-                                       bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 
-                                       border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none pr-10"
+                            className="w-full px-3.5 py-2.5 text-sm font-black rounded-xl border transition-colors
+                                       bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 
+                                       border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none pr-10 shadow-sm"
                           />
-                          <span className="absolute right-3 text-xs font-bold text-slate-400 pointer-events-none">
+                          <span className="absolute right-3.5 text-xs font-black text-slate-500 dark:text-slate-400 pointer-events-none">
                             M
                           </span>
                         </div>
