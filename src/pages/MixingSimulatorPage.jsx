@@ -1176,20 +1176,37 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
 
                       {/* Quantity */}
                       <div>
-                        <div className="flex justify-between mb-1">
+                        <div className="flex items-center justify-between mb-1.5">
                           <label className="text-xs font-semibold" style={{ color: '#475569' }}>Quantity (mL)</label>
-                          <span className="text-xs font-bold px-2 py-0.5 rounded-md" style={{ color: accent, background: `${accent}15` }}>
-                            {vars.quantity} mL
-                          </span>
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm" style={{ background: `${accent}12` }}>
+                            <input
+                              type="number"
+                              min={1}
+                              max={500}
+                              step={1}
+                              value={vars.quantity}
+                              onChange={(e) => {
+                                const val = e.target.value
+                                setVars(v => ({ ...v, quantity: val === '' ? '' : Number(val) }))
+                              }}
+                              onBlur={(e) => {
+                                const val = Math.max(1, Math.min(500, Number(e.target.value) || 1))
+                                setVars(v => ({ ...v, quantity: val }))
+                              }}
+                              className="w-12 text-xs font-bold text-center bg-transparent outline-none focus:ring-1 focus:ring-blue-500 rounded"
+                              style={{ color: accent }}
+                            />
+                            <span className="text-xs font-bold" style={{ color: accent }}>mL</span>
+                          </div>
                         </div>
                         <input
                           type="range" min={1} max={500} step={1}
-                          value={vars.quantity}
+                          value={vars.quantity || 1}
                           onChange={(e) => setVars(v => ({ ...v, quantity: Number(e.target.value) }))}
                           className="w-full h-2.5 rounded-full cursor-pointer transition-all accent-blue-600"
                           style={{
                             accentColor: accent,
-                            background: `linear-gradient(to right, ${accent} 0%, ${accent} ${((vars.quantity - 1) / 499) * 100}%, #E2E8F0 ${((vars.quantity - 1) / 499) * 100}%, #E2E8F0 100%)`
+                            background: `linear-gradient(to right, ${accent} 0%, ${accent} ${(((vars.quantity || 1) - 1) / 499) * 100}%, #E2E8F0 ${(((vars.quantity || 1) - 1) / 499) * 100}%, #E2E8F0 100%)`
                           }}
                         />
                         <div className="flex justify-between text-xs font-medium mt-1" style={{ color: '#64748B' }}>
@@ -1199,20 +1216,37 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
 
                       {/* Concentration */}
                       <div>
-                        <div className="flex justify-between mb-1">
+                        <div className="flex items-center justify-between mb-1.5">
                           <label className="text-xs font-semibold" style={{ color: '#475569' }}>Concentration (mol/L)</label>
-                          <span className="text-xs font-bold px-2 py-0.5 rounded-md" style={{ color: accent, background: `${accent}15` }}>
-                            {vars.concentration.toFixed(1)} M
-                          </span>
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm" style={{ background: `${accent}12` }}>
+                            <input
+                              type="number"
+                              min={0.1}
+                              max={12}
+                              step={0.1}
+                              value={vars.concentration}
+                              onChange={(e) => {
+                                const val = e.target.value
+                                setVars(v => ({ ...v, concentration: val === '' ? '' : Number(val) }))
+                              }}
+                              onBlur={(e) => {
+                                const val = Math.max(0.1, Math.min(12, Number(e.target.value) || 0.1))
+                                setVars(v => ({ ...v, concentration: Number(val.toFixed(1)) }))
+                              }}
+                              className="w-12 text-xs font-bold text-center bg-transparent outline-none focus:ring-1 focus:ring-blue-500 rounded"
+                              style={{ color: accent }}
+                            />
+                            <span className="text-xs font-bold" style={{ color: accent }}>M</span>
+                          </div>
                         </div>
                         <input
                           type="range" min={0.1} max={12} step={0.1}
-                          value={vars.concentration}
+                          value={vars.concentration || 0.1}
                           onChange={(e) => setVars(v => ({ ...v, concentration: Number(e.target.value) }))}
                           className="w-full h-2.5 rounded-full cursor-pointer transition-all"
                           style={{
                             accentColor: accent,
-                            background: `linear-gradient(to right, ${accent} 0%, ${accent} ${((vars.concentration - 0.1) / 11.9) * 100}%, #E2E8F0 ${((vars.concentration - 0.1) / 11.9) * 100}%, #E2E8F0 100%)`
+                            background: `linear-gradient(to right, ${accent} 0%, ${accent} ${(((vars.concentration || 0.1) - 0.1) / 11.9) * 100}%, #E2E8F0 ${(((vars.concentration || 0.1) - 0.1) / 11.9) * 100}%, #E2E8F0 100%)`
                           }}
                         />
                         <div className="flex justify-between text-xs font-medium mt-1" style={{ color: '#64748B' }}>
@@ -1223,19 +1257,39 @@ Do not include any markdown styling or extra text. Return ONLY the raw JSON stri
                       {/* Temperature */}
                       <div>
                         {(() => {
-                          const tempColor = vars.temperature > 60 ? '#EF4444' : vars.temperature < 5 ? '#3B82F6' : accent
-                          const tempPct = ((vars.temperature - (-20)) / 220) * 100
+                          const currentTemp = vars.temperature === '' ? 25 : Number(vars.temperature)
+                          const tempColor = currentTemp > 60 ? '#EF4444' : currentTemp < 5 ? '#3B82F6' : accent
+                          const tempPct = ((Math.max(-20, Math.min(200, currentTemp)) - (-20)) / 220) * 100
                           return (
                             <>
-                              <div className="flex justify-between mb-1">
+                              <div className="flex items-center justify-between mb-1.5">
                                 <label className="text-xs font-semibold" style={{ color: '#475569' }}>Temperature (°C)</label>
-                                <span className="text-xs font-bold px-2 py-0.5 rounded-md" style={{ color: tempColor, background: `${tempColor}15` }}>
-                                  {vars.temperature}°C {vars.temperature > 60 ? '🔥' : vars.temperature < 5 ? '❄️' : '🌡️'}
-                                </span>
+                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm" style={{ background: `${tempColor}12` }}>
+                                  <input
+                                    type="number"
+                                    min={-20}
+                                    max={200}
+                                    step={1}
+                                    value={vars.temperature}
+                                    onChange={(e) => {
+                                      const val = e.target.value
+                                      setVars(v => ({ ...v, temperature: val === '' ? '' : Number(val) }))
+                                    }}
+                                    onBlur={(e) => {
+                                      const val = Math.max(-20, Math.min(200, Number(e.target.value) || 25))
+                                      setVars(v => ({ ...v, temperature: val }))
+                                    }}
+                                    className="w-12 text-xs font-bold text-center bg-transparent outline-none focus:ring-1 focus:ring-blue-500 rounded"
+                                    style={{ color: tempColor }}
+                                  />
+                                  <span className="text-xs font-bold" style={{ color: tempColor }}>
+                                    °C {currentTemp > 60 ? '🔥' : currentTemp < 5 ? '❄️' : '🌡️'}
+                                  </span>
+                                </div>
                               </div>
                               <input
                                 type="range" min={-20} max={200} step={1}
-                                value={vars.temperature}
+                                value={currentTemp}
                                 onChange={(e) => setVars(v => ({ ...v, temperature: Number(e.target.value) }))}
                                 className="w-full h-2.5 rounded-full cursor-pointer transition-all"
                                 style={{
