@@ -24,11 +24,11 @@ function useCounter(target, duration = 1500) {
 }
 
 // Stat Card component
-function StatCard({ icon: Icon, label, value, color, bg, trend, onClick }) {
+function StatCard({ icon: Icon, label, value, color, bg, onClick }) {
   const count = useCounter(value)
   return (
     <motion.div
-      className="stat-card cursor-pointer"
+      className="stat-card cursor-pointer h-full flex flex-col justify-between"
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
@@ -37,19 +37,17 @@ function StatCard({ icon: Icon, label, value, color, bg, trend, onClick }) {
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm mb-3" style={{ color: '#64748B' }}>{label}</p>
+          <p className="text-xs font-semibold mb-2 text-slate-500 dark:text-slate-400">{label}</p>
           <motion.p
-            className="font-heading font-bold text-3xl"
-            style={{ color: '#2C3E50' }}
+            className="font-heading font-bold text-3xl text-slate-800 dark:text-slate-100"
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, type: 'spring' }}
           >
             {count}
           </motion.p>
-          {trend && <p className="text-xs mt-2 flex items-center gap-1" style={{ color: '#5DB9A0' }}><ArrowUpRight size={12} />{trend}</p>}
         </div>
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: bg }}>
+        <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-xs" style={{ background: bg }}>
           <Icon size={22} style={{ color }} />
         </div>
       </div>
@@ -698,23 +696,22 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <motion.div
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-4 items-stretch"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        <motion.div variants={itemVariants}>
+        <motion.div variants={itemVariants} className="h-full">
           <StatCard 
             icon={FlaskConical} 
             label={t('total_chemicals')} 
             value={(chemicals || []).length} 
             color="#4A90E2" 
             bg="#EBF4FF" 
-            trend={lang === 'ar' ? '+2 هذا الأسبوع' : '+2 this week'} 
             onClick={() => navigate('/chemicals')} 
           />
         </motion.div>
-        <motion.div variants={itemVariants}>
+        <motion.div variants={itemVariants} className="h-full">
           <StatCard 
             icon={Clock} 
             label={lang === 'ar' ? 'تنتهي صلاحيتها قريباً' : 'Expiring Soon'} 
@@ -724,7 +721,7 @@ export default function DashboardPage() {
             onClick={() => navigate('/chemicals?filter=expiring')} 
           />
         </motion.div>
-        <motion.div variants={itemVariants}>
+        <motion.div variants={itemVariants} className="h-full">
           <StatCard 
             icon={AlertTriangle} 
             label={t('hazard_alerts')} 
@@ -734,14 +731,13 @@ export default function DashboardPage() {
             onClick={() => navigate('/chemicals?filter=hazardous')} 
           />
         </motion.div>
-        <motion.div variants={itemVariants}>
+        <motion.div variants={itemVariants} className="h-full">
           <StatCard 
             icon={Activity} 
             label={lang === 'ar' ? 'الاستخدام اليوم' : 'Usage Today'} 
             value={recentLogs.length} 
             color="#5DB9A0" 
             bg="#E8FBF6" 
-            trend={lang === 'ar' ? 'مختبرات نشطة' : 'Active labs'} 
             onClick={() => {
               const usedIds = [...new Set(recentLogs.map(log => log.chemical_id))].filter(Boolean).join(',')
               navigate(`/chemicals?filter=used&ids=${usedIds}`)
