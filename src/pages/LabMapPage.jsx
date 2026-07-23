@@ -303,19 +303,19 @@ export default function LabMapPage() {
                 const chemicalsInRoom = mappedChemicals.filter(c => c.room === hoveredRoomId)
                 if (!roomObj || !layoutObj) return null
                 return (
-                  <motion.div className="absolute z-20 pointer-events-none p-3 rounded-xl border border-slate-100 shadow-xl w-56 bg-white animate-fade-in" style={{ left: `${layoutObj.x + layoutObj.w / 2}%`, top: `${layoutObj.y + layoutObj.h / 2}%`, transform: 'translate(-50%, -50%)', borderLeft: `4px solid ${levelColors[roomObj.maxHazard]}` }} initial={{ opacity: 0, scale: 0.9, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 10 }}>
-                    <div className="flex items-center gap-1.5 border-b pb-1.5 mb-1.5">
+                  <motion.div className="absolute z-20 pointer-events-none p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl w-56 bg-white dark:bg-slate-900 animate-fade-in text-slate-900 dark:text-slate-100" style={{ left: `${layoutObj.x + layoutObj.w / 2}%`, top: `${layoutObj.y + layoutObj.h / 2}%`, transform: 'translate(-50%, -50%)', borderLeft: `4px solid ${levelColors[roomObj.maxHazard]}` }} initial={{ opacity: 0, scale: 0.9, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 10 }}>
+                    <div className="flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-1.5">
                       <span className="text-sm">{roomObj.icon}</span>
-                      <h4 className="font-bold text-xs text-slate-800">{translateLabName(roomObj.name)}</h4>
+                      <h4 className="font-bold text-xs text-slate-900 dark:text-slate-100">{translateLabName(roomObj.name)}</h4>
                       <span className="badge text-[8px] font-bold ml-auto" style={{ background: levelColors[roomObj.maxHazard] + '15', color: levelColors[roomObj.maxHazard] }}>{translateLevel(roomObj.maxHazard)}</span>
                     </div>
-                    <p className="text-[10px] text-slate-400 font-bold mb-1">{lang === 'ar' ? 'المواد المخزنة:' : 'Chemicals stored:'} <strong className="text-slate-700">{roomObj.chemicals}</strong></p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold mb-1">{lang === 'ar' ? 'المواد المخزنة:' : 'Chemicals stored:'} <strong className="text-slate-800 dark:text-slate-200">{roomObj.chemicals}</strong></p>
                     {chemicalsInRoom.length > 0 ? (
                       <div className="space-y-1 mt-1 max-h-[85px] overflow-hidden">
-                        {chemicalsInRoom.slice(0, 3).map(c => <div key={c.id} className="flex justify-between items-center text-[9px] text-slate-600 font-semibold"><span className="truncate max-w-[120px]">{c.name}</span><span className="font-mono text-slate-400">({c.formula})</span></div>)}
-                        {chemicalsInRoom.length > 3 && <p className="text-[8px] text-slate-400 text-center font-bold mt-0.5">{lang === 'ar' ? `+${chemicalsInRoom.length - 3} مواد أخرى` : `+${chemicalsInRoom.length - 3} more chemicals`}</p>}
+                        {chemicalsInRoom.slice(0, 3).map(c => <div key={c.id} className="flex justify-between items-center text-[9px] text-slate-700 dark:text-slate-300 font-semibold"><span className="truncate max-w-[120px]">{c.name}</span><span className="font-mono text-slate-400 dark:text-slate-500">({c.formula})</span></div>)}
+                        {chemicalsInRoom.length > 3 && <p className="text-[8px] text-slate-400 dark:text-slate-500 text-center font-bold mt-0.5">{lang === 'ar' ? `+${chemicalsInRoom.length - 3} مواد أخرى` : `+${chemicalsInRoom.length - 3} more chemicals`}</p>}
                       </div>
-                    ) : <p className="text-[9px] text-slate-400 font-semibold italic mt-1">{lang === 'ar' ? 'القسم فارغ حالياً' : 'Area is empty'}</p>}
+                    ) : <p className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold italic mt-1">{lang === 'ar' ? 'القسم فارغ حالياً' : 'Area is empty'}</p>}
                   </motion.div>
                 )
               })()}
@@ -331,53 +331,53 @@ export default function LabMapPage() {
         <div className="space-y-4">
           <AnimatePresence mode="wait">
             {selectedChem ? (
-              <motion.div key="chem-details" className="card p-5 border border-slate-100" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}>
-                <div className="flex items-center justify-between border-b pb-2 mb-3">
-                  <h3 className="font-bold text-xs flex items-center gap-1.5" style={{ color: '#64748B' }}><MapPin size={14} style={{ color: '#3B82F6' }} /> {lang === 'ar' ? 'المادة الكيميائية المحددة' : 'Selected Chemical'}</h3>
-                  <button onClick={() => setSelectedChemId(null)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400"><X size={14} /></button>
+              <motion.div key="chem-details" className="card p-5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}>
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-3">
+                  <h3 className="font-bold text-xs flex items-center gap-1.5 text-slate-500 dark:text-slate-400"><MapPin size={14} className="text-blue-500" /> {lang === 'ar' ? 'المادة الكيميائية المحددة' : 'Selected Chemical'}</h3>
+                  <button onClick={() => setSelectedChemId(null)} className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"><X size={14} /></button>
                 </div>
                 <div className="flex items-start gap-3 mb-4">
                   <MiniNfpa ratings={chemDetails?.nfpa} />
                   <div className="min-w-0">
-                    <h2 className="font-heading font-bold text-sm text-slate-800 truncate">{selectedChem.name}</h2>
-                    <p className="text-xs font-mono text-slate-400 font-bold mt-0.5">{selectedChem.formula}</p>
+                    <h2 className="font-heading font-bold text-sm text-slate-900 dark:text-slate-100 truncate">{selectedChem.name}</h2>
+                    <p className="text-xs font-mono text-blue-600 dark:text-blue-400 font-bold mt-0.5">{selectedChem.formula}</p>
                     <span className="badge text-[10px] mt-1" style={{ background: levelColors[selectedChem.hazard_level] + '15', color: levelColors[selectedChem.hazard_level] }}>{translateLevel(selectedChem.hazard_level)}</span>
                   </div>
                 </div>
-                <div className="space-y-2 border-t pt-3 mb-4">
+                <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3 mb-4">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-slate-400 font-semibold">{lang === 'ar' ? 'الموقع الفعلي' : 'Location'}</span>
-                    <p className="font-bold text-xs truncate mt-0.5 text-slate-700">{selectedChem.location}</p>
+                    <span className="text-slate-500 dark:text-slate-400 font-semibold">{lang === 'ar' ? 'الموقع الفعلي' : 'Location'}</span>
+                    <p className="font-bold text-xs truncate mt-0.5 text-slate-900 dark:text-slate-100">{selectedChem.cabinet ? `(${selectedChem.cabinet}) ` : ''}{selectedChem.location}</p>
                   </div>
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-slate-400 font-semibold">{lang === 'ar' ? 'الكمية المتوفرة' : 'Stock Amount'}</span>
-                    <span className="font-bold text-slate-700">{selectedChem.quantity} {selectedChem.quantity_unit}</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-semibold">{lang === 'ar' ? 'الكمية المتوفرة' : 'Stock Amount'}</span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100">{selectedChem.quantity} {selectedChem.quantity_unit}</span>
                   </div>
                   {selectedChem.expiry_date && (
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-400 font-semibold">{lang === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date'}</span>
-                      <span className="font-bold text-slate-700">{new Date(selectedChem.expiry_date).toLocaleDateString()}</span>
+                      <span className="text-slate-500 dark:text-slate-400 font-semibold">{lang === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date'}</span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100">{new Date(selectedChem.expiry_date).toLocaleDateString()}</span>
                     </div>
                   )}
                 </div>
                 <button onClick={() => navigate(`/chemicals/${selectedChem.id}`)} className="btn-primary w-full justify-center py-2.5 text-xs font-bold ripple shadow-sm flex items-center gap-1.5"><Eye size={14} /> {lang === 'ar' ? 'فتح صفحة التفاصيل الكاملة' : 'Open Full Details'}</button>
               </motion.div>
             ) : selectedRoom ? (
-              <motion.div key="room-details" className="card p-5 border border-slate-100" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}>
-                <div className="flex items-center justify-between border-b pb-2 mb-3">
-                  <h3 className="font-bold text-xs flex items-center gap-1.5" style={{ color: '#64748B' }}><Layers size={14} style={{ color: '#10B981' }} /> {translateLabName(roomInfo?.name || '')}</h3>
-                  <button onClick={() => setSelectedRoom(null)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400"><X size={14} /></button>
+              <motion.div key="room-details" className="card p-5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}>
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-3">
+                  <h3 className="font-bold text-xs flex items-center gap-1.5 text-slate-500 dark:text-slate-400"><Layers size={14} className="text-emerald-500" /> {translateLabName(roomInfo?.name || '')}</h3>
+                  <button onClick={() => setSelectedRoom(null)} className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"><X size={14} /></button>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-neutral-50"><span className="font-semibold text-neutral-500">{lang === 'ar' ? 'إجمالي المواد المخزنة' : 'Total chemicals stored'}</span><span className="font-bold text-neutral-800">{roomChems.length}</span></div>
-                  <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-neutral-50"><span className="font-semibold text-neutral-500">{lang === 'ar' ? 'أعلى مستوى خطورة' : 'Max hazard rating'}</span><span className="badge text-[10px]" style={{ background: levelColors[zones.find(z => z.id === selectedRoom)?.maxHazard || 'low'] + '15', color: levelColors[zones.find(z => z.id === selectedRoom)?.maxHazard || 'low'] }}>{translateLevel(zones.find(z => z.id === selectedRoom)?.maxHazard || 'low')}</span></div>
+                  <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/50 dark:border-slate-700/60"><span className="font-semibold text-slate-600 dark:text-slate-400">{lang === 'ar' ? 'إجمالي المواد المخزنة' : 'Total chemicals stored'}</span><span className="font-bold text-slate-900 dark:text-slate-100">{roomChems.length}</span></div>
+                  <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/50 dark:border-slate-700/60"><span className="font-semibold text-slate-600 dark:text-slate-400">{lang === 'ar' ? 'أعلى مستوى خطورة' : 'Max hazard rating'}</span><span className="badge text-[10px]" style={{ background: levelColors[zones.find(z => z.id === selectedRoom)?.maxHazard || 'low'] + '15', color: levelColors[zones.find(z => z.id === selectedRoom)?.maxHazard || 'low'] }}>{translateLevel(zones.find(z => z.id === selectedRoom)?.maxHazard || 'low')}</span></div>
                   <div className="mt-3">
-                    <p className="text-[10px] text-neutral-400 font-bold mb-2 uppercase tracking-wide">{lang === 'ar' ? 'قائمة المواد داخل هذا القسم:' : 'Chemicals in this section:'}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold mb-2 uppercase tracking-wide">{lang === 'ar' ? 'قائمة المواد داخل هذا القسم:' : 'Chemicals in this section:'}</p>
                     <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
                       {roomChems.map(chem => (
-                        <div key={chem.id} onClick={() => setSelectedChemId(chem.id)} className="flex items-center justify-between p-2 rounded-xl border border-slate-100 bg-[#FAFBFD] hover:bg-slate-50 hover:border-slate-300 cursor-pointer transition-all text-xs">
-                          <div className="min-w-0 text-left"><span className="font-bold text-slate-800 truncate block">{chem.name}</span><span className="text-[10px] font-mono text-slate-400">{chem.formula}</span></div>
-                          <div className="flex items-center gap-1.5 flex-shrink-0"><span className="text-[10px] font-bold text-slate-500">{chem.quantity} {chem.quantity_unit}</span><div className="w-2.5 h-2.5 rounded-full" style={{ background: levelColors[chem.hazard_level] }} /></div>
+                        <div key={chem.id} onClick={() => setSelectedChemId(chem.id)} className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/80 hover:bg-blue-50/70 dark:hover:bg-slate-800 hover:border-blue-300 dark:hover:border-slate-600 cursor-pointer transition-all text-xs shadow-xs">
+                          <div className="min-w-0 text-left"><span className="font-bold text-slate-900 dark:text-slate-100 truncate block">{chem.name}</span><span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 font-bold">{chem.formula}</span></div>
+                          <div className="flex items-center gap-1.5 flex-shrink-0"><span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">{chem.quantity} {chem.quantity_unit}</span><div className="w-2.5 h-2.5 rounded-full shadow-xs" style={{ background: levelColors[chem.hazard_level] }} /></div>
                         </div>
                       ))}
                     </div>
@@ -385,14 +385,14 @@ export default function LabMapPage() {
                 </div>
               </motion.div>
             ) : (
-              <motion.div key="zone-overview" className="card p-5" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}>
-                <h3 className="font-semibold text-sm mb-3 text-left" style={{ color: '#2C3E50' }}>{lang === 'ar' ? 'مراقبة خطورة المناطق' : 'Zone Summary'}</h3>
+              <motion.div key="zone-overview" className="card p-5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}>
+                <h3 className="font-semibold text-sm mb-3 text-left text-slate-900 dark:text-slate-100">{lang === 'ar' ? 'مراقبة خطورة المناطق' : 'Zone Summary'}</h3>
                 <div className="space-y-2">
                   {zones.map((zone, i) => {
                     const roomColor = levelColors[zone.maxHazard]
                     return (
-                      <motion.div key={zone.id} onClick={() => setSelectedRoom(zone.id)} className="flex items-center justify-between p-2.5 rounded-xl cursor-pointer border border-neutral-100 hover:border-neutral-300 bg-[#F8F9FA] hover:bg-slate-50 transition-all text-left" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
-                        <div className="flex items-center gap-2.5 text-left"><span className="text-lg">{zone.icon}</span><div className="text-left"><p className="text-xs font-bold text-slate-700">{translateLabName(zone.name)}</p><p className="text-[10px] text-neutral-400 font-semibold">{lang === 'ar' ? `${zone.chemicals} مواد مخزنة` : `${zone.chemicals} chemicals`}</p></div></div>
+                      <motion.div key={zone.id} onClick={() => setSelectedRoom(zone.id)} className="flex items-center justify-between p-2.5 rounded-xl cursor-pointer border border-slate-200 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-left" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
+                        <div className="flex items-center gap-2.5 text-left"><span className="text-lg">{zone.icon}</span><div className="text-left"><p className="text-xs font-bold text-slate-900 dark:text-slate-100">{translateLabName(zone.name)}</p><p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">{lang === 'ar' ? `${zone.chemicals} مواد مخزنة` : `${zone.chemicals} chemicals`}</p></div></div>
                         <span className="badge text-[10px] font-bold flex items-center gap-1" style={{ background: roomColor + '15', color: roomColor }}><span className="w-1.5 h-1.5 rounded-full" style={{ background: roomColor }} />{translateLevel(zone.maxHazard)}</span>
                       </motion.div>
                     )
