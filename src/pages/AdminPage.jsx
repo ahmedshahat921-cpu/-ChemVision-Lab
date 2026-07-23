@@ -666,6 +666,13 @@ export default function AdminPage() {
 
       if (occupiedChem) {
         const suggestions = getEmptySpots(data.location)
+        if (suggestions.length === 0) {
+          toast.error(
+            lang === 'ar'
+              ? '⚠️ جميع أماكن وكباين التخزين ممتلئة بالكامل! لا يوجد أي مكان فارغ.'
+              : '⚠️ All storage spots and cabinets are 100% full! No empty spots available.'
+          )
+        }
         setOccupiedCheck({
           location: data.location,
           cabinet: data.cabinet,
@@ -1093,7 +1100,19 @@ export default function AdminPage() {
 
           <motion.button
             className="btn-primary col-span-2 sm:col-span-1 justify-center py-2.5 text-xs sm:text-sm font-bold shadow-md"
-            onClick={() => { setEditingChemical(null); setShowForm(true) }}
+            onClick={() => {
+              const freeSpots = getEmptySpots()
+              if (freeSpots.length === 0) {
+                toast.error(
+                  lang === 'ar'
+                    ? '⚠️ تعذرت الإضافة! جميع أرفف وأماكن التخزين في المختبر ممتلئة بالكامل (100%). يرجى تفريغ أو نقل أي مركب أولاً.'
+                    : '⚠️ Cannot add chemical! All storage locations and cabinets in the lab are 100% full. Please free up a spot first.'
+                )
+                return
+              }
+              setEditingChemical(null)
+              setShowForm(true)
+            }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -1434,9 +1453,17 @@ export default function AdminPage() {
                 </p>
                 
                 {occupiedCheck.suggestions.length === 0 ? (
-                  <p className="text-xs italic text-red-500 font-semibold">
-                    {lang === 'ar' ? 'لا توجد أماكن شاغرة حالياً في المستودع!' : 'No empty spots available in the storage right now!'}
-                  </p>
+                  <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 space-y-2">
+                    <div className="flex items-center gap-2 font-bold text-sm">
+                      <AlertTriangle size={18} className="flex-shrink-0 text-rose-500" />
+                      <span>{lang === 'ar' ? 'جميع الأماكن ممتلئة بالكامل (100%)!' : 'All Storage Locations Are 100% Full!'}</span>
+                    </div>
+                    <p className="text-xs leading-relaxed font-medium">
+                      {lang === 'ar'
+                        ? 'لا توجد أي أماكن أو كباين فارغة حالياً في أي ممر أو رف في المختبر. يرجى تفريغ أو حذف أو تغيير موقع مركب آخر أولاً لإتاحة مكان لهذا المركب.'
+                        : 'There are currently no empty spots or cabinets in any lab or shelf. Please free up or move an existing chemical to make space for this one.'}
+                    </p>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 gap-2 mt-2">
                     {occupiedCheck.suggestions.map((spot, index) => (
