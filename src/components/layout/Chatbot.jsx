@@ -152,34 +152,39 @@ export default function Chatbot() {
   }
 
   return (
-    <div className={`fixed bottom-4 sm:bottom-6 ${lang === 'ar' ? 'left-4 sm:left-6' : 'right-4 sm:right-6'} z-[9999]`} style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
-      {/* Floating Toggle Button */}
-      <motion.button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white shadow-2xl relative z-50 cursor-pointer"
-        style={{
-          background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
-          boxShadow: '0 8px 32px rgba(124, 58, 237, 0.45)'
-        }}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.92 }}
+    <>
+      {/* Floating Toggle Button - always on top */}
+      <div
+        className={`fixed bottom-4 sm:bottom-6 ${lang === 'ar' ? 'left-4 sm:left-6' : 'right-4 sm:right-6'} z-[10000]`}
+        style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}
       >
-        <AnimatePresence mode="wait">
-          {isOpen ? (
-            <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
-              <X size={22} />
-            </motion.div>
-          ) : (
-            <motion.div key="open" className="relative" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
-              <MessageSquare size={22} />
-              {/* Online pulse indicator */}
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-violet-600 animate-pulse" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.button>
+        <motion.button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white shadow-2xl cursor-pointer"
+          style={{
+            background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
+            boxShadow: '0 8px 32px rgba(124, 58, 237, 0.45)'
+          }}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.92 }}
+        >
+          <AnimatePresence mode="wait">
+            {isOpen ? (
+              <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
+                <X size={22} />
+              </motion.div>
+            ) : (
+              <motion.div key="open" className="relative" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
+                <MessageSquare size={22} />
+                {/* Online pulse indicator */}
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-violet-600 animate-pulse" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.button>
+      </div>
 
-      {/* Chat Window Panel */}
+      {/* Chat Window Panel - separate fixed layer below button */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -187,7 +192,8 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-            className={`absolute bottom-16 sm:bottom-20 ${lang === 'ar' ? 'left-0' : 'right-0'} w-[calc(100vw-2rem)] sm:w-[380px] max-w-[420px] h-[70vh] sm:h-[520px] rounded-2xl border flex flex-col overflow-hidden shadow-2xl bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 transition-colors backdrop-blur-xl relative z-40`}
+            className={`fixed bottom-20 sm:bottom-24 ${lang === 'ar' ? 'left-4 sm:left-6' : 'right-4 sm:right-6'} w-[calc(100vw-2rem)] sm:w-[380px] max-w-[420px] h-[70vh] sm:h-[520px] rounded-2xl border flex flex-col overflow-hidden shadow-2xl bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 transition-colors backdrop-blur-xl z-[9999]`}
+            style={{ direction: lang === 'ar' ? 'rtl' : 'ltr' }}
           >
             {/* Custom Clear Confirmation Modal Overlay */}
             <AnimatePresence>
@@ -346,6 +352,6 @@ export default function Chatbot() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   )
 }
