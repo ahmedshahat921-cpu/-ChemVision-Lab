@@ -156,10 +156,10 @@ export default function Chatbot() {
       {/* Floating Toggle Button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white shadow-2xl relative cursor-pointer"
+        className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white shadow-2xl relative z-50 cursor-pointer"
         style={{
           background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
-          boxShadow: '0 8px 32px rgba(124, 58, 237, 0.35)'
+          boxShadow: '0 8px 32px rgba(124, 58, 237, 0.45)'
         }}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
@@ -187,7 +187,7 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 280 }}
-            className={`absolute bottom-16 sm:bottom-20 ${lang === 'ar' ? 'left-0' : 'right-0'} w-[calc(100vw-2rem)] sm:w-[380px] max-w-[420px] h-[70vh] sm:h-[520px] rounded-2xl border flex flex-col overflow-hidden shadow-2xl bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 transition-colors backdrop-blur-xl relative`}
+            className={`absolute bottom-16 sm:bottom-20 ${lang === 'ar' ? 'left-0' : 'right-0'} w-[calc(100vw-2rem)] sm:w-[380px] max-w-[420px] h-[70vh] sm:h-[520px] rounded-2xl border flex flex-col overflow-hidden shadow-2xl bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 transition-colors backdrop-blur-xl relative z-40`}
           >
             {/* Custom Clear Confirmation Modal Overlay */}
             <AnimatePresence>
@@ -259,13 +259,22 @@ export default function Chatbot() {
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => setShowConfirmClear(true)}
-                title={lang === 'ar' ? 'مسح المحادثة' : 'Clear Chat'}
-                className="p-1.5 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
-              >
-                <Trash2 size={16} />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setShowConfirmClear(true)}
+                  title={lang === 'ar' ? 'مسح المحادثة' : 'Clear Chat'}
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                >
+                  <Trash2 size={16} />
+                </button>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  title={lang === 'ar' ? 'إغلاق الشات' : 'Close Chat'}
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer ml-1"
+                >
+                  <X size={18} />
+                </button>
+              </div>
             </div>
 
             {/* Message Area */}
