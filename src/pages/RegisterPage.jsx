@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Eye, EyeOff, FlaskConical, Mail, Lock, User, ArrowRight, Loader2, Shield, CheckCircle, AlertCircle, Microscope, Settings } from 'lucide-react'
+import { Eye, EyeOff, FlaskConical, Mail, Lock, User, ArrowRight, Loader2, Shield, CheckCircle, AlertCircle, Microscope, Settings, Home } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store'
+import { useLanguage } from '../hooks/useLanguage'
 import ParticlesBackground, { FloatingMolecule } from '../components/animations/ParticlesBackground'
 import toast from 'react-hot-toast'
 
@@ -20,16 +21,21 @@ const containerVariants = {
 }
 
 const fieldVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', role: 'user', securityAnswer: '' })
+  const [form, setForm] = useState({
+    name: '', email: '', password: '', confirmPassword: '',
+    role: 'user', securityQuestion: 'what is your lab badge number or id?', securityAnswer: ''
+  })
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [shake, setShake] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const { register, loading } = useAuthStore()
+  const { lang } = useLanguage()
   const navigate = useNavigate()
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
@@ -161,17 +167,32 @@ export default function RegisterPage() {
       </div>
 
       {/* RIGHT PANEL – Register Form */}
-      <div className="w-full lg:w-3/5 flex flex-col" style={{ background: '#FFFFFF' }}>
-        {/* Mobile-only branded header */}
-        <div className="flex lg:hidden items-center gap-3 px-6 pt-6 pb-4 border-b" style={{ borderColor: '#E2E8F0' }}>
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1B3A6B, #2D6A9F)' }}>
-            <FlaskConical size={18} color="white" />
+      <div className="w-full lg:w-3/5 flex flex-col relative" style={{ background: '#FFFFFF' }}>
+        {/* Top Header Bar with Back to Landing button for Mobile & Desktop */}
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b" style={{ borderColor: '#E2E8F0' }}>
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-xs" style={{ background: 'linear-gradient(135deg, #1B3A6B, #2D6A9F)' }}>
+              <FlaskConical size={18} color="white" />
+            </div>
+            <div>
+              <p className="font-heading font-bold text-sm text-slate-800 leading-tight">ChemVision</p>
+              <p className="text-[11px] text-slate-400 font-medium">Lab Hub</p>
+            </div>
           </div>
-          <div>
-            <p className="font-heading font-bold text-sm" style={{ color: '#2C3E50' }}>ChemVision Lab Hub</p>
-            <p className="text-xs" style={{ color: '#94A3B8' }}>Create your account</p>
-          </div>
+
+          {/* Back to Landing Page Button */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate('/landing')}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs border border-blue-200 shadow-xs transition-all cursor-pointer"
+            title={lang === 'ar' ? 'الرجوع للصفحة الرئيسية' : 'Back to Home Landing Page'}
+          >
+            <Home size={15} className="text-blue-600" />
+            <span>{lang === 'ar' ? 'الصفحة الرئيسية' : 'Back to Home'}</span>
+          </motion.button>
         </div>
+
         <div className="flex-1 flex items-center justify-center p-8">
         <motion.div className="w-full max-w-lg" variants={containerVariants} initial="hidden" animate="visible">
           <motion.div variants={fieldVariants} className="mb-8">

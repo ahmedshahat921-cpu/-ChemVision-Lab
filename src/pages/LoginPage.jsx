@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Eye, EyeOff, FlaskConical, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, FlaskConical, Mail, Lock, ArrowRight, Loader2, Home } from 'lucide-react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../store'
+import { useLanguage } from '../hooks/useLanguage'
 import ParticlesBackground, { FloatingMolecule } from '../components/animations/ParticlesBackground'
 import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabase'
@@ -36,6 +37,7 @@ export default function LoginPage() {
   const [chemCount, setChemCount] = useState(null)
 
   const { login, loading } = useAuthStore()
+  const { lang } = useLanguage()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -170,17 +172,32 @@ export default function LoginPage() {
       </div>
 
       {/* RIGHT PANEL – Login Form */}
-      <div className="w-full lg:w-2/5 flex flex-col" style={{ background: '#FFFFFF' }}>
-        {/* Mobile-only branded header */}
-        <div className="flex lg:hidden items-center gap-3 px-6 pt-6 pb-4 border-b" style={{ borderColor: '#E2E8F0' }}>
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1B3A6B, #2D6A9F)' }}>
-            <FlaskConical size={18} color="white" />
+      <div className="w-full lg:w-2/5 flex flex-col relative" style={{ background: '#FFFFFF' }}>
+        {/* Top Header Bar with Back to Landing button for Mobile & Desktop */}
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b" style={{ borderColor: '#E2E8F0' }}>
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-xs" style={{ background: 'linear-gradient(135deg, #1B3A6B, #2D6A9F)' }}>
+              <FlaskConical size={18} color="white" />
+            </div>
+            <div>
+              <p className="font-heading font-bold text-sm text-slate-800 leading-tight">ChemVision</p>
+              <p className="text-[11px] text-slate-400 font-medium">Lab Hub</p>
+            </div>
           </div>
-          <div>
-            <p className="font-heading font-bold text-sm" style={{ color: '#2C3E50' }}>ChemVision Lab Hub</p>
-            <p className="text-xs" style={{ color: '#94A3B8' }}>Sign in to your account</p>
-          </div>
+
+          {/* Back to Landing Page Button */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate('/landing')}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs border border-blue-200 shadow-xs transition-all cursor-pointer"
+            title={lang === 'ar' ? 'الرجوع للصفحة الرئيسية' : 'Back to Home Landing Page'}
+          >
+            <Home size={15} className="text-blue-600" />
+            <span>{lang === 'ar' ? 'الصفحة الرئيسية' : 'Back to Home'}</span>
+          </motion.button>
         </div>
+
         <div className="flex-1 flex items-center justify-center p-8">
         <motion.div
           className="w-full max-w-md"
@@ -188,11 +205,6 @@ export default function LoginPage() {
           initial="hidden"
           animate="visible"
         >
-          {/* Mobile logo */}
-          <motion.div variants={fieldVariants} className="flex items-center gap-2 mb-8 lg:hidden">
-            <FlaskConical size={28} color="#4A90E2" />
-            <span className="font-heading font-bold text-xl" style={{ color: '#1B3A6B' }}>ChemVision Lab Hub</span>
-          </motion.div>
 
           {/* Heading */}
           <motion.div variants={fieldVariants} className="mb-8">
